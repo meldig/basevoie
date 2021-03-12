@@ -1,0 +1,18 @@
+# Différences entre la documentation et la réalité de la base
+
+## Les contraintes
+
+Selon la documentation ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) il existe 8 clés étrangères dans les tables de la base voie :
+``` TSV
+Nom_Table	Nom_Colonne	Type_Donnees	Type_Contrainte
+ILTASEU	CDCOTE	varchar(5)	FK
+ILTASIT	IDSEUI	decimal(22,7)	FK
+ILTASIT	CNUMTRC	decimal(22,5)	FK
+ILTADTN	CNUMPTZ	decimal(22,8)	FK
+ILTADTN	CNUMTRC	decimal(22,5)	FK
+VOIECVT	CCOMVOI	decimal(22,7)	FK
+VOIECVT	CNUMTRC	decimal(22,5)	FK
+VOIEVOI	CCODTVO	char(4)	FK
+```
+
+Or dans la base, il n'existe aucune clé étrangère dans ces tables (cf. ![contraintes_base_voie.tsv](/contraintes_base_voie.tsv)).
