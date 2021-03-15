@@ -212,6 +212,68 @@ WHERE
 
 ## Analyse de la géométrie des tables.
 
+### Analyse des indexes géométrique des tables.
+
+Toutes les tables de la base voie avec une colonne géométrique ont des métadonnées dans la table __USER_SDO_GEOM_METADATA__
+
+```SQL
+SELECT
+    *
+FROM
+    USER_SDO_GEOM_METADATA
+WHERE
+    TABLE_NAME IN(
+        'ILTALPU',
+        'ILTAPTZ',
+        'ILTASEU',
+        'ILTATRC',
+        'REMARQUES_THEMATIQUES_VOIES',
+        'REMARQUES_VOIES'
+    );
+```
+
+|TABLE 								|COLONNE| DIMINFO 																	| SRID 	|
+|:----------------------------------|:------|:--------------------------------------------------------------------------|:------|
+|ILTALPU							| GEOM	| MDSYS.SDO_DIM_ARRAY([MDSYS.SDO_DIM_ELEMENT], [MDSYS.SDO_DIM_ELEMENT])		| 2154	|
+|ILTAPTZ							| GEOM	| MDSYS.SDO_DIM_ARRAY([MDSYS.SDO_DIM_ELEMENT], [MDSYS.SDO_DIM_ELEMENT])		| 2154	|
+|ILTASEU							| GEOM	| MDSYS.SDO_DIM_ARRAY([MDSYS.SDO_DIM_ELEMENT], [MDSYS.SDO_DIM_ELEMENT])		| 2154	|
+|ILTATRC							| GEOM	| MDSYS.SDO_DIM_ARRAY([MDSYS.SDO_DIM_ELEMENT], [MDSYS.SDO_DIM_ELEMENT])		| 2154	|
+|REMARQUES_THEMATIQUES_VOIES		| GEOM	| MDSYS.SDO_DIM_ARRAY([MDSYS.SDO_DIM_ELEMENT], [MDSYS.SDO_DIM_ELEMENT])		| 2154	|
+|REMARQUES_VOIES					| GEOM	| MDSYS.SDO_DIM_ARRAY([MDSYS.SDO_DIM_ELEMENT], [MDSYS.SDO_DIM_ELEMENT])		| 2154	|
+
+
+```SQL
+SELECT
+    b.TABLE_NAME,
+    b.INDEX_NAME,
+    a.UNIQUENESS,
+    a.STATUS,
+    a.INDEX_TYPE,
+    a.PARAMETERS
+FROM
+    USER_INDEXES a
+    INNER JOIN USER_IND_COLUMNS b ON b.INDEX_NAME = a.INDEX_NAME
+WHERE
+    b.TABLE_NAME IN(
+        'ILTALPU',
+        'ILTAPTZ',
+        'ILTASEU',
+        'ILTATRC',
+        'REMARQUES_THEMATIQUES_VOIES',
+        'REMARQUES_VOIES'
+    )
+AND a.INDEX_TYPE = 'DOMAIN';
+```
+
+|TABLE 							|INDEX 								|UNIQUENESS 	|STATUS|INDEX_TYPE 		|PARAMETERS|
+|:------------------------------|:----------------------------------|:--------------|:-----|:---------------|:---------|
+|ILTALPU 						| ILTALPU_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| sdo_indx_dims=2|
+|ILTAPTZ						| ILTAPTZ_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| NULL|
+|ILTASEU						| ILTASEU_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| NULL|
+|ILTATRC						| ILTATRC_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| NULL|
+|REMARQUES_THEMATIQUES_VOIES	| REMARQUES_THEMATIQUES_VOI_SIDX	| NONUNIQUE		| VALID 	| DOMAIN	| LAYER_GTYPE = MULTIPOLYGON WORK_TABLESPACE=DATA_TEMP TABLESPACE=ISPA_g_SIDU|
+|REMARQUES_VOIES				| REMARQUES_VOIES_SIDX				| NONUNIQUE		| VALID 	| DOMAIN	| sdo_indx_dims=2, layer_gtype=COLLECTION|
+
 ### Analyse du type de géométrie des tables.
 
 #### Analyse du type de géométrie présente dans la table ILTALPU.
