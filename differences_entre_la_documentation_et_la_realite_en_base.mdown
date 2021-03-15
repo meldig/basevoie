@@ -88,5 +88,34 @@ ADMIN_COL_TABLES_VOIES	TYPE_OBJET	varchar(20)	FK
 Or dans la base, il n'existe aucune clé étrangère dans ces tables (cf. ![contraintes_base_voie.tsv](/contraintes_base_voie.tsv)), il n'y a donc aucune contrainte d'intégrité, ce qui signifie qu'il peut potentiellement y avoir des doublons ou des valeurs manquantes. Le fait qu'il n'y ait aucune contrainte signifie que *TOUT* dépend de la saisie et de la mise à jour de la donnée par les utilisateurs/gestionnaires. Il n'y a aucune sécurité.
 
 #### Les contraintes d'unicité
+Hormis les clés primaires, il n'y a aucune contrainte d'unicité, ce qui est conforme au MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) (cf. ![contraintes_base_voie.tsv](/contraintes_base_voie.tsv)).
 
+#### Les contraintes de Non-nullité
+Il existe 70 contraintes de non-nullité c'est-à-dire 70 - 9 clés primaires, soit 61 contraintes en plus que dans le MCD du pdf.
+*Il faut regarder si ces contraintes ont été placées à bon escient ou non, ou s'il en manque*.
 
+## 2. Les déclencheurs
+
+### 2.1. Généralités
+Il existe en tout 15 triggers dans le schéma G_SIDU, portant sur les tables de la base voie.
+``` TSV
+Nom_Table	Nom_trigger	Type_Trigger	Evenement_de_Declenchement	Schema	Statut
+ILTADTN	TRG_ILTADTN_MAJ_CDVALDTN	BEFORE EACH ROW	INSERT OR UPDATE	G_SIDU	ENABLED
+ILTALPU	TRG_ILTALPU	AFTER EACH ROW	INSERT OR UPDATE OR DELETE	G_SIDU	ENABLED
+ILTALPU	TRG_ILTALPU_INS_CNUMLPU	BEFORE EACH ROW	INSERT	G_SIDU	ENABLED
+ILTALPU	TRG_ILTALPU_MAJ_CDVALLPU	BEFORE EACH ROW	INSERT OR UPDATE	G_SIDU	ENABLED
+ILTAPTZ	TRG_ILTAPTZ_INS_CNUMPTZ	BEFORE EACH ROW	INSERT	G_SIDU	ENABLED
+ILTAPTZ	TRG_ILTAPTZ_MAJ_CDVALPTZ	BEFORE EACH ROW	INSERT OR UPDATE	G_SIDU	ENABLED
+ILTASEU	TRG_ILTASEU	AFTER EACH ROW	INSERT OR UPDATE OR DELETE	G_SIDU	ENABLED
+ILTASEU	TRG_ILTASEU_INS_IDSEUI	BEFORE EACH ROW	INSERT	G_SIDU	ENABLED
+ILTASIT	TRG_ILTASIT	AFTER EACH ROW	INSERT OR UPDATE OR DELETE	G_SIDU	ENABLED
+ILTATRC	TRG_ILTATRC_INS_CNUMTRC	BEFORE EACH ROW	INSERT	G_SIDU	DISABLED
+ILTATRC	TRG_ILTATRC_MAJ_CDVALTRO	BEFORE EACH ROW	INSERT OR UPDATE	G_SIDU	ENABLED
+ILTATRC	TRG_ILTATRC_SENS_TRC	AFTER EACH ROW	INSERT OR UPDATE OR DELETE	G_SIDU	ENABLED
+REMARQUES_VOIES	TRG_REMARQUES_VOIES_INS_ID	BEFORE EACH ROW	INSERT	G_SIDU	ENABLED
+VOIECVT	TRG_VOIECVT_MAJ_CVALIDE	BEFORE EACH ROW	INSERT OR UPDATE	G_SIDU	ENABLED
+VOIEVOI	TRG_VOIEVOI_MAJ_CDVALVOI	BEFORE EACH ROW	INSERT OR UPDATE	G_SIDU	ENABLED
+```
+
+### 2.2. Trigger de la table *ILTADTN*
+La table *ILTADTN* ne dispose que d'un seul trigger appelé *TRG_ILTADTN_MAJ_CDVALDTN*, déclenché lors d'insertion ou d'édition de données. Le trigger est actif.
