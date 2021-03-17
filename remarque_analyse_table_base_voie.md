@@ -65,6 +65,17 @@ WHERE
     cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
 ;
 -- 3
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(cnumtrc)
+FROM
+    G_SIDU.ILTASIT
+WHERE
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL AND cdvaltro = 'V')
+;
+-- 187
 ```
 
 ### Verification de la relation entre les tables G_SIDU.ILTADTN et G_SIDU.ILTATRC.
@@ -78,6 +89,17 @@ WHERE
     cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
 ;
 -- 0
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(cnumtrc)
+FROM
+    G_SIDU.ILTADTN
+WHERE
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL AND cdvaltro = 'V')
+;
+-- 15042
 ```
 
 ### Verification de la relation entre les tables G_SIDU.ILTADTN et G_SIDU.ILTAPTZ.
@@ -91,6 +113,17 @@ WHERE
     cnumptz NOT IN (SELECT cnumptz FROM G_SIDU.ILTAPTZ WHERE cnumptz IS NOT NULL)
 ;
 -- 0
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(cnumptz)
+FROM
+    G_SIDU.ILTADTN
+WHERE
+    cnumptz NOT IN (SELECT cnumptz FROM G_SIDU.ILTAPTZ WHERE cnumptz IS NOT NULL AND cdvalptz = 'V')
+;
+-- 4645
 ```
 
 ### Verification de la relation entre les tables G_SIDU.VOIECVT et G_SIDU.ILTATRC.
@@ -104,6 +137,17 @@ WHERE
     cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
 ;
 -- 1
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(cnumtrc)
+FROM
+    G_SIDU.VOIECVT
+WHERE
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL AND cdvaltro = 'V')
+;
+-- 8211
 ```
 
 ### Verification de la relation entre les tables G_SIDU.ILTAFILIA et G_SIDU.ILTATRC.
@@ -117,19 +161,17 @@ WHERE
     cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
 ;
 -- 1
-```
 
-### Verification de la relation entre les tables G_SIDU.ILTADTN et G_SIDU.ILTAPTZ.
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
 
-```SQL
 SELECT
-    COUNT(cnumptz)
+    COUNT(cnumtrc)
 FROM
-    G_SIDU.ILTADTN
+    G_SIDU.ILTAFILIA
 WHERE
-    cnumptz NOT IN (SELECT cnumptz FROM G_SIDU.ILTAPTZ WHERE cnumptz IS NOT NULL)
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL AND cdvaltro = 'V')
 ;
--- 0
+-- 641
 ```
 
 ### Verification de la relation entre les tables G_SIDU.VOIEVOI et G_SIDU.TYPEVOIE
@@ -156,6 +198,17 @@ WHERE
     ccomvoi NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL)
 ;
 -- 0
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(ccomvoi)
+FROM
+    G_SIDU.VOIECVT
+WHERE
+    ccomvoi NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL AND CDVALVOI = 'V')
+;
+-- 1670
 ```
 
 ### Verification de la relation entre les tables G_SIDU.TA_RUEVOIE et G_SIDU.VOIEVOI.
@@ -169,6 +222,16 @@ WHERE
     ccomvoie NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL)
 ;
 -- 7
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(ccomvoie)
+FROM
+    G_SIDU.TA_RUEVOIE
+WHERE
+    ccomvoie NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL AND CDVALVOI = 'V')
+-- 495
 ```
 
 ### Verification de la relation entre les tables G_SIDU.TA_RUEVOIE et G_SIDU.TA_RUE.
@@ -208,6 +271,17 @@ WHERE
     cnumlpu NOT IN (SELECT cnumlpu FROM G_SIDU.ILTALPU WHERE cnumlpu IS NOT NULL)
 ;
 -- 0
+
+-- EN PRENANT EN COMPTE LA VALIDITE DES ELEMENTS
+
+SELECT
+    COUNT(cnumlpu)
+FROM
+    G_SIDU.TA_RUELPU
+WHERE
+    cnumlpu NOT IN (SELECT cnumlpu FROM G_SIDU.ILTALPU WHERE cnumlpu IS NOT NULL AND CDVALLPU = 'V')
+;
+-- 8
 ```
 
 ## Analyse de la géométrie des tables.
