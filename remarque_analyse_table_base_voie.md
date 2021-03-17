@@ -39,7 +39,7 @@ La table G_SIDU.ITACOM n'est pas présente dans le schéma G_SIDU en PRODUCTION
 
 ## Analyse des tables.
 
-Requêtes réalisées le 15/03/2021 sur la base G_SIDU@cudl. Cette analyse sert à vérifiée la cohérence des éléments entre les tables de relation et les tables des objets. Normalement un élément présent dans une table de relation doit également être présent dans la table des objets qui sont mise ne relation par la table de relation. L'absence de contraintes de clé étrangère nous oblige à vérifier si cela est réellement le cas.
+Requêtes réalisées le 15/03/2021 sur le schéma G_SIDU en PRODUCTION. Cette analyse sert à vérifiée la cohérence des éléments entre les tables de relation et les tables des objets. Normalement un élément présent dans une table de relation doit également être présent dans la table des objets qui sont mise ne relation par la table de relation. L'absence de contraintes de clé étrangère nous oblige à vérifier si cela est réellement le cas.
 
 ### Verification de la relation entre les tables G_SIDU.ILTASIT et G_SIDU.ILTASEU.
 
