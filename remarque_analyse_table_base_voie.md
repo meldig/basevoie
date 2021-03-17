@@ -21,7 +21,7 @@
 * REMARQUES_VOIES
 * REMARQUES_THEMATIQUES_VOIES
 
-La table G_SIDU.ITACOM n'est pas présente dans le schéma G_SIDU@cudl
+La table G_SIDU.ITACOM n'est pas présente dans le schéma G_SIDU en PRODUCTION
 
 ### Les tables d'administration.
 
@@ -39,7 +39,7 @@ La table G_SIDU.ITACOM n'est pas présente dans le schéma G_SIDU@cudl
 
 ## Analyse des tables.
 
-Requêtes réalisées le 15/03/2021 sur la base G_SIDU@cudl.
+Requêtes réalisées le 15/03/2021 sur la base G_SIDU@cudl. Cette analyse sert à vérifiée la cohérence des éléments entre les tables de relation et les tables des objets. Normalement un élément présent dans une table de relation doit également être présent dans la table des objets qui sont mise ne relation par la table de relation. L'absence de contraintes de clé étrangère nous oblige à vérifier si cela est réellement le cas.
 
 ### Verification de la relation entre les tables G_SIDU.ILTASIT et G_SIDU.ILTASEU.
 
@@ -402,8 +402,8 @@ Pas d'erreur présente dans la table
 
 #### Analyse des erreurs de géométrie de la table ILTATRC.
 
-|TYPE DE GEOMETRIE|NOMBRE D'OBJET|TABLE|
-|:----------------|:-------------|:----|
+|ERREUR|NOMBRE D'OBJET|TABLE|
+|:-----|:-------------|:----|
 |13356			  |6			 |ILTATRC|
 
 Les géométries de la tables peuvent être corrigées avec la fonction __SDO_UTIL.RECTIFY_GEOMETRY__
@@ -431,7 +431,7 @@ Pas d'erreur présente dans la table
 
 #### Analyse des erreurs de géométrie de la table REMARQUES_VOIES.
 
-|TYPE DE GEOMETRIE|NOMBRE D'OBJET|TABLE|
+|ERREUR|NOMBRE D'OBJET|TABLE|
 |:----------------|:-------------|:----|
 |13356			  |1			 |REMARQUES_VOIES|
 |13367			  |11			 |REMARQUES_VOIES|
