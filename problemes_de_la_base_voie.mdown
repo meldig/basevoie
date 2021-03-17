@@ -96,7 +96,7 @@ De plus, pour les tables disposant d'un index spatial nous remarquons les probl�
 Pour rappel certaines applications, comme QGIS, ne reconnaissent une table en tant que table géométrique *QUE* si elle dispose d'un index spatial.
 
 #### 2.2 Les erreurs de géométries
-On dénombre en tout 31 erreurs de géométrie dans les tables de la base voie, ce qui est certes peu, mais indique qu'il n'y a pas de vérification de la validité des géométries et que dans les applications utilisées ces objets peuvent ne pas apparaître. Il serait donc bon de faire des triggers de vérification et de correction des géométries pour tables spatiales de la base.  
+On dénombre en tout 21 erreurs de géométrie dans les tables de la base voie sur des objets tagués en *valides*, ce qui est certes peu, mais indique qu'il n'y a pas de vérification de la validité des géométries et que dans les applications utilisées ces objets peuvent ne pas apparaître. Il serait donc bon de faire des triggers de vérification et de correction des géométries pour tables spatiales de la base.  
 A titre d'exemple, nous avons rencontré ce problème lors de la création de dossier dans *GEO.TA_GG_GEO* : parfois la saisie du périmètre d'un dossier de récolement dans DynMap provoque l'erreur 13028, ce qui l'empêche d'apparaître dans qgis alors que la donnée apparaît en base. Le problème a été réglé par un trigger qui corrige l'erreur 13028 avant l'insertion de la géométrie en base.
 
 ### 3. Les tablespaces
