@@ -1,0 +1,104 @@
+# Les Problèmes de la base voie
+
+## Sommaire :
+### 1. un schéma sans contrainte d'intégrité
+	1.1 Différences entre la documentation et la réalité en base
+	1.2 Absences de clés primaires
+### 2. Des géométries sans restriction sur leurs types
+	2.1 Présentation des indexes spatiaux
+	2.2 Les erreurs de géométries
+### 3. Les tablespaces
+
+### 1. un schéma sans contrainte d'intégrité
+
+#### 1.1 Différences entre la documentation et la réalité en base
+Si on retrouve les 19 tables dans la ![documentation.pdf](/doc_i2g_dev_application_2013.pdf) et en base oracle, ce n'est pas le cas des contraintes d'intégrité.  
+Pour rappel, ces contraintes ont pour but de sécuriser les relations entre tables, en vérifiant que les valeurs présentes dans les clés étrangères des tables filles sont bien présentes dans les tables parentes.  
+Or, comme on peut le voir dans le tableau ci-dessous, il devrait y avoir 12 clés étrangères.  
+
+###### figure n°1 : les clés étrangères de la base voie issue de la documentation
+|Nom_Table	|Nom_Colonne	|Type_Donnees	|Type_Contrainte|
+|:----------|:--------------|:--------------|:--------------|
+|ILTASEU	|CDCOTE	|varchar(5)	|FK|
+|ILTASIT	|IDSEUI	|decimal(22,7)	|FK|
+|ILTASIT	|CNUMTRC	|decimal(22,5)	|FK|
+|ILTADTN	|CNUMPTZ	|decimal(22,8)	|FK|
+|ILTADTN	|CNUMTRC	|decimal(22,5)	|FK|
+|VOIECVT	|CCOMVOI	|decimal(22,7)	|FK|
+|VOIECVT	|CNUMTRC	|decimal(22,5)	|FK|
+|VOIEVOI	|CCODTVO	|char(4)	|FK|
+|ILTALPU	|CDSFAMILLE	|varchar(5)	|FK|
+|ILTALPU	|CLEF_ORIGINE	|varchar(5)	|FK|
+|ILTALPU	|SYMBOLE_LIEU	|varchar(50)	|FK|
+|ADMIN_COL_TABLES_VOIES	|TYPE_OBJET	|varchar(20)	|FK|
+
+L'absence de contrainte de clé étrangère en base signifie qu'il peut potentiellement y avoir des doublons ou des valeurs manquantes. Le fait qu'il n'y ait aucune contrainte d'intégrité signifie que *TOUT* dépend de la saisie et de la mise à jour de la donnée par les utilisateurs/gestionnaires et par les triggers.
+Or, les triggers peuvent être réécris sans avoir à les supprimer d'abord ce qui rend leur modification très facile.
+Ensuite, même si les utilisateurs sont guidés par des formulaires lors de la saisie, il se peut (notamment en télétravail), que la connexion à la base soit perdue momentanément. Ainsi seule une partie des tables serait remplies et non *toutes* les tables concernées par la modification. Là où la clé étrangère invaliderai la saisie/modification, son absence permet la saisie/modification des données, mais sans aucune garantie que l'intégrité des données soit respectée. Il n'y a donc aucune sécurité de la donnée.  
+
+Ainsi, on retrouve 7034 identifiant de seuil (IDSEUI) dans la table *G_SIDU.ILTASIT* qui sont pourtant absents de la table parente *G_SIDU.ILTASEU*.
+
+#### 1.2 Absences de clés primaires
+Sur les 19 tables de la base voie, seules 8 disposent de clés primaires (cf. figure n°2), ce qui pose trois problèmes :  
+
+###### figure n°2 : Tables disposant de clés primaire en base
+|Nom_Table	|Nom_Colonne	|Nom_Contrainte	|Type_Contrainte	|Statut	|Validite	|Nom_Index|
+|:----------|:--------------|:--------------|:------------------|:------|:----------|:--------|
+|ILTALPU	|CNUMLPU	|PK_ILTALPU	|PRIMARY KEY	|ENABLED	|VALIDATED	|PK_ILTALPU|
+|ILTAPTZ	|CNUMPTZ	|PK_ILTAPTZ	|PRIMARY KEY	|ENABLED	|VALIDATED	|PK_ILTAPTZ|
+|ILTASEU	|IDSEUI	|PK_ILTASEU	|PRIMARY KEY	|ENABLED	|VALIDATED	|PK_ILTASEU|
+|ILTASIT	|IDSEUI	|ILTASIT_PK	|PRIMARY KEY	|ENABLED	|VALIDATED	|ILTASIT_PK|
+|ILTASIT	|CNUMTRC	|ILTASIT_PK	|PRIMARY KEY	|ENABLED	|VALIDATED	|ILTASIT_PK|
+|ILTATRC	|CNUMTRC	|PK_ILTATRC	|PRIMARY KEY	|ENABLED	|VALIDATED	|PK_ILTATRC|
+|REMARQUES_VOIES	|ID_REMARQUE	|PK_REMARQUES_VOIES	|PRIMARY KEY	|ENABLED	|VALIDATED	|PK_REMARQUES_VOIES|
+|TYPEVOIE	|CCODTVO	|TYPEVOIE_PK	|PRIMARY KEY	|ENABLED	|VALIDATED	|TYPEVOIE_PK|
+|VOIEVOI	|CCOMVOI	|VOIEVOI_PK	|PRIMARY KEY	|ENABLED	|VALIDATED	|VOIEVOI_PK|
+
+1. 11 tables n'ont d'identifiant unique de leur donnée ;
+2. Il peut y avoir des doublons dans les champs servant d'identifiant de la donnée ;
+3. Les recherches sur ces tables sont allongées puisqu'il n'y a pas d'index de clé primaire. De plus, leur absence empêche l'affichage de ces tables dans certaines applications ;  
+
+###### figure n°3 : Tables sans clé primaire en base
+|Nom_Table_Sans_PK|
+|:----------------|
+|ADMIN_LISTE_COTE|
+|ILTAFILIA|
+|ILTADTN|
+|VOIECVT|
+|ADMIN_LISTE_FAMILLE_POI|
+|ADMIN_LISTE_ORIGINE_POI|
+|ADMIN_LISTE_SYMBOLE|
+|ADMIN_TABLES_VOIES|
+|ADMIN_COL_TABLES_VOIES|
+|ADMIN_CONFIG_GESTION_VOIES|
+|ADMIN_USERS_GESTION_VOIES|
+
+### 2. Des géométries sans restriction sur leurs types
+#### 2.1 Présentation des indexes spatiaux
+
+Les indexes spatiaux dans oracle permettent de limiter les types de géométries enregistrés dans la table, de spécifier le tablespace et le worktablespace utilisés pour traiter les géométries. La présence d'index spatial permet aussi d'accélérer les traitements géométriques.  
+Cependant comme on peut le voir dans la figure n°4, certaines tables disposant d'un champ géométrique n'ont pas d'index spatial. Cela est d'autant plus problématique qu'il s'agit des tables de lignes, de noeuds et de seuils de la base voie, qui sont fréquemment mis à jour. Les utilisateurs peuvent donc en théorie enregistrer n'importe quelle géométrie dans ces bases. En outre puisqu'aucun tablespace ni worktablespace n'est spécifié, nous supposons que tablespaces et workspaces par défaut sont utilisés, ce qui ne correspond pas aux tables normalement utilisés pour les indexes spatiaux.
+
+###### figure n°4 : Les indexes spatiaux en base
+|TABLE 							|INDEX 								|UNIQUENESS 	|STATUS|INDEX_TYPE 		|PARAMETERS|
+|:------------------------------|:----------------------------------|:--------------|:-----|:---------------|:---------|
+|ILTALPU 						| ILTALPU_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| sdo_indx_dims=2|
+|ILTAPTZ						| ILTAPTZ_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| NULL|
+|ILTASEU						| ILTASEU_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| NULL|
+|ILTATRC						| ILTATRC_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| NULL|
+|REMARQUES_THEMATIQUES_VOIES	| REMARQUES_THEMATIQUES_VOI_SIDX	| NONUNIQUE		| VALID 	| DOMAIN	| LAYER_GTYPE = MULTIPOLYGON WORK_TABLESPACE=DATA_TEMP TABLESPACE=ISPA_g_SIDU|
+|REMARQUES_VOIES				| REMARQUES_VOIES_SIDX				| NONUNIQUE		| VALID 	| DOMAIN	| sdo_indx_dims=2, layer_gtype=COLLECTION|
+
+De plus, pour les tables disposant d'un index spatial nous remarquons les problèmes suivants :  
+* **ILTALPU :** seul le paramètre SDO_INDX_DIMS (autrement dit la dimension) est renseignée. Il n'y a aucune contrainte sur les types de géométries et aucun tablespace n'est spécifié ;
+* **REMARQUES_THEMATIQUES_VOIES :** le tablespace utilisé est *ISPA_G_SIDU* qui était anciennement utilisé pour les indexes spatiaux. Il faudrait le rediriger vers le tablespace *INDX_G_SIDU* utilisé actuellement ;
+* **REMARQUES_VOIES :** le type de géométrie est *COLLECTION*, la table accepte donc tous les types de géométries. Or cela va poser problème si on passe sur qgis car ce dernier différencie les types de géométries par table. En outre, d'un point de vue de gestionnaire de base de donnée une table dispose d'un et d'un seul type de géométrie, cela permet de gérer efficacement la donnée et répond aux normes INSPIRE. Par ailleurs, aucun tablespace ni worktablespace n'est spécifié ;  
+Pour rappel certaines applications, comme QGIS, ne reconnaissent une table en tant que table géométrique *QUE* si elle dispose d'un index spatial.
+
+#### 2.2 Les erreurs de géométries
+On dénombre en tout 31 erreurs de géométrie dans les tables de la base voie, ce qui est certes peu, mais indique qu'il n'y a pas de vérification de la validité des géométries et que dans les applications utilisées ces objets peuvent ne pas apparaître. Il serait donc bon de faire des triggers de vérification et de correction des géométries pour tables spatiales de la base.  
+A titre d'exemple, nous avons rencontré ce problème lors de la création de dossier dans *GEO.TA_GG_GEO* : parfois la saisie du périmètre d'un dossier de récolement dans DynMap provoque l'erreur 13028, ce qui l'empêche d'apparaître dans qgis alors que la donnée apparaît en base. Le problème a été réglé par un trigger qui corrige l'erreur 13028 avant l'insertion de la géométrie en base.
+
+### 3. Les tablespaces
+Toutes les tables de la base voie utilisent encore le tablespace *DATA_G_SIDU*, comme au moment où l'on distinguait les tablespaces utilisés soit pour les indexes spatiaux, soit pour les autres indexes. Or nous sommes passés, depuis un certain temps déjà, sur un tablespace préfixé par "INDX_" pour TOUS les indexes.
+Le soucis est que cette utilisation des tablespace ne suit pas la méthode actuelle, donc si certains tablespaces sont supprimés car non utilisé en théorie, certaines se retrouveront sans index, ce qui posera un problème. A voir également l'impact que cela aura sur la donnée même.
