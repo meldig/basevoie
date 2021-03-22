@@ -4,7 +4,7 @@
 ### 1. un schéma sans contrainte d'intégrité
 	1.1 Différences entre la documentation et la réalité en base
 	1.2 Absences de clés primaires
-### 2. Des données invalides en production
+### 2. Des données invalides dans les tables filles
 	2.1 Les tronçons
 	2.2 Les voies
 	2.3 Les seuils
@@ -83,7 +83,7 @@ Sur les 19 tables de la base voie, seules 8 disposent de clés primaires (cf. fi
 |ADMIN_CONFIG_GESTION_VOIES|
 |ADMIN_USERS_GESTION_VOIES|
 
-### 2. Des données invalides en production
+### 2. Des données invalides dans les tables filles
 
 En vérifiant l'intégrité des données, nous nous sommes aperçus que de nombreuses données invalides dans les tables parentes étaient pourtant toujours présentes et valides dans les tables filles.
 
@@ -110,7 +110,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ##### Relation *VOIECVT* / *ILTATRC*
 
 ###### Figure n°6 : Relation entre *VOIECVT* et *ILTATRC*
-![relation_VOIECVT_ILTATRC.PNG](/images_base_voie/relation_VOIECVT_ILTATRC.PNG)
+![relation_VOIECVT_ILTATRC.PNG](/images_base_voie/relation_VOIECVT_ILTATRC.png)
 
 Comme on peut le voir dans la figure ci-dessus, *VOIECVT* est la table fille de la table parente *ILTATRC*.  
 Cependant, 7507 tronçons présents dans la table fille (*VOIECVT*) sont invalides dans la table parente (*ILTATRC*). Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
