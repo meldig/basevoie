@@ -12,7 +12,7 @@
 	2.5 Les rues et les fantoirs
 	2.6 Les points d'intérêt
 ### 3. Des géométries sans restriction sur leurs types
-	3.1 Présentation des indexes spatiaux
+	3.1 Présentation des index spatiaux
 	3.2 Les erreurs de géométries
 ### 4. Les tablespaces
 
@@ -205,12 +205,12 @@ Cependant, 7 points d'intérêt présents dans la table fille *TA_RUELPU* sont i
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.  
 
 ### 3. Des géométries sans restriction sur leurs types
-#### 3.1 Présentation des indexes spatiaux
+#### 3.1 Présentation des index spatiaux
 
-Les indexes spatiaux dans oracle permettent de limiter les types de géométries enregistrés dans la table, de spécifier le tablespace et le worktablespace utilisés pour traiter les géométries. La présence d'index spatial permet aussi d'accélérer les traitements géométriques.  
-Cependant comme on peut le voir dans la figure n°4, certaines tables disposant d'un champ géométrique n'ont pas d'index spatial. Cela est d'autant plus problématique qu'il s'agit des tables de lignes, de noeuds et de seuils de la base voie, qui sont fréquemment mis à jour. Les utilisateurs peuvent donc en théorie enregistrer n'importe quelle géométrie dans ces bases. En outre puisqu'aucun tablespace ni worktablespace n'est spécifié, nous supposons que tablespaces et workspaces par défaut sont utilisés, ce qui ne correspond pas aux tables normalement utilisés pour les indexes spatiaux.
+Les index spatiaux dans oracle permettent de limiter les types de géométries enregistrés dans la table, de spécifier le tablespace et le worktablespace utilisés pour traiter les géométries. La présence d'index spatiaux permet aussi d'accélérer les traitements géométriques.  
+Cependant comme on peut le voir dans la figure n°4, certaines tables disposant d'un champ géométrique n'ont pas d'index spatial. Cela est d'autant plus problématique qu'il s'agit des tables de lignes, de noeuds et de seuils de la base voie, qui sont fréquemment mis à jour. Les utilisateurs peuvent donc en théorie enregistrer n'importe quelle géométrie dans ces bases. En outre puisqu'aucun tablespace ni worktablespace n'est spécifié, nous supposons que tablespaces et workspaces par défaut sont utilisés, ce qui ne correspond pas aux tables normalement utilisés pour les index spatiaux.
 
-###### figure n°16 : Les indexes spatiaux en base
+###### figure n°16 : Les index spatiaux en base
 |TABLE 							|INDEX 								|UNIQUENESS 	|STATUS|INDEX_TYPE 		|PARAMETERS|
 |:------------------------------|:----------------------------------|:--------------|:-----|:---------------|:---------|
 |ILTALPU 						| ILTALPU_SIDX						| NONUNIQUE		| VALID 	| DOMAIN	| sdo_indx_dims=2|
@@ -222,7 +222,7 @@ Cependant comme on peut le voir dans la figure n°4, certaines tables disposant 
 
 De plus, pour les tables disposant d'un index spatial nous remarquons les problèmes suivants :  
 * **ILTALPU :** seul le paramètre SDO_INDX_DIMS (autrement dit la dimension) est renseignée. Il n'y a aucune contrainte sur les types de géométries et aucun tablespace n'est spécifié ;
-* **REMARQUES_THEMATIQUES_VOIES :** le tablespace utilisé est *ISPA_G_SIDU* qui était anciennement utilisé pour les indexes spatiaux. Il faudrait le rediriger vers le tablespace *INDX_G_SIDU* utilisé actuellement ;
+* **REMARQUES_THEMATIQUES_VOIES :** le tablespace utilisé est *ISPA_G_SIDU* qui était anciennement utilisé pour les index spatiaux. Il faudrait le rediriger vers le tablespace *INDX_G_SIDU* utilisé actuellement ;
 * **REMARQUES_VOIES :** le type de géométrie est *COLLECTION*, la table accepte donc tous les types de géométries. Or cela va poser problème si on passe sur qgis car ce dernier différencie les types de géométries par table. En outre, d'un point de vue de gestionnaire de base de donnée une table dispose d'un et d'un seul type de géométrie, cela permet de gérer efficacement la donnée et répond aux normes INSPIRE. Par ailleurs, aucun tablespace ni worktablespace n'est spécifié ;  
 Pour rappel certaines applications, comme QGIS, ne reconnaissent une table en tant que table géométrique *QUE* si elle dispose d'un index spatial.
 
@@ -231,5 +231,5 @@ On dénombre en tout 21 erreurs de géométrie dans les tables de la base voie s
 A titre d'exemple, nous avons rencontré ce problème lors de la création de dossier dans *GEO.TA_GG_GEO* : parfois la saisie du périmètre d'un dossier de récolement dans DynMap provoque l'erreur 13028, ce qui l'empêche d'apparaître dans qgis alors que la donnée apparaît en base. Le problème a été réglé par un trigger qui corrige l'erreur 13028 avant l'insertion de la géométrie en base.
 
 ### 3. Les tablespaces
-Toutes les tables de la base voie utilisent encore le tablespace *DATA_G_SIDU*, comme au moment où l'on distinguait les tablespaces utilisés soit pour les indexes spatiaux, soit pour les autres indexes. Or nous sommes passés, depuis un certain temps déjà, sur un tablespace préfixé par "INDX_" pour TOUS les indexes.
+Toutes les tables de la base voie utilisent encore le tablespace *DATA_G_SIDU*, comme au moment où l'on distinguait les tablespaces utilisés soit pour les index spatiaux, soit pour les autres index. Or nous sommes passés, depuis un certain temps déjà, sur un tablespace préfixé par "INDX_" pour TOUS les index.
 Le soucis est que cette utilisation des tablespace ne suit pas la méthode actuelle, donc si certains tablespaces sont supprimés car non utilisé en théorie, certaines se retrouveront sans index, ce qui posera un problème. A voir également l'impact que cela aura sur la donnée même.
