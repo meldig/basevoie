@@ -70,7 +70,7 @@ Voir avec le service voirie.
 
 ### ADMIN_TABLES_VOIES
 ### ADMIN_COL_TABLES_VOIES
-### ADMIN-CONFIG_GESTION_VOIES
+### ADMIN_CONFIG_GESTION_VOIES
 
 Table contenant les paramètres configurables de l’application.
 
