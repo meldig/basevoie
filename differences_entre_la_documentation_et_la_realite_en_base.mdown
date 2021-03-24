@@ -24,7 +24,7 @@ On retrouve bien les 19 tables dans la base oracle et dans le MCD (p.8 - 9) du f
 	Le champ *lIB_COURT* est présent en base, mais absent du MCD du pdf.
 
 5. Table *ADMIN_USERS_GESTION_VOIES*
-	Le champ *DROIT_GESTION_RUES* est présent en base, mais absnet du MCD du pdf.  
+	Le champ *DROIT_GESTION_RUES* est présent en base, mais absent du MCD du pdf.  
 
 Comme on peut le voir ci-dessus il existe quelques différences entre le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) et les tables en base, mais sans grande incidence, puisque ces différences ne portent pas sur des champs de PK ou FK et ne changent pas fondamentalement la structure des tables.
 Tous les autres champs des tables en base sont également présents dans le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf).
@@ -61,7 +61,7 @@ Les tables suivantes n'ont donc pas de clé primaire :
 |ADMIN_CONFIG_GESTION_VOIES|
 |ADMIN_USERS_GESTION_VOIES|
 
-De plus, la nomenclature n'est pas homogène, puisque le préfixe PK_ devient parfois un suffixe. Cependant, que ce fois en suffixe ou en préfixe la chaîne de caractère "PK" indiquant qu'il s'agit d'une contrainte de clé primaire est toujours présente dans le nom de ces contraintes.  
+De plus, la nomenclature n'est pas homogène, puisque le préfixe PK_ devient parfois un suffixe. Cependant, que ce soit en suffixe ou en préfixe la chaîne de caractère "PK" indiquant qu'il s'agit d'une contrainte de clé primaire est toujours présente dans le nom de ces contraintes.  
 
 En outre, toutes les clés primaires de la base voie sont valides et disposent d'un index.
 

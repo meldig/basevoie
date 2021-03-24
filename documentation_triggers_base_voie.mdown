@@ -68,7 +68,7 @@ La table *ILTASIT* dispose d'un seul trigger nommé *TRG_ILTASIT*, déclenché p
 #### Actions :
 * En cas de suppression dans la table *G_SIDU.ILTASIT*, l'entité correspondante est supprimée de la table *SIDU.ILTASIT* ;
 
-* En cas de mise à jour d'une entité, les champs *CNUMTRC*, *NBABSCIS* et *CDCOTE* de l'entité correspondante dans la table *SIDU.ILTASIT* seront mis à jour. *Cependant, il faut regarder à quoi correspondent les objets geocodeurs et dist_tron_seuil car il ne s'agit ni de package, ni de proccédure, ni de fonction ni de trigger. Or ils utilisés pour remplir le champ NBABSCIS.*
+* En cas de mise à jour d'une entité, les champs *CNUMTRC*, *NBABSCIS* et *CDCOTE* de l'entité correspondante dans la table *SIDU.ILTASIT* seront mis à jour. *Cependant, il faut regarder à quoi correspondent les objets geocodeurs et dist_tron_seuil car il ne s'agit ni de package, ni de proccédure, ni de fonction ni de trigger. Or ils sont utilisés pour remplir le champ NBABSCIS.*
 
 ### 7. Trigger de la table *ILTASEU*
 La table ILTASEU dispose de deux triggers :  
@@ -87,7 +87,7 @@ La table ILTASEU dispose de deux triggers :
 
 * En cas de mise à jour et si le champ *CNUMTRC* n'est pas null, alors les champs *CNUMTRC*, *NBABSCIS* et *CDCOTE* de la table *G_SIDU.ILTASIT* sont mis à jour. L'égalité se fait sur le champ *IDSEUI*. *Cependant, il faut regarder à quoi correspondent les objets geocodeurs et dist_tron_seuil car il ne s'agit ni de package, ni de proccédure, ni de fonction ni de trigger. Or ils utilisés pour remplir le champ NBABSCIS.*
 
-* En cas d'insertion, données sont dupliquées dans la table *SIDU.ILTASEU* et dans la table *GEO.TA_POINT_SEUIL* (pour les champs *OBJECTID*, *NUSEUI*, *NSSEUI*, *CNUMCOM*, *GEOM*, *CDCOTE*, *NPARCELLE* seulement) ;
+* En cas d'insertion, les données sont dupliquées dans la table *SIDU.ILTASEU* et dans la table *GEO.TA_POINT_SEUIL* (pour les champs *OBJECTID*, *NUSEUI*, *NSSEUI*, *CNUMCOM*, *GEOM*, *CDCOTE*, *NPARCELLE* seulement) ;
 
 * En cas d'insertion et si le champ *SIDU.ILTATRC.CDVALTRO* n'est pas null, alors les champs *IDSEUI*, *CNUMTRC*, *NBABSCIS*, *CDCOTE* de la table *SIDU.ILTASIT* sont remplis avec les données insérées ;
 
