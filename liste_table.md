@@ -12,7 +12,7 @@ Table des relations entre la table ILTASEU (seuils) et ILTATRC (tronçons). Afin
 
 ### ILTATRC
 
-Table contenant les tronçons de la MEL. Un troçon est un linéaire entre deux carrefours.
+Table contenant les tronçons de la MEL. Un tronçon est un linéaire entre deux carrefours.
 
 ### ILTAFILIA
 
@@ -20,7 +20,7 @@ Peut-être table de sauvegarde. Garde une trace du tronçon père si celui-ci es
 
 ### ILTAPTZ
 
-Table contenant les noeuds (point calva) chaque tronçon a deux noeuds. Un noeud de début et de fin. Un noeud peut être un carrefour ou une fin de voie ou une impasse.
+Table contenant les noeuds de chaque tronçon. Chaque tronçons a deux noeuds. Un noeud de début et de fin. Un noeud peut être un carrefour entre deux voies ou une fin de voie ou une impasse.
 
 ### ILTADTN
 
@@ -28,15 +28,15 @@ Table des relations entre ILTAPTZ (noeuds) et ITLATRC (tronçons).
 
 ### VOIECVT
 
-Table des relations entre VOIEVOI (voies) et ILTATRC (tronçons). Une voie est composée d'un groupe de tronçon.
+Table des relations entre VOIEVOI (voies) et ILTATRC (tronçons). Une voie est composée d'un groupe de tronçons.
 
 ### VOIEVOI
 
-Table contenant les voies de la MEL. La voie est un sous-element de la rue. Une voie est composée d'un groupe de tronçon.
+Table contenant les voies de la MEL. La voie est un sous-élément de la rue. Une voie est composée d'un groupe de tronçons.
 
 ### TYPEVOIE
 
-Table contenant les types de voie possible: rue, avenue, route...
+Table contenant les types de voie possibles: rue, avenue, route...
 
 ### TA_RUE
 
@@ -48,7 +48,7 @@ Table des relations entre TA_RUE (rues) et VOIEVOI (voies). Afin d'associer une 
 
 ### ILTALPU
 
-Table qui contient les points d'intérêts de la MEL. Cette couche est mise à jour pas Marie-Hélène Suzanne et Marie-Christine Louis.
+Table qui contient les points d'intérêts de la MEL. Cette couche est mise à jour pas Marie-Hélène Suzanne et Marie-Christine Louis. Cette table se nomme ILTALPU car initialement les points contenus dans la table étaient appelés *Lieux Publics*
 
 ### TA_RUELPU
 
@@ -56,7 +56,7 @@ Table des relations entre ILTALPU (points d'intérêts) et TA_RUE (rue).
 
 ### ILTACOM
 
-Table des communes de la MEL.
+Table des communes de la MEL. Cette table est située dans le schéma __SIDU__.
 
 ### REMARQUES_VOIES
 
@@ -69,10 +69,16 @@ Voir avec le service voirie.
 ## Les tables d'administration.
 
 ### ADMIN_TABLES_VOIES
+
+Table indiquant les informations générales des tables de la base voie, c'est-à-dire son id dans DynMap, son schéma d'appartenance, la séquence d'incrémentation de sa PK, les colonnes de PK, de géométrie, de validité, de date de validité etc. Cette table propose un résumé rapide de chaque table (sans pour autant les commenter).
+
 ### ADMIN_COL_TABLES_VOIES
+
+Cette table propose un résumé succinte des champs des tables de la base voie. Elle donne aussi des informations sur les tables jointes, leur schéma d'appartenance, leur type de donnée et leur nom, mais sans leur commentaire ainsi que des informations sur les champs de jointure entre les tables de la base voie. Néanmoins il faut préciser qu'il n'y a pas de contrainte de jointure entre les tables.
+
 ### ADMIN_CONFIG_GESTION_VOIES
 
-Table contenant les paramètres configurables de l’application.
+Table contenant les paramètres configurables de l’application. Plus précisément le rayon de recherche en mètre permettant l'accrochage d'un noeud dans DynMap, lors de la saisie/modification de tronçons.
 
 ### ADMIN_USERS_GESTION_VOIES
 
