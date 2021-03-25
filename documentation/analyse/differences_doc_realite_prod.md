@@ -1,11 +1,11 @@
 # Différences entre la documentation et la réalité de la base
 
 
-## 1. Comparaison entre le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) et la structure en base
+## 1. Comparaison entre le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/documentation/dynmap/doc_i2g_dev_application_2013.pdf) et la structure en base
 
 
 ### 1.1. Les tables
-On retrouve bien les 19 tables dans la base oracle et dans le MCD (p.8 - 9) du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf).
+On retrouve bien les 19 tables dans la base oracle et dans le MCD (p.8 - 9) du fichier ![doc_i2g_dev_application_2013.pdf](/documentation/dynmap/doc_i2g_dev_application_2013.pdf).
 
 ### 1.2. Les champs
 
@@ -26,8 +26,8 @@ On retrouve bien les 19 tables dans la base oracle et dans le MCD (p.8 - 9) du f
 5. Table *ADMIN_USERS_GESTION_VOIES*
 	Le champ *DROIT_GESTION_RUES* est présent en base, mais absent du MCD du pdf.  
 
-Comme on peut le voir ci-dessus il existe quelques différences entre le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) et les tables en base, mais sans grande incidence, puisque ces différences ne portent pas sur des champs de PK ou FK et ne changent pas fondamentalement la structure des tables.
-Tous les autres champs des tables en base sont également présents dans le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf).
+Comme on peut le voir ci-dessus il existe quelques différences entre le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/documentation/dynmap/doc_i2g_dev_application_2013.pdf) et les tables en base, mais sans grande incidence, puisque ces différences ne portent pas sur des champs de PK ou FK et ne changent pas fondamentalement la structure des tables.
+Tous les autres champs des tables en base sont également présents dans le MCD du fichier ![doc_i2g_dev_application_2013.pdf](/documentation/dynmap/doc_i2g_dev_application_2013.pdf).
 
 
 ### 1.3. Les contraintes
@@ -66,7 +66,7 @@ De plus, la nomenclature n'est pas homogène, puisque le préfixe PK_ devient pa
 En outre, toutes les clés primaires de la base voie sont valides et disposent d'un index.
 
 #### Les clés étrangères
-Selon la documentation ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) il existe 12 clés étrangères dans les tables de la base voie :
+Selon la documentation ![doc_i2g_dev_application_2013.pdf](/documentation/dynmap/doc_i2g_dev_application_2013.pdf) il existe 12 clés étrangères dans les tables de la base voie :
 |Nom_Table	|Nom_Colonne	|Type_Donnees	|Type_Contrainte|
 |:----------|:--------------|:--------------|:--------------|
 |ILTASEU	|CDCOTE	|varchar(5)	|FK|
@@ -82,10 +82,10 @@ Selon la documentation ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_applicat
 |ILTALPU	|SYMBOLE_LIEU	|varchar(50)	|FK|
 |ADMIN_COL_TABLES_VOIES	|TYPE_OBJET	|varchar(20)	|FK|
 
-Or dans la base, il n'existe aucune clé étrangère dans ces tables (cf. ![contraintes_base_voie.tsv](/contraintes_base_voie.tsv)), il n'y a donc aucune contrainte d'intégrité, ce qui signifie qu'il peut potentiellement y avoir des doublons ou des valeurs manquantes. Le fait qu'il n'y ait aucune contrainte signifie que *TOUT* dépend de la saisie et de la mise à jour de la donnée par les utilisateurs/gestionnaires. Il n'y a aucune sécurité.
+Or dans la base, il n'existe aucune clé étrangère dans ces tables (cf. ![contraintes_base_voie.tsv](/documentation/analyse/contraintes_base_voie.tsv)), il n'y a donc aucune contrainte d'intégrité, ce qui signifie qu'il peut potentiellement y avoir des doublons ou des valeurs manquantes. Le fait qu'il n'y ait aucune contrainte signifie que *TOUT* dépend de la saisie et de la mise à jour de la donnée par les utilisateurs/gestionnaires. Il n'y a aucune sécurité.
 
 #### Les contraintes d'unicité
-Hormis les clés primaires, il n'y a aucune contrainte d'unicité, ce qui est conforme au MCD du fichier ![doc_i2g_dev_application_2013.pdf](/doc_i2g_dev_application_2013.pdf) (cf. ![contraintes_base_voie.tsv](/contraintes_base_voie.tsv)).
+Hormis les clés primaires, il n'y a aucune contrainte d'unicité, ce qui est conforme au MCD du fichier ![doc_i2g_dev_application_2013.pdf](/documentation/dynmap/doc_i2g_dev_application_2013.pdf) (cf. ![contraintes_base_voie.tsv](/contraintes_base_voie.tsv)).
 
 #### Les contraintes de Non-nullité
 Il existe 70 contraintes de non-nullité c'est-à-dire 70 - 9 clés primaires, soit 61 contraintes en plus que dans le MCD du pdf.
