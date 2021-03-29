@@ -2,20 +2,23 @@
 
 ## Sommaire :
 
-1. un schéma sans contrainte d'intégrité
-   1.1 Différences entre la documentation et la réalité en base
-   1.2 Absences de clés primaires
-2. Des données invalides dans les tables filles
-   2.1 Les tronçons
-   2.2 Les voies
-   2.3 Les seuils
-   2.4 Les noeuds
-   2.5 Les rues et les fantoirs
-   2.6 Les points d'intérêt
-3. Des géométries sans restriction sur leurs types
-   3.1 Présentation des index spatiaux
-   3.2 Les erreurs de géométries
+1. un schéma sans contrainte d'intégrité  
+   1.1 Différences entre la documentation et la réalité en base  
+   1.2 Absences de clés primaires  
+2. Des données invalides dans les tables filles  
+   2.1 Les tronçons  
+   2.2 Les voies  
+   2.3 Les seuils  
+   2.4 Les noeuds  
+   2.5 Les rues et les fantoirs  
+   2.6 Les points d'intérêt  
+3. Des géométries sans restriction sur leurs types  
+   3.1 Présentation des index spatiaux  
+   3.2 Les erreurs de géométries  
 4. Les tablespaces
+5. Etude des données  
+   5.1 Les données valides/invalides
+
 
 ## 1. Un schéma sans contrainte d'intégrité
 
@@ -259,4 +262,48 @@ On dénombre en tout 21 erreurs de géométrie dans les tables de la base voie s
 
 Toutes les tables de la base voie utilisent encore le tablespace *DATA_G_SIDU*, comme au moment où l'on distinguait les tablespaces utilisés soit pour les index spatiaux, soit pour les autres index. Or nous sommes passés, depuis un certain temps déjà, sur un tablespace préfixé par "INDX_" pour TOUS les index.
 
-Le souci est que cette utilisation des tablespace ne suit pas la méthode actuelle, donc si certains tablespaces sont supprimés car non utilisé en théorie, certaines se retrouveront sans index, ce qui posera un problème. A voir également l'impact que cela aura sur la donnée même.
+Le souci est que cette utilisation des tablespace ne suit pas la méthode actuelle, donc si certains tablespaces sont supprimés car non utilisé en théorie, certaines tables se retrouveront sans index, ce qui posera un problème. A voir également l'impact que cela aura sur la donnée même.
+
+## 5. Etude des données
+
+### 5.1 Les données valides/invalides
+
+#### Les tronçons
+Dans la table ILTATRC des schémas SIDU et G_SIDU on retrouve des incohérences entre les dates de saisie ou de début de validité et la date de fin de validité. Cependant on ne retrouve pas les mêmes nombres d'incohérence entre les schémas. Heureusement, aucun de ces tronçons n'est tagué en valide (champ CDVALTRO) : :
+
+**Schéma SIDU :**
+- 4194 tronçons ont une date de saisie postérieure à la date de fin de validité ;
+- 4340 tronçons ont une date de début de validité postérieure à la date de fin de validité ;
+- 5205 tronçons tagués en fin de vie dans ILTATRC sont présents dans ILTADTN ;
+
+**Schéma G_SIDU :**
+- 4216 tronçons ont une date de saisie postérieure à la date de fin de validité ;
+- 4367 tronçons ont une date de début de validité postérieure à la date de fin de validité ;
+- 5234 tronçons tagués en fin de vie dans ILTATRC sont présents dans ILTADTN ;
+
+Dans les deux schémas on retrouve exactement les mêmes nombres d'objets avec les incohérences de début de validité (et date de saisie) / fin de validité dans ILTATRC et dans ILTADTN.
+Cependant, on observe une différence concernant les tronçons tagués en fin de vie dans ILTATRC et pourtant présents dans ILTADTN. En revanche, on retrouve le même nombre de ces incohérences d'un schéma à l'autre.
+
+#### Les noeuds
+Dans la table ILTAPTZ des schémas SIDU et G_SIDU on retrouve des incohérences entre les dates de saisie ou de début de validité et la date de fin de validité. Cependant on ne retrouve pas les mêmes nombres d'incohérence entre les schémas. Heureusement, aucun de ces noeuds n'est tagué en valide (champ CDVALPTZ) :
+
+**Schéma SIDU :**
+- 1096 tronçons ont une date de saisie postérieure à la date de fin de validité ;
+- 1026 tronçons dont la date de saisie est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
+- 1233 tronçons ont une date de début de validité postérieure à la date de fin de validité ;  
+- 1117 tronçons dont la date de début de validité est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
+
+**Schéma G_SIDU :**
+- 1104 tronçons ont une date de saisie postérieure à la date de fin de validité ;
+- 1034 tronçons dont la date de saisie est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
+- 1241 tronçons ont une date de début de validité postérieure à la date de fin de validité ;
+- 1125 tronçons dont la date de début de validité est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
+
+#### Les points d'intérêt
+Il n'y a aucune incohérence entre les dates de début de validité ou date de saisie et les dates de fin de validité, que ce soit dans le schéma SIDU ou dans le schéma G_SIDU.
+
+### 5.2 Les tronçons avec ou sans noeud
+
+La table ILTADTN permet de savoir, sans faire d'analyse géométrique, à quel tronçon de la table ILTATRC appartiennent les noeuds de la table ILTAPTZ. Nous allons donc vérifier si, du point vue attributaire, chaque tronçon dispose bien d'un noeud de début et d'un noeud de fin.
+
+Dans les deux schémas, les tronçons de la table ILTADTN disposent à chaque fois d'un noeud de départ et d'un noeud d'arrivée.
