@@ -308,19 +308,19 @@ Dans la table ILTATRC des schémas SIDU et G_SIDU on retrouve des incohérences 
 
 
 #### Les noeuds
-Dans la table ILTAPTZ des schémas SIDU et G_SIDU on retrouve des incohérences entre les dates de saisie ou de début de validité et la date de fin de validité. Cependant on ne retrouve pas les mêmes nombres d'incohérence entre les schémas. Heureusement, aucun de ces noeuds n'est tagué en valide (champ CDVALPTZ) :
+Dans les tables ILTAPTZ et ILTADTN des schémas SIDU et G_SIDU, on observe des divergences quant à la validité des noeuds :
 
 **Schéma SIDU :**
-- 1096 tronçons ont une date de saisie postérieure à la date de fin de validité ;
-- 1026 tronçons dont la date de saisie est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
-- 1233 tronçons ont une date de début de validité postérieure à la date de fin de validité ;  
-- 1117 tronçons dont la date de début de validité est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
+- 5741 noeuds sont tagués *valide* dans la table ILTAPTZ, mais apparaissent en tant qu'*invalide* dans la table ILTADTN ;
+- 337 noeuds sont tagués *valide* dans la table ILTADTN, mais apparaissent en tant qu'*invalide* dans la table ILTAPTZ ;
+- Aucun noeud ne dispose de date de fin de validité antérieure à sa date de saisie ou sa date de début de validité dans ILTAPTZ;
 
 **Schéma G_SIDU :**
-- 1104 tronçons ont une date de saisie postérieure à la date de fin de validité ;
-- 1034 tronçons dont la date de saisie est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
-- 1241 tronçons ont une date de début de validité postérieure à la date de fin de validité ;
-- 1125 tronçons dont la date de début de validité est postérieure à la date de fin validité dans ILTAPTZ se retrouvent dans ILTADTN ;
+- 3751 noeuds sont tagués *valide* dans la table ILTAPTZ, mais apparaissent en tant qu'*invalide* dans la table ILTADTN ;
+- Aucun noeud n'est tagué *valide* dans la table ILTADTN tout en apparaissant en tant qu'*invalide* dans la table ILTAPTZ ;
+- Aucun noeud ne dispose de date de fin de validité antérieure à sa date de saisie ou sa date de début de validité dans ILTAPTZ;
+
+Il n'y a cependant aucune incohérence entre les dates de début de validité/saisie et les dates de fin de validité dans la table ILTAPTZ des deux schémas.
 
 #### Les points d'intérêt
 Il n'y a aucune incohérence entre les dates de début de validité ou date de saisie et les dates de fin de validité, que ce soit dans le schéma SIDU ou dans le schéma G_SIDU.

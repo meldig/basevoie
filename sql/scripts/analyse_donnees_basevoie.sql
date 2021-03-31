@@ -110,7 +110,46 @@ FROM
 WHERE
     cdvaldtn = 'F';
 
--- 2. Vérification des noeuds par tronçon
+-- 2. Vérification des noeuds
+-- Sélection du nombre de noeuds valides dont la date de fin de validité est antérieure à la date de saisie
+SELECT
+    COUNT(a.cnumptz)
+FROM
+    G_SIDU.ILTAPTZ a
+WHERE
+    a.cdvalptz = 'V'
+    AND TO_DATE(CDTFPTZ,'dd/mm/yy') < TO_DATE(CDTDPTZ,'dd/mm/yy');
+
+-- Sélection du nombre de noeuds valides dont la date de fin de validité est antérieure à la date de début de validité    
+SELECT
+    COUNT(a.cnumptz)
+FROM
+    G_SIDU.ILTAPTZ a
+WHERE
+    a.cdvalptz = 'V'
+    AND TO_DATE(CDTFPTZ,'dd/mm/yy') < TO_DATE(CDTSPTZ,'dd/mm/yy');
+    
+-- Sélection des noeuds valides dans ILTAPTZ tagués invalides dans ILTADTN
+SELECT
+    COUNT(DISTINCT b.cnumptz)
+FROM
+    G_SIDU.ILTAPTZ a
+    INNER JOIN G_SIDU.ILTADTN b ON b.cnumptz = a.cnumptz
+WHERE
+    a.cdvalptz = 'V'
+    AND b.cdvaldtn = 'F';    
+
+-- Sélection des noeuds invalides dans ILTAPTZ tagués valides dans ILTADTN
+SELECT
+    COUNT(DISTINCT b.cnumptz)
+FROM
+    G_SIDU.ILTAPTZ a
+    INNER JOIN G_SIDU.ILTADTN b ON b.cnumptz = a.cnumptz
+WHERE
+    a.cdvalptz = 'F'
+    AND b.cdvaldtn = 'V';
+
+-- 3. Vérification des noeuds par tronçon
 -- Nombre de tronçons valides sans noeud de début    
 SELECT
     COUNT(a.cnumtrc)
@@ -189,7 +228,7 @@ WHERE
     AND b.CCODDFT = 'D'
 ;
 
--- 3. Vérification des connexions entre tronçons
+-- 4. Vérification des connexions entre tronçons
 -- Nombre de mauvaises connexions entre tronçons
 SELECT
     COUNT(a.cnumtrc)/2 -- cette division est nécessaire puisque la fonction SDO_LRS.CONNECTED_GEOM_SEGMENTS vérifie si le tronçon A est connecté au tronçon B et vice versa. Il y a donc deux vérififcations pour chaque connexion.
