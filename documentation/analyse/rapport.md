@@ -270,7 +270,7 @@ Le souci est que cette utilisation des tablespace ne suit pas la méthode actuel
 ### 5.1 Les données valides/invalides
 
 #### Les tronçons
-Dans la table ILTATRC des schémas SIDU et G_SIDU on retrouve des incohérences entre les dates de saisie ou de début de validité et la date de fin de validité. Cependant on ne retrouve pas les mêmes nombres d'incohérence entre les schémas. Heureusement, aucun de ces tronçons n'est tagué en valide (champ CDVALTRO) : :
+Dans la table ILTATRC des schémas SIDU et G_SIDU on retrouve des incohérences entre les dates de saisie ou de début de validité et la date de fin de validité. Cependant on ne retrouve pas les mêmes nombres d'incohérence entre les schémas. Aucun de ces tronçons n'est tagué en valide (champ CDVALTRO) dans ILTATRC, ce qui n'est pas toujours le cas dans ILTADTN :
 
 **Schéma SIDU :**
 - 4194 tronçons ont une date de saisie postérieure à la date de fin de validité ;
