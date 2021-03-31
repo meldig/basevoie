@@ -150,6 +150,29 @@ WHERE
     AND b.cdvaldtn = 'V';
 
 -- 3. Vérification des noeuds par tronçon
+-- Sélection du nombre de tronçons valides dans ILTADTN dont les noeuds sont tagués invalides dans ILTAPTZ 
+SELECT
+    COUNT(DISTINCT a.cnumtrc)
+FROM
+    G_SIDU.ILTADTN a
+    INNER JOIN G_SIDU.ILTAPTZ b ON b.cnumptz = a.cnumptz
+WHERE
+    a.cdvaldtn = 'V'
+    AND b.cdvalptz = 'F';
+
+-- Décompte des noeuds invalides dans ILTAPTZ utilisés par des tronçons valides dans ILTADTN
+SELECT
+    COUNT(a.cnumptz),
+    a.cnumtrc
+FROM
+    G_SIDU.ILTADTN a
+    INNER JOIN SIDU.ILTAPTZ b ON b.cnumptz = a.cnumptz
+WHERE
+    a.cdvaldtn = 'V'
+    AND b.cdvalptz = 'F'
+GROUP BY
+    a.cnumtrc;
+
 -- Nombre de tronçons valides sans noeud de début    
 SELECT
     COUNT(a.cnumtrc)

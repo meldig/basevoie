@@ -314,11 +314,16 @@ Dans les tables ILTAPTZ et ILTADTN des schémas SIDU et G_SIDU, on observe des d
 - 5741 noeuds sont tagués *valide* dans la table ILTAPTZ, mais apparaissent en tant qu'*invalide* dans la table ILTADTN ;
 - 337 noeuds sont tagués *valide* dans la table ILTADTN, mais apparaissent en tant qu'*invalide* dans la table ILTAPTZ ;
 - Aucun noeud ne dispose de date de fin de validité antérieure à sa date de saisie ou sa date de début de validité dans ILTAPTZ;
+- 554 tronçons tagués *valide* dans ILTADTN utilisent au moins 1 noeud tagué *invalide* dans ILTAPTZ ;
+- 691 noeuds tagués *invalides* dans ILTAPTZ sont utilisés par des tronçons tagués *valides* dans ILTADTN ;
+- 417 tronçons tagués *valides* dans ILTADTN disposent d'un noeud tagué *invalide* dans ILTAPTZ ;
+- 137 tronçons tagués *valides* dans ILTADTN disposent de deux noeuds tagués *invalides* dans ILTAPTZ ;
 
 **Schéma G_SIDU :**
 - 3751 noeuds sont tagués *valide* dans la table ILTAPTZ, mais apparaissent en tant qu'*invalide* dans la table ILTADTN ;
 - Aucun noeud n'est tagué *valide* dans la table ILTADTN tout en apparaissant en tant qu'*invalide* dans la table ILTAPTZ ;
 - Aucun noeud ne dispose de date de fin de validité antérieure à sa date de saisie ou sa date de début de validité dans ILTAPTZ;
+- Tous les tronçons *valides* de ILTADTN utilisent des noeuds *valides* de ILTAPTZ ;
 
 Il n'y a cependant aucune incohérence entre les dates de début de validité/saisie et les dates de fin de validité dans la table ILTAPTZ des deux schémas.
 
