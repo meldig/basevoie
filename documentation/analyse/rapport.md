@@ -17,8 +17,9 @@
    3.2 Les erreurs de géométries  
 4. Les tablespaces
 5. Etude des données  
-   5.1 Les données valides/invalides
-
+   5.1 Les données valides/invalides  
+   5.2 Les tronçons avec ou sans noeud  
+   5.3 Mauvaises connexions des tronçons
 
 ## 1. Un schéma sans contrainte d'intégrité
 
@@ -274,15 +275,37 @@ Dans la table ILTATRC des schémas SIDU et G_SIDU on retrouve des incohérences 
 **Schéma SIDU :**
 - 4194 tronçons ont une date de saisie postérieure à la date de fin de validité ;
 - 4340 tronçons ont une date de début de validité postérieure à la date de fin de validité ;
-- 5205 tronçons tagués en fin de vie dans ILTATRC sont présents dans ILTADTN ;
+- 1752 tronçons tagués *invalide* dans ILTATRC sont tagués *valide* dans ILTADTN ;
+- 50596 tronçons sont tagués en *valide* dans ILTADTN, alors que seuls 48844 tronçons le sont dans ILTATRC ;
+
+**Attention**, dans les deux schémas un tronçon peut à la fois être tagué en *valide*, avoir une date de saisie postérieur à sa date de fin de validité et avoir une date de début de validité également postérieure à sa date de fin de validité.
+
+###### figure n°17 : validité des tronçons entre ILTADTN et ILTATRC pour une date de fin de validité incohérente dans SIDU
+|Nombre de tronçons|Validité ILTADTN|Validité ILTATRC|Incohérences de dates                         |
+|:-----------------|:---------------|:---------------|:--------------------------------------------------|
+|1603          |valide        |invalide       |date de fin de validité < sysdate              |
+|3952          |invalide      |invalide       |date de fin de validité < sysdate              |
+|1264          |valide        |invalide       |date de fin de validité < date de saisie          |
+|3211          |invalide      |invalide       |date de fin de validité < date de saisie          |
+|1376          |valide        |invalide       |date de fin de validité < date de début de validité|
+|3267          |invalide      |invalide       |date de fin de validité < date de début de validité|
 
 **Schéma G_SIDU :**
 - 4216 tronçons ont une date de saisie postérieure à la date de fin de validité ;
 - 4367 tronçons ont une date de début de validité postérieure à la date de fin de validité ;
-- 5234 tronçons tagués en fin de vie dans ILTATRC sont présents dans ILTADTN ;
+- 2 tronçons tagués *invalide* dans ILTATRC sont tagués *valide* dans ILTADTN ;
+- 48933 tronçons sont tagués en *valide* dans ILTADTN, alors que seuls 48931 tronçons le sont dans ILTATRC ;
 
-Dans les deux schémas on retrouve exactement les mêmes nombres d'objets avec les incohérences de début de validité (et date de saisie) / fin de validité dans ILTATRC et dans ILTADTN.
-Cependant, on observe une différence concernant les tronçons tagués en fin de vie dans ILTATRC et pourtant présents dans ILTADTN. En revanche, on retrouve le même nombre de ces incohérences d'un schéma à l'autre.
+###### figure n°18 : validité des tronçons entre ILTADTN et ILTATRC pour une date de fin de validité incohérente dans G_SIDU
+|Nombre de tronçons|Validité ILTADTN|Validité ILTATRC|Incohérences de dates                         |
+|:-----------------|:---------------|:---------------|:--------------------------------------------------|
+|2             |valide        |invalide       |date de fin de validité < sysdate              |
+|5232          |invalide      |invalide       |date de fin de validité < sysdate              |
+|1             |valide        |invalide       |date de fin de validité < date de saisie          |
+|4215          |invalide      |invalide       |date de fin de validité < date de saisie          |
+|1             |valide        |invalide       |date de fin de validité < date de début de validité|
+|4366          |invalide      |invalide       |date de fin de validité < date de début de validité|
+
 
 #### Les noeuds
 Dans la table ILTAPTZ des schémas SIDU et G_SIDU on retrouve des incohérences entre les dates de saisie ou de début de validité et la date de fin de validité. Cependant on ne retrouve pas les mêmes nombres d'incohérence entre les schémas. Heureusement, aucun de ces noeuds n'est tagué en valide (champ CDVALPTZ) :
@@ -306,4 +329,14 @@ Il n'y a aucune incohérence entre les dates de début de validité ou date de s
 
 La table ILTADTN permet de savoir, sans faire d'analyse géométrique, à quel tronçon de la table ILTATRC appartiennent les noeuds de la table ILTAPTZ. Nous allons donc vérifier si, du point vue attributaire, chaque tronçon dispose bien d'un noeud de début et d'un noeud de fin.
 
-Dans les deux schémas, les tronçons de la table ILTADTN disposent à chaque fois d'un noeud de départ et d'un noeud d'arrivée.
+**Schéma G_SIDU :**
+Tous les tronçons disposent d'un noeud de départ et d'un noeud d'arrivée.
+
+**Schéma SIDU :**
+391 tronçons tagués en valides disposent d'un seul noeud et 205 d'entre eux sont des starpoint, les 186 autres étant des endpoints.  
+il y a donc un delta entre les deux schémas, qui s'explique par la mise à jour manuelle de SIDU, qui pourrait facilement être réglé avec un trigger.
+
+### 5.3 Mauvaises connexions des tronçons
+
+On dénombre en tout 695 mauvaises connexions dans la table G_SIDU.ILTATRC. Ce nombre est le résultat d'une analyse spatiale qui ne fait pas la distinction entre une intersection hors start/end point et une absence de connexion à un autre tronçon dans un rayon de 5mm autours de chaque tronçon.
+
