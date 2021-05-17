@@ -29,7 +29,7 @@ SELECT
       WHEN a.complement_numero_seuil IS NULL
       THEN b.code_insee||'_'||h.fantoir||'_'||a.numero_seuil
       ELSE
-            CASE SUBSTR(CAST (a.numero))
+            CASE LENGTH(CAST (a.numero AS VARCHAR(5)))
                 WHEN 1
                   THEN b.code_insee||'_'||i.fantoir||'_'|| '0000' || a.numero_seuil||'_'||LOWER(a.complement_numero_seuil)
                 WHEN 2
