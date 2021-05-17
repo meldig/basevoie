@@ -138,8 +138,8 @@ COMMENT ON MATERIALIZED VIEW "GEO"."LM_VOIE"  IS 'snapshot table for snapshot GE
 
 COMMENT ON COLUMN "GEO"."LM_VOIE".OBJECTID IS 'Cle primaire de la vue materialisee.';
 COMMENT ON COLUMN "GEO"."LM_VOIE"."TRONCON" IS "Identifiant du troncon.";
-COMMENT ON COLUMN "GEO"."LM_VOIE"."INSEE" IS "code commune de la commune d'implantation du troncon.";
-COMMENT ON COLUMN "GEO"."LM_VOIE"."CODE_INSEE" IS "code INSEE de la commune d'implantation du troncon.";
+COMMENT ON COLUMN "GEO"."LM_VOIE"."INSEE" IS "Code commune de la commune d'implantation du troncon.";
+COMMENT ON COLUMN "GEO"."LM_VOIE"."CODE_INSEE" IS "Code INSEE de la commune d'implantation du troncon.";
 COMMENT ON COLUMN "GEO"."LM_VOIE"."COMMUNE" IS "Nom de la commune d'implantation du troncon.";
 COMMENT ON COLUMN "GEO"."LM_VOIE"."ID_VOIE" IS "Identifiant de la voie composé des troncons.";
 COMMENT ON COLUMN "GEO"."LM_VOIE"."RIVOLI" IS "Code FANTOIR de la voie.";
