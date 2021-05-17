@@ -11,7 +11,7 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON_LOG(
     fid_type_action NUMBER(38,0) NOT NULL,
     date_action DATE NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL,
-    geom SDO_GEOMETRY NOT NULL,
+    geom SDO_GEOMETRY NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -70,7 +70,7 @@ REFERENCES G_BASE_VOIE.ta_libelle(objectid);
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
 ADD CONSTRAINT TA_TRONCON_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
-REFERENCES G_BASE_VOIE.ta_agent(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_TRONCON_LOG_FID_TRONCON_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon)

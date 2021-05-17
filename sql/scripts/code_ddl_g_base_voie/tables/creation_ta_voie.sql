@@ -58,12 +58,12 @@ REFERENCES G_BASE_VOIE.ta_libelle(objectid);
 ALTER TABLE G_BASE_VOIE.TA_VOIE
 ADD CONSTRAINT TA_VOIE_FID_PNOM_SAISIE_FK
 FOREIGN KEY (fid_pnom_saisie)
-REFERENCES G_BASE_VOIE.ta_agent(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 ALTER TABLE G_BASE_VOIE.TA_VOIE
 ADD CONSTRAINT TA_VOIE_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
-REFERENCES G_BASE_VOIE.ta_agent(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 5. Création des index sur les clés étrangères
 CREATE INDEX TA_VOIE_FID_TYPEVOIE_IDX ON G_BASE_VOIE.TA_VOIE(fid_typevoie)

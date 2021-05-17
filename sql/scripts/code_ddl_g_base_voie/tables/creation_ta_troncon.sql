@@ -53,12 +53,12 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_table
 ALTER TABLE G_BASE_VOIE.TA_TRONCON
 ADD CONSTRAINT TA_TRONCON_FID_PNOM_SAISIE_FK 
 FOREIGN KEY (fid_pnom_saisie)
-REFERENCES G_BASE_VOIE.ta_agent(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 ALTER TABLE G_BASE_VOIE.TA_TRONCON
 ADD CONSTRAINT TA_TRONCON_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
-REFERENCES G_BASE_VOIE.ta_agent(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_saisie)

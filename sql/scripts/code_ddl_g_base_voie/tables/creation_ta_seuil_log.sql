@@ -12,7 +12,7 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL_LOG(
     geom SDO_GEOMETRY,
     date_action DATE,
     fid_type_action NUMBER(38,0),
-    fid_pnom NUMBER(38,0),
+    fid_pnom NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -65,7 +65,7 @@ REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
 ALTER TABLE G_BASE_VOIE.TA_SEUIL_LOG
 ADD CONSTRAINT TA_SEUIL_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
-REFERENCES G_BASE_VOIE.TA_AGENT(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_SEUIL_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_type_action)

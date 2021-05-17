@@ -21,7 +21,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_AGENT.validite IS 'Validité de l''agent, c''es
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_AGENT 
 ADD CONSTRAINT TA_AGENT_PK 
-PRIMARY KEY("OBJECTID") 
+PRIMARY KEY("NUMERO_AGENT") 
 USING INDEX TABLESPACE "G_ADT_INDX";
 
 -- 4. Affectation du droit de sélection sur les objets de la table aux administrateurs
