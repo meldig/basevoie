@@ -8,7 +8,15 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL_LOG(
     fid_seuil NUMBER(38,0) NOT NULL,
     fid_infos_seuil NUMBER(38,0) NOT NULL,
     cote_troncon CHAR(1),
-    code_insee CHAR(5),
+    code_insee COMPUTED BY(
+        SELECT
+            b.code_insee
+        FROM
+            G_BASE_VOIE.TA_SEUIL a,
+            G_REFERENTIEL.A_COMMUNE b
+        WHERE
+            SDO_CONTAINS(b.geom, a.geom) = 'TRUE'
+        ),
     geom SDO_GEOMETRY,
     date_action DATE,
     fid_type_action NUMBER(38,0),
