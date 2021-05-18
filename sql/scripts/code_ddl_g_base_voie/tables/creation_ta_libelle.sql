@@ -11,8 +11,7 @@ CREATE TABLE G_BASE_VOIE.TA_LIBELLE(
 -- 2. Création des commentaires sur la table et les champs
 COMMENT ON TABLE G_BASE_VOIE.TA_LIBELLE IS 'Table listant les types et états permettant de catégoriser les objets de la base voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_LIBELLE.objectid IS 'Clé primaire auto-incrémentée de la table.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_LIBELLE.valeur IS 'Nom des types d''objets ou des états permettant de catégoriser les objets de la base voie.
-Ces libellés sont catégorisés par famille.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_LIBELLE.valeur IS 'Nom des types d''objets ou des états permettant de catégoriser les objets de la base voie. Ces libellés sont catégorisés par famille.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_LIBELLE 

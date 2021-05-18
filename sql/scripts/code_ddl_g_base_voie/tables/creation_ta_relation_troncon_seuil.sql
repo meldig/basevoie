@@ -9,8 +9,7 @@ CREATE TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL IS 'Table pivot faisant la relation entre les tronçons de la table TA_TRONCON et les seuils de la table TA_SEUIl qui s''y rattachent. 
-Ancienne table : ILTASIT';
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL IS 'Table pivot faisant la relation entre les tronçons de la table TA_TRONCON et les seuils de la table TA_SEUIl qui s''y rattachent. Ancienne table : ILTASIT.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL.fid_troncon IS 'Clé primaire et étrangère vers la table TA_TRONCON permettant d''asocier un tronçons aux seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL.fid_seuil IS 'Clé primaire et clé étrangère vers la table TA_SEUIL permettant d''associer un ou plusieurs seuils à un tronçon.';
 

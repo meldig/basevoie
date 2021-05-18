@@ -24,9 +24,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.objectid IS 'Clé primaire auto-incré
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_typevoie IS 'Clé étangère vers la table TA_TYPE_VOIE permettant de catégoriser les voies de la base.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_fantoir IS 'Clé étrangère vers la table TA_FANTOIR permettant d''associer un code fantoir à chaque voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.numero_voie IS 'numéro de voie (commence par code insee)';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.cote_commune IS 'Côté de la voie appartenant à la commune (gauche/droite)
-
-Remplace les champs CGPARITE et CDPARITE';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.cote_commune IS 'Côté de la voie appartenant à la commune (gauche/droite). Ce champ remplace les champs CGPARITE et CDPARITE.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.complement_nom_voie IS 'Complément du nom de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.libelle_voie IS 'Nom de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_genre_voie IS 'Clé étrangère vers la table TA_LIBELLE permettant de connaître le genre du nom de la voie : masculin, féminin, neutre et non-identifié.';

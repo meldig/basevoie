@@ -15,17 +15,11 @@ CREATE TABLE G_BASE_VOIE.TA_RUE(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_RUE IS 'Table regroupant toutes les rues de la MEL.
-La rue est le composée de plusieurs voies elles-mêmes composées de plusieurs tronçons.
-Schématiquement la rue c''est le concept, la voie c''est l''objet et les tronçons composent l''objet.
-
-Ancienne table : TA_RUE';
+COMMENT ON TABLE G_BASE_VOIE.TA_RUE IS 'Table regroupant toutes les rues de la MEL. La rue est le composée de plusieurs voies elles-mêmes composées de plusieurs tronçons. Schématiquement la rue c''est le concept, la voie c''est l''objet et les tronçons composent l''objet. Ancienne table : TA_RUE';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.objectid IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.libelle_rue IS 'Libellé de la rue (imposé par la commune).';
-
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.nom IS 'Nom de la rue.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque rue le code insee de la commune dans laquelle elle se trouve (issue de la table G_REFERENTIEL.A_COMMUNES).';
-
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.date_saisie IS 'Date de saisie de la rue (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé une rue.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.date_modification IS 'Date de modification de la rue (via un trigger).';

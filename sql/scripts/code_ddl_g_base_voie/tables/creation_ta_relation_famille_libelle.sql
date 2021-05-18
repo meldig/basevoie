@@ -10,11 +10,7 @@ CREATE TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE IS 'Table pivot permettant d''associer des libellés à des familles afin de catégoriser les états et les objets de la base voie.
-
-Exemple :
-- La famille "action" dipose des libellés "création", "modification" et "suppression" ;
-- La famile "genre" dispose des libellés "masculin", "féminin" et "neutre" ;';
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE IS 'Table pivot permettant d''associer des libellés à des familles afin de catégoriser les états et les objets de la base voie. Exemple : La famille action dipose des libellés création, modification et suppression ; La famile genre dispose des libellés masculin, féminin et neutre.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE.objectid IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE.fid_famille IS 'Clé étrangère vers la table TA_FAMILLE permettant d''associer une ou plusieurs familles à un ou plusieurs libellés afin de catégoriser les états et les objets de la base voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE.fid_libelle IS 'Clé étrangère vers la table TA_LIBELLE permettant d''associer un ou plusieurs libellés à une ou plusieurs familles, afin de catégoriser les états et les objets de la base voie.';

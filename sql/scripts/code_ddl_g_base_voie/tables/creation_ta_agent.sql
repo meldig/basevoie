@@ -13,10 +13,7 @@ CREATE TABLE G_BASE_VOIE.TA_AGENT(
 COMMENT ON TABLE G_BASE_VOIE.TA_AGENT IS 'Table listant les pnoms de tous les agents ayant travaillés et qui travaillent encore pour la base voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_AGENT.numero_agent IS 'Numéro d''agent présent sur la carte de chaque agent.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_AGENT.pnom IS 'Pnom de l''agent, c''est-à-dire la concaténation de l''initiale de son prénom et de son nom entier.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_AGENT.validite IS 'Validité de l''agent, c''est-à-dire que ce champ permet de savoir si l''agent continue de travailler dans/pour la base voie ou non.
-
-- 1 = oui ;
-- 0 = non ;';
+COMMENT ON COLUMN G_BASE_VOIE.TA_AGENT.validite IS 'Validité de l''agent, c''est-à-dire que ce champ permet de savoir si l''agent continue de travailler dans/pour la base voie ou non : 1 = oui ; 0 = non.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_AGENT 

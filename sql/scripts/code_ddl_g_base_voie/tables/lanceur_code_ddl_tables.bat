@@ -15,7 +15,7 @@ type %chemin_code_ddl%\creation_ta_agent.sql > code_ddl_tables.sql | echo. >> co
 | type %chemin_code_ddl%\creation_ta_libelle.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
 | type %chemin_code_ddl%\creation_ta_relation_famille_libelle.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
 | type %chemin_code_ddl%\creation_ta_troncon.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
-| type %chemin_code_ddl%\creation_ta_troncon_log.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql
+| type %chemin_code_ddl%\creation_ta_troncon_log.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
 | type %chemin_code_ddl%\creation_ta_type_voie.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
 | type %chemin_code_ddl%\creation_ta_voie.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
 | type %chemin_code_ddl%\creation_ta_voie_log.sql >> code_ddl_tables.sql | echo. >> code_ddl_tables.sql ^
@@ -35,4 +35,6 @@ CD C:/ora12c/R1/BIN
 
 :: 4. Execution de sqlplus. pour lancer les requetes SQL.
 sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_ddl%\code_ddl_tables.sql
-pause
+
+:: 5. MISE EN PAUSE
+PAUSE

@@ -17,10 +17,8 @@ CREATE TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(
 COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG IS 'Table de log enregistrant l''évolution des associations voies / tronçons.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.objectid IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_relation_troncon_voie IS 'Clé étrangère vers la table TA_RELATION_TRONCON_VOIE permettant d''identifier les relations tronçon/voies.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_voie IS 'Identifiant des voies permettant d''associer une voie à un ou plusieurs tronçons.
-Ancien champ : CCOMVOI.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_troncon IS 'Identifiant des tronçons permettant d''associer un ou plusieurs tronçons à une voie.
-Ancien champ : CNUMTRC.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_voie IS 'Identifiant des voies permettant d''associer une voie à un ou plusieurs tronçons. Ancien champ : CCOMVOI.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_troncon IS 'Identifiant des tronçons permettant d''associer un ou plusieurs tronçons à une voie. Ancien champ : CNUMTRC.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.date_action IS 'Date de création, modification ou suppression de la voie avec ce tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur l''association tronçon / voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent à l''association voie / tronçon qu''il a créé, modifié ou supprimé.';

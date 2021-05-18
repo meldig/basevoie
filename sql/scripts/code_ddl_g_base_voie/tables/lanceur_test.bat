@@ -1,5 +1,5 @@
 @echo off
-echo Bienvenu dans la suppression des tables de la Base Voie !
+echo Bienvenu dans la creation des tables de la Base Voie !
 
 :: 1. Configurer le système d'encodage des caractères en UTF-8
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
@@ -13,6 +13,8 @@ SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 :: 3. lancement de SQL plus.
 CD C:/ora12c/R1/BIN
 
-:: 4. Execution de sqlplus. pour lancer la requete SQL.
-sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_ddl%\suppression_tables_base_voie.sql
-pause
+:: 4. Execution de sqlplus. pour lancer les requetes SQL.
+sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_ddl%\code_ddl_tables.sql
+
+:: 5. MISE EN PAUSE
+PAUSE

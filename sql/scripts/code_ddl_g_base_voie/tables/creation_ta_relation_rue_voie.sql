@@ -10,7 +10,7 @@ CREATE TABLE G_BASE_VOIE.TA_RELATION_RUE_VOIE(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_RUE_VOIE IS 'Table pivot permettant d''associer chaque rue à sa/ses voies. Ancienne table TA_RUEVOIE';
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_RUE_VOIE IS 'Table pivot permettant d''associer chaque rue à sa/ses voies. Ancienne table TA_RUEVOIE.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_RUE_VOIE.objectid IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_RUE_VOIE.fid_rue IS 'Clé étrangère vers la table TA_RUE permettant d''associer une rue à une ou plusieurs voies.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_RUE_VOIE.fid_voie IS 'Clé étrangère permettant d''associer une ou plusieurs voies à une rue.';
