@@ -21,3 +21,5 @@ create or replace FUNCTION GET_CODE_INSEE(v_geometry SDO_GEOMETRY) RETURN CHAR
              RETURN 'error';
         END;        
     END GET_CODE_INSEE;
+
+/

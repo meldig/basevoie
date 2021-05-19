@@ -25,10 +25,9 @@ BEGIN
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, fid_troncon_pere, date_fin_validite, geom, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, date_fin_validite, geom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :old.fid_troncon, 
                     :old.date_fin_validite,
                     :old.geom,
                     sysdate,
@@ -36,10 +35,9 @@ BEGIN
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, fid_troncon_pere, date_fin_validite, geom, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, date_fin_validite, geom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
-                    :old.fid_troncon, 
                     :old.date_fin_validite,
                     :old.geom,
                     sysdate,
@@ -48,10 +46,9 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, fid_troncon_pere, date_fin_validite, geom, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, date_fin_validite, geom, date_action, fid_type_action, fid_pnom)
         VALUES(
                 :old.objectid, 
-                :old.fid_troncon_pere, 
                 :old.date_fin_validite,
                 :old.geom,
                 sysdate,
