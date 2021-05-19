@@ -1,12 +1,17 @@
-create or replace TRIGGER G_BASE_VOIE.B_IUD_TA_RELATION_TRONCON_VOIE_LOG
-BEFORE INSERT OR UPDATE OR DELETE ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG
+/*
+Déclencheur permettant de remplir la table de logs TA_RELATION_TRONCON_VOIE_LOG dans laquelle sont enregistrés chaque création, 
+modification et suppression des données de la table TA_RELATION_TRONCON_VOIE avec leur date et le pnom de l'agent les ayant effectuées.
+*/
+
+CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUD_TA_RELATION_TRONCON_VOIE_LOG
+BEFORE INSERT OR UPDATE OR DELETE ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE
 FOR EACH ROW
-    DECLARE
-        username VARCHAR2(100);
-        v_id_agent NUMBER(38,0);
-        v_id_creation NUMBER(38,0);
-        v_id_modification NUMBER(38,0);
-        v_id_suppression NUMBER(38,0);
+DECLARE
+    username VARCHAR2(100);
+    v_id_agent NUMBER(38,0);
+    v_id_creation NUMBER(38,0);
+    v_id_modification NUMBER(38,0);
+    v_id_suppression NUMBER(38,0);
 BEGIN
     -- Sélection du pnom
     SELECT sys_context('USERENV','OS_USER') into username from dual;
@@ -32,7 +37,7 @@ BEGIN
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
             INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
-                    :new.objectid, 
+                    :old.objectid, 
                     :old.fid_voie, 
                     :old.fid_troncon, 
                     sysdate,
@@ -43,7 +48,7 @@ BEGIN
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
         VALUES(
-                :new.objectid, 
+                :old.objectid, 
                 :old.fid_voie, 
                 :old.fid_troncon, 
                 sysdate,
@@ -54,3 +59,5 @@ BEGIN
         WHEN OTHERS THEN
             mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_RELATION_TRONCON_VOIE_LOG','bjacq@lillemetropole.fr');
 END;
+
+/

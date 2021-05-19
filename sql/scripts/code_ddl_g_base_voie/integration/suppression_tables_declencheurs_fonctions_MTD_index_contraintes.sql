@@ -1,5 +1,5 @@
 /*
-Requêtes sql permettant de supprimer les tables de la base voie avec leur MTD spatiale, index, contraintes, etc.
+Requêtes sql permettant de supprimer les tables de la base voie avec leur MTD spatiale, index, contraintes, triggers et fonctions.
 */
 
 -- 1. Suppression des tables pivot
@@ -42,3 +42,6 @@ DELETE FROM USER_SDO_GEOM_METADATA
 WHERE TABLE_NAME = 'TA_SEUIL_LOG';
 
 COMMIT;
+
+-- 5. Suppression des fonctions personnalisées du schéma
+DROP FUNCTION GET_CODE_INSEE;
