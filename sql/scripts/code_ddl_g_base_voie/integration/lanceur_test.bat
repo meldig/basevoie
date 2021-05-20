@@ -1,19 +1,21 @@
 @echo off
-echo Bienvenu dans la creation des tables de la Base Voie !
 
-:: 1. Configurer le système d'encodage des caractères en UTF-8
+:: 1. gestion des identifiants Oracle
+SET /p USER_D="Veuillez saisir l'utilisateur Oracle de destination : "
+SET /p USER_P_AGENT="Veuillez saisir l'utilisateur Oracle de provenance pour les AGENTS : "
+SET /p MDP_D="Veuillez saisir le mot de passe de l'utilisateur Oracle de destination : "
+SET /p MDP_P_AGENT="Veuillez saisir le mot de passe de l'utilisateur Oracle de provenance pour les AGENTS : "
+SET /p INSTANCE_D="Veuillez saisir l'instance Oracle de destination: "
+SET /p INSTANCE_P_AGENT="Veuillez saisir l'instance Oracle de provenance pour les AGENTS : "
+
+:: 2. se mettre dans l'environnement QGIS
+cd C:\Program Files\QGIS 3.16\bin
+
+:: 3. Configurer le système d'encodage des caractères en UTF-8
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
-:: 2. Déclaration et valorisation des variables
-SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du schema : "
-SET /p chemin_code_trigger="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TRIGGERS du schema : "
-SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier qui contiendra la concaténation de vos codes (dossier fichiers temporaires) : "
-type %chemin_code_table%\creation_ta_agent.sql > %chemin_code_temp%\code_ddl_schema_basevoie.sql | echo. >> code_ddl_schema_basevoie.sql ^
-| type %chemin_code_table%\creation_ta_famille.sql >> %chemin_code_temp%\code_ddl_schema_basevoie.sql | echo. >> code_ddl_schema_basevoie.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql >> %chemin_code_temp%\code_ddl_schema_basevoie.sql | echo. >> code_ddl_schema_basevoie.sql
+:: 5.13. table TA_GG_SOURCE
+ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_P_AGENT%/%MDP_P_AGENT%@%INSTANCE_P_AGENT% -sql "SELECT * FROM G_GESTIONGEO.TA_GG_SOURCE" -nln TEMP_TA_GG_SOURCE
 
-:: 3. Suppression du fichier temporaire
-DEL %chemin_code_temp%\code_ddl_schema_basevoie.sql
-
-:: 4. MISE EN PAUSE
+:: 6. MISE EN PAUSE
 PAUSE
