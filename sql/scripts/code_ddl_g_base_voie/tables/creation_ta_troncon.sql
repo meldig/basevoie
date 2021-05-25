@@ -21,7 +21,8 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_saisie IS 'date de saisie du tron�
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_modification IS 'Dernière date de modification du tronçon (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_fin_validite IS 'date de fin de validité du tronçon. Cette date correspond à la date d''invalidation du tronçon (cf. doc_dynmap_mhsuzanne.pdf p. 11 alinéa 2).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_debut_validite IS 'Date de début de vie du tronçon, équivalent à sa date de fin de chantier. Cette date peut être différente de sa date de création en base.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_fin_validite IS 'Date de fin de validité du tronçon. Cette date correspond à la date d''invalidation du tronçon (cf. doc_dynmap_mhsuzanne.pdf p. 11 alinéa 2).';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TRONCON 
