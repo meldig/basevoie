@@ -16,12 +16,11 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
-    IF INSERTING THEN -- En cas d'insertion on insère la date du jour dans le champ date_saisie
-       :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
+    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TA_AGENT.
        :new.fid_pnom_saisie := v_id_agent;
     ELSE
-        IF UPDATING THEN -- En cas de mise à jour on insère/met à jour le champ date_modification avec la date du jour, ainsi à chaque édition ce champ sera mis à jour
-             :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
+        IF UPDATING THEN -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le tronçon, présent dans TA_AGENT.
+             :new.date_modification := sysdate;
              :new.fid_pnom_modification := v_id_agent; 
         END IF;
     END IF;

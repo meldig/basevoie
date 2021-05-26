@@ -12,9 +12,9 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE(
     complement_nom_voie VARCHAR2(50),
     libelle_voie VARCHAR2(50) NOT NULL,
     fid_genre_voie NUMBER(38,0) NOT NULL,
-    date_saisie DATE NOT NULL,
+    date_saisie DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    date_modification DATE,
+    date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_modification NUMBER(38,0)
 );
 
@@ -28,7 +28,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.cote_commune IS 'Côté de la voie apparte
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.complement_nom_voie IS 'Complément du nom de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.libelle_voie IS 'Nom de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_genre_voie IS 'Clé étrangère vers la table TA_LIBELLE permettant de connaître le genre du nom de la voie : masculin, féminin, neutre et non-identifié.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_saisie IS 'Date de saisie de la voie (via un trigger).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_saisie IS 'Date de saisie de la voie (automatique).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé une voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_modification IS 'Date de modification de la voie (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié une voie.';

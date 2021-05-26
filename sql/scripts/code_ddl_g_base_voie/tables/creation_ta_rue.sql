@@ -8,9 +8,9 @@ CREATE TABLE G_BASE_VOIE.TA_RUE(
     libelle_rue VARCHAR2(100),
     nom VARCHAR2(100),
     code_insee CHAR(5),
-    date_saisie DATE,
+    date_saisie DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0),
-    date_modification DATE,
+    date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_modification NUMBER(38,0)
 );
 
@@ -20,7 +20,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.objectid IS 'Clé primaire auto-incrément�
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.libelle_rue IS 'Libellé de la rue (imposé par la commune).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.nom IS 'Nom de la rue.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque rue le code insee de la commune dans laquelle elle se trouve (issue de la table G_REFERENTIEL.A_COMMUNES).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.date_saisie IS 'Date de saisie de la rue (via un trigger).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.date_saisie IS 'Date de saisie de la rue (automatique).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé une rue.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.date_modification IS 'Date de modification de la rue (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_RUE.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié une rue.';

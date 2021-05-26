@@ -9,9 +9,9 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     cote_troncon CHAR(1),
     code_insee VARCHAR2(4000) AS(GET_CODE_INSEE(geom)),
     geom SDO_GEOMETRY,
-    date_saisie DATE NOT NULL,
+    date_saisie DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    date_modification DATE,
+    date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_modification NUMBER(38,0)
 );
 
@@ -22,7 +22,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_infos_seuil IS 'Clé étrangère vers
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.cote_troncon IS 'Côté du tronçon auquel est rattaché le seuil. G = gauche ; D = droite. En agglomération le sens des tronçons est déterminé par ses numéros de seuils. En d''autres termes il commence au niveau du seuil dont le numéro est égal à 1. Hors agglomération, le sens du tronçon dépend du sens de circulation pour les rues à sens unique. Pour les rues à double-sens chaque tronçon est doublé donc leur sens dépend aussi du sens de circulation;';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque rue le code insee de la commune dans laquelle elle se trouve (issue de la table G_REFERENTIEL.A_COMMUNES).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.geom IS 'Géométrie de type point de chaque seuil présent dans la table.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_saisie IS 'date de saisie du seuil (via un trigger).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_saisie IS 'date de saisie du seuil (automatique).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_modification IS 'Dernière date de modification du seuil (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un seuil.';
