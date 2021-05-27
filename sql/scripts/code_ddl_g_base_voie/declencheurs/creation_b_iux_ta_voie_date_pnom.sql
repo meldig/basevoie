@@ -18,6 +18,7 @@ BEGIN
 
     IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
        :new.fid_pnom_saisie := v_id_agent;
+       :new.fid_pnom_modification := v_id_agent;
     ELSE
         IF UPDATING THEN -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié la voie, présent dans TA_AGENT.
              :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
