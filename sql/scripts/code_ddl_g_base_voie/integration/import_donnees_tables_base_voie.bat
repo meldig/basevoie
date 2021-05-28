@@ -9,7 +9,7 @@ SET /p MDP_P="Veuillez saisir le mot de passe de l'utilisateur Oracle de provena
 SET /p INSTANCE_D="Veuillez saisir l'instance Oracle de destination: "
 SET /p INSTANCE_P="Veuillez saisir l'instance Oracle de provenance : "
 SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
-SET /p CHEMIN_FAMILLE_LIBELLE="Veuillez saisir le chemin d'acces au dossier integration : "
+SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier integration : "
 
 :: 2. se mettre dans l'environnement QGIS
 cd C:\Program Files\QGIS 3.16\bin
@@ -61,10 +61,13 @@ ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_P%/%MDP_P%@%INSTA
 ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_AGENT%/TEMP_AGENT.csv
 
 :: 5.14 table TEMP_FAMILLE
-ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_FAMILLE_LIBELLE%/TEMP_FAMILLE.csv
+ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_INTEGRATION%/TEMP_FAMILLE.csv
 
 :: 5.15 table TEMP_FAMILLE
-ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_FAMILLE_LIBELLE%/TEMP_LIBELLE.csv
+ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_INTEGRATION%/TEMP_LIBELLE.csv
+
+:: 5.16 table TEMP_RELATION_CODES_DEP_COMMUNES
+ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_INTEGRATION%/TEMP_RELATION_CODES_DEP_COMMUNES.csv
 
 :: 6. MISE EN PAUSE
 PAUSE
