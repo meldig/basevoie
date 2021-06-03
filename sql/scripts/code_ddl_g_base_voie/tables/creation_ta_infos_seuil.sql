@@ -8,6 +8,7 @@ CREATE TABLE G_BASE_VOIE.TA_INFOS_SEUIL(
     numero_seuil NUMBER(5,0) NOT NULL,
     numero_parcelle CHAR(9) NOT NULL,
     complement_numero_seuil VARCHAR2(10),
+    fid_seuil NUMBER(38,0) NOT NULL,
     date_saisie DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0),
     date_modification DATE DEFAULT sysdate NOT NULL,
@@ -20,6 +21,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.objectid IS 'Clé primaire auto-inc
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.numero_seuil IS 'Numéro de seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.numero_parcelle IS 'Numéro de parcelle issu du cadastre.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.complement_numero_seuil IS 'Complément du numéro de seuil. Exemple : 1 bis';
+COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.fid_seuil IS 'Clé étrangère vers la table TA_SEUIL, permettant d''affecter une géométrie à un ou plusieurs seuils, dans le cas où plusieurs se superposent sur le même point.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.date_saisie IS 'Date de saisie des informations du seuil (automatique).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé les informations d''un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL.date_modification IS 'Date de modification des informations du seuil (via un trigger).';
@@ -33,6 +35,11 @@ USING INDEX TABLESPACE "G_ADT_INDX";
 
 -- 4. Création des clés étrangères
 ALTER TABLE G_BASE_VOIE.TA_INFOS_SEUIL
+ADD CONSTRAINT TA_INFOS_SEUIL_FID_SEUIL_FK 
+FOREIGN KEY (fid_seuil)
+REFERENCES G_BASE_VOIE.ta_seuil(objectid);
+
+ALTER TABLE G_BASE_VOIE.TA_INFOS_SEUIL
 ADD CONSTRAINT TA_INFOS_SEUIL_FID_PNOM_SAISIE_FK 
 FOREIGN KEY (fid_pnom_saisie)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
@@ -43,6 +50,9 @@ FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 5. Création des index sur les clés étrangères
+CREATE INDEX TA_INFOS_SEUIL_FID_SEUIL_IDX ON G_BASE_VOIE.TA_INFOS_SEUIL(fid_seuil)
+    TABLESPACE G_ADT_INDX;
+
 CREATE INDEX TA_INFOS_SEUIL_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_INFOS_SEUIL(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
