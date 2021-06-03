@@ -93,3 +93,19 @@ INSERT INTO G_BASE_VOIE.TA_VOIE(FID_TYPEVOIE, FID_FANTOIR, OBJECTID, COMPLEMENT_
             C_1
         WHERE
             GENRE IS NOT NULL;
+
+-- 11. Désactivation du trigger de log de la table TA_RELATION_TRONCON_VOIE
+ALTER TRIGGER B_IUD_TA_RELATION_TRONCON_VOIE_LOG DISABLE;
+
+INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON)
+SELECT
+    a.objectid AS fid_troncon,
+    c.objectid AS fid_voie,
+    b.CCODSTR AS sens,
+    b.CNUMTRV AS ordre_troncon
+FROM
+    G_BASE_VOIE.TA_TRONCON a
+    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.objectid
+    INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.ccomvoi
+WHERE
+    b.CVALIDE = 'V';
