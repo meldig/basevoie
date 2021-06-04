@@ -43,7 +43,8 @@ type %chemin_code_fonction%\creation_get_code_insee.sql > %chemin_code_temp%\tem
 | type %chemin_code_trigger%\creation_b_iux_ta_rue_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iux_ta_seuil_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql
+| type %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
+| type %chemin_code_temp%\creation_temp_buffer_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql
 
 :: 3. lancement de SQL plus.
 CD C:/ora12c/R1/BIN
