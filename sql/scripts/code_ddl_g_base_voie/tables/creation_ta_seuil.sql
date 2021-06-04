@@ -11,7 +11,7 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
-    fid_pnom_modification NUMBER(38,0)
+    fid_pnom_modification NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs

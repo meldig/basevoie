@@ -28,7 +28,6 @@ BEGIN
         INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, fid_infos_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :old.fid_infos_seuil, 
                     :old.cote_troncon,
                     sysdate,
                     v_id_creation,
@@ -38,7 +37,6 @@ BEGIN
             INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, fid_infos_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
-                    :old.fid_infos_seuil, 
                     :old.cote_troncon,
                     sysdate,
                     v_id_modification,
@@ -49,7 +47,6 @@ BEGIN
         INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, fid_infos_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
         VALUES(
                 :old.objectid, 
-                :old.fid_infos_seuil, 
                 :old.cote_troncon,
                 sysdate,
                 v_id_suppression,
