@@ -109,3 +109,33 @@ FROM
     INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.ccomvoi
 WHERE
     b.CVALIDE = 'V';
+
+/
+
+-- 12. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 20cm max dans la table TA_SEUIL
+SET SERVEROUTPUT ON
+DECLARE
+BEGIN
+
+-- Insertion des buffers de 10cm autour de chaque seuil dans la table temporaire TEST_BUFFER_SEUIL
+INSERT INTO G_BASE_VOIE.TEMP_BUFFER_SEUIL(idseui, geom)
+SELECT
+    a.idseui,
+    SDO_GEOM.SDO_BUFFER(a.ORA_GEOMETRY, 0.10, 0.01) AS geom
+FROM
+    G_BASE_VOIE.TEMP_ILTASEU a;
+COMMIT;
+
+-- Insertion dans TEST_ILTASEU d'un seuil pour chaque groupe de seuils situés à 10cm maximum les uns des autres
+INSERT INTO G_BASE_VOIE.TEST_ILTASEU(idseui, geom)
+SELECT
+    c.idseui,
+    c.ora_geometry
+FROM
+    G_BASE_VOIE.TEMP_BUFFER_SEUIL a
+    INNER JOIN G_BASE_VOIE.TEMP_ILTASEU c ON c.idseui = a.idseui,
+    G_BASE_VOIE.TEMP_BUFFER_SEUIL b
+WHERE
+    a.idseui < b.idseui
+    AND SDO_ANYINTERACT(a.geom, b.geom) = 'TRUE';
+END;
