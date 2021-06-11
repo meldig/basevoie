@@ -4,7 +4,7 @@ ILTATRC	CGEOTRC	Géomètrie (nouille) Perdu depuis la nouvelle appli	non utilis�
 ILTATRC	TEMP	Utilisé par l'appli (0 ou 1; question de maj)	ne sert à rien
 ILTATRC CDVALTRO	Champ de validité de l'objet. Maintenant tous les éléments présentés aux utilisateurs sont valides
 ILTATRC CDTDTRC	Date de début de valité. Plus nécessaire.
-ILTATRC CDTFTRC Date de fin de validité. Plus nécessaire car maintenant il y a une table de log.
+ILTATRC CDTFTRC Date de fin de validité. Plus nécessaire.
 ILTAPTZ	CXLAPTZ	xlamb 1 (plus utilisé avec la nouvelle appli)	non utilisé par SIREO
 ILTAPTZ	CYLAPTZ	ylamb 1 (plus utilisé avec la nouvelle appli)	non utilisé par SIREO
 ILTASEU	CCODCONT	non utilisé	champ toujours vide
@@ -33,8 +33,8 @@ VOIECVT	CVOFTRF	?	non utilisé
 VOIECVT	CMUTDEB	plus utilisé mais rempli	non utilisé
 VOIECVT	CMUTFIN	plus utilisé mais rempli	non utilisé
 VOIECVT	CDCOTE	code coté (en rapport avec la commune)	non utilisé.
-VOIECVT	CDTDCVT	date début validité. Maintenant il y a une table de log.
-VOIECVT	CDTFCVT date de fin de validite. Maintenant table de log.
+VOIECVT	CDTDCVT	date début validité. Champ inutilisable.
+VOIECVT	CDTFCVT date de fin de validite. Champ inutilisable.
 VOIECVT CNUMCOM Champ remplacé par une requête spatiale au besoin
 VOIECVT CVALIDE Table de log
 ILTADTN	CANGTRC	angle de troncon (trigo)	non utilisé par SIREO.
