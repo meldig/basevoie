@@ -1,0 +1,53 @@
+Ancien Schéma		Nouveau Schéma		
+Table	Champ	Table	Champ	Explications
+ILTATRC	CNUMTRC	TA_TRONCON	OBJECTID	Identifiant de chaque tronçon. Dans le nouveau schéma les identifiants actuels seront insérés et l'incrémentation commencera à partir du plus grand identifiant actuel.
+ILTATRC	GEOM	TA_TRONCON	GEOM	Géométrie de type ligne simple de chaque tronçon. Une contrainte sera mise afin qu'il n'y ait que des lignes simples dans ce champ.
+ILTATRC	CDTSTRC	TA_TRONCON	DATE_SAISIE	Date de saisie en base de chaque tronçon. Ce champ est et sera mis à jour automatiquement.
+ILTATRC	CDTMTRC	TA_TRONCON	DATE_MODIFICATION	Date de la dernière modification en base de chaque tronçon. Ce champ est et sera mis à jour automatiquement.
+ILTATRC	CLNGTRC	V_TRONCON	LONGUEUR	Longueur du tronçon en mètre. Dans le nouveau schéma cette longeur sera calculée en base et non plus par l'application DynMap.
+ILTAFILIA	CNUMTRC	TA_TRONCON_LOG	FID_TONCON	Identifiant du tronçon. Dans le nouveau schéma ce champ dispose d'une contrainte de clé étrangère vers TA_TRONCON.
+ILTAFILIA	TRCPERE	TA_TRONCON_LOG	FID_TRONCON_PERE	Identifiant du tronçon père (tronçon duquel est issu le tronçon actuel suite à un découpage). Ce champ disposera d'une contrainte de clé étrangère dans le nouveau schéma.
+ILTAFILIA	CDTSFILIA	TA_TRONCON_LOG	DATE_ACTION	"Date de saisie et date de modification des tronçons dans le schéma actuel.
+Dans le nouveau schéma, il n'y a qu'un seul champ date car les actions seront catégorisées par le champ FID_TYPE_ACTION"
+ILTAFILIA	CDTMFILIA			
+ILTAFILIA	OPERATION	TA_TRONCON_LOG	FID_TYPE_ACTION	"Type d'action opérée sur chaque tronçon. Actuellement les action sont de deux types : coupé et détruit.
+Dans le nouveau schéma les actions seront de trois types : création, modification, suppression"
+ILTADTN	CCODDFT	V_TRONCON	"START_POINT
+END_POINT"	"Coordonnées des startpoint et endpoint des tronçons. Actuellement il existe un champ pour déterminé la position du point et deux autres pour les coordonnées x, y.
+Dans le nouveau schéma nous utiliserons les fonctions SDO_LRS.GEOM_SEGMENT_START_PT et SDO_LRS.GEOM_SEGMENT_SEND_PT afin de calculer les coordonnées de ces points, ce qui nous permet de réduire le nombre de champs à deux."
+ILTAPTZ	CXLAPTZ			
+ILTAPTZ	CYLAPTZ			
+VOIECVT	CCODSTR	TA_RELATION_TRONCON_VOIE	SENS	Sens de codage des tronçons. Ce sens suit la numérotation des seuils (de 1 vers n), c'est pourquoi un tronçon ne peut pas être entré en base avant la création des lotissements.
+VOIECVT	CNUMTRV	TA_RELATION_TRONCON_VOIE	ORDRE_TRONCON	Ordre des tronçons dans la voie. Comme plusieurs tronçons compose une voie, cela nous permet de savoir dans quel ordre s'alignent les tronçons au sein de la voie.
+VOIECVT	CCOMVOI	TA_RELATION_TRONCON_VOIE	FID_VOIE	Identifiant de la voie permettant d'associer une voie à un ou plusieurs tronçons. Dans le nouveau schéma ce champ dispose d'une contrainte de clé étrangère.
+VOIECVT	CNUMTRC	TA_RELATION_TRONCON_VOIE	FID_TRONCON	Identifiant de tronçon permettant d'associer un ou plusieurs tronçons à une voie. Dans le nouveau schéma ce champ dispose d'une contrainte de clé étrangère.
+VOIECVT	CDTSCVT	TA_RELATION_TRONCON_VOIE_LOG	DATE_ACTION	"Date de saisie ou de modification de la relation tronçon - voie
+On passe de deux champs à un dans le nouveau schéma car le champ FID_TYPE_ACTION permet de catégoriser le type d'action effectuée sur ces relations."
+VOIECVT	CDTMCVT			
+VOIEVOI	CCOMVOI	TA_VOIE	OBJECTID	Identifiant de la voie. Dans le nouveau schéma les identifiants actuels seront conservé et leur incrémentation commencera à partir du plus grand identifiant actuel.
+VOIEVOI	CCODRVO	TA_RIVOLI	CODE_RIVOLI	"Dans le schéma actuel ce code se compose de 7 caractères (3 pour le code commune issu du code INSEE et 4 pour l'identifiant de la voie au sein de la commune (RIVOLI)).
+Dans le nouveau schéma ce code se composera uniquement des 4 caractères du RIVOLI. La clé de contrôle sera également enregistrée dans TA_RIVOLI et le code département + direction (591) et le code commune pourront être calculés automatiquement."
+VOIEVOI	CNOMINUS	TA_VOIE	LIBELLE_VOIE	Nom de la voie. Actuellement il s'agit du nom écrit en minuscule ce qui sera conservé dans le nouveau schéma.
+VOIEVOI	CINFOS	TA_VOIE	COMPLEMENT_NOM_VOIE	Complément du nom de la voie donnant une information complémentaire : ACCES FERME ; ACCES PRIVE ; COTE OUES ; CRT1
+VOIEVOI	CDTSVOI	TA_VOIE	DATE_SAISIE	Date de saisie de la voie en base. Cette date est et sera remplie automatiquement.
+VOIEVOI	CDTMVOI	TA_VOIE	DATE_MODIFICATION	Date de modification de la voie en base. Cette date est et sera remplie automatiquement.
+VOIEVOI	CCODTVO	TA_TYPE_VOIE	CODE_TYPE_VOIE	Code du type de voie : chemin, sentier, autoroute, allée, etc
+VOIEVOI	GENRE	TA_LIBELLE	VALEUR	"Genre du nom de la voie (obligation politique permettant de déterminer la part des noms de voie masculins et féminins…)
+Exemple :  M : Masculin ; F : Féminin ; N : Neutre ; C : Couple ; NI : Non identifié"
+ILTASIT	IDSEUI	TA_RELATION_TRONCON_SEUIL	FID_SEUIL	Identifiant de seuil permettant d'associer un ou plusieurs seuils à un tronçon. Dans le nouveau schéma ce champ disposera d'une contrainte de clé étrangère.
+ILTASIT	CDCOTE	TA_SEUIL	COTE_TRONCON	Code côté du tronçon (droite ou gauche) sur lequel se situe le seuil. Les côtés sont déterminés par rapport au sens de codage des tronçons, et non par rapport au sens de circulation. Cette information sera conservée dans le nouveau schéma.
+ILTASIT	CNUMTRC	TA_RELATION_TRONCON_SEUIL	FID_TRONCON	"Identifiant de tronçon permettant d'associer un tronçon à un ou plusieurs seuils. 
+Dans le nouveau schéma ce champ disposera d'une contrainte de clé étrangère et sera uniquement présent dans TA_RELATION_TRONCON_SEUIL."
+ILTASEU	CNUMTRC			
+ILTASEU	IDSEUI	TA_SEUIL	OBJECTID	Identifiant de seuil. Dans le nouveau schéma les identifiants actuels seront conservé et leur incrémentation commencera à partir du plus grand identifiant actuel.
+ILTASEU	GEOM	TA_SEUIL	GEOM	Géométrie de type ponctuel. Dans le nouveau schéma, seuls des points simples pourront être enregistrés dans cette table.
+ILTASEU	CDCOTE	TA_SEUIL	COTE_TRONCON	Côté du tronçon sur lequel se trouve le seuil (droite, gauche - je suppose que ce positionnement dépend du sens de codage du tronçon et non du sens de circulation).
+ILTASEU	CNUMCOM	TA_SEUIL	CODE_INSEE	"Actuellement il s'agit du code commune, issu du code INSEE, écrit en dur. Cependant dans le nouveau schéma ce champ contiendra le code INSEE complet 
+et ce sera un champ virtuel qui calculera automatiquemet le code INSEE de chaque seuil via une requête spatiale."
+ILTASEU	CDTSSEUIL	TA_SEUIL	DATE_SAISIE	Date de saisie de la géométrie du seuil en base (un point pourra disposer de plusieurs seuils contenus dans TA_INFOS_SEUIL). Cette date est et sera remplie automatiquement.
+		TA_INFOS_SEUIL	DATE_SAISIE	Date de saisie des informations du seuil en base. Cette date est et sera remplie automatiquement.
+ILTASEU	CDTMSEUIL	TA_SEUIL	DATE_MODIFICATION	Date de modification de la géométrie du seuil en base. Cette date est et sera remplie automatiquement.
+		TA_INFOS_SEUIL	DATE_MODIFICATION	Date de modification des informations du seuil en base. Cette date est et sera remplie automatiquement.
+ILTASEU	NPARCELLE	TA_INFOS_SEUIL	NUMERO_PARCELLE	Numéro de la parcelle (ISSU du parcellaire cadastral) dans laquelle se situe le seuil.
+ILTASEU	NUSEUI	TA_INFOS_SEUIL	NUMERO_SEUIL	Numéro du seuil (différent de l'identifiant interne à la MEL - objectid)
+ILTASEU	NSSEUI	TA_INFOS_SEUIL	COMPLEMENT_NUMERO_SEUIL	Complément du numéro du seuil : bis, b, tris, etc
