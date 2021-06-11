@@ -1,7 +1,10 @@
 TABLE	CHAMP	COMMENTAIRE	RAISON de L'ABANDON
-ILTATRC	CLNGTRC	Longueur troncon	plus utilisé par SIREO
+ILTATRC	CLNGTRC	Longueur troncon	plus utilisé par SIREO. Champ maintenant calculé
 ILTATRC	CGEOTRC	Géomètrie (nouille) Perdu depuis la nouvelle appli	non utilisé
 ILTATRC	TEMP	Utilisé par l'appli (0 ou 1; question de maj)	ne sert à rien
+ILTATRC CDVALTRO	Champ de validité de l'objet. Maintenant tous les éléments présentés aux utilisateurs sont valides
+ILTATRC CDTDTRC	Date de début de valité. Plus nécessaire.
+ILTATRC CDTFTRC Date de fin de validité. Plus nécessaire car maintenant il y a une table de log.
 ILTAPTZ	CXLAPTZ	xlamb 1 (plus utilisé avec la nouvelle appli)	non utilisé par SIREO
 ILTAPTZ	CYLAPTZ	ylamb 1 (plus utilisé avec la nouvelle appli)	non utilisé par SIREO
 ILTASEU	CCODCONT	non utilisé	champ toujours vide
@@ -12,14 +15,26 @@ ILTASEU	CYLACEN	ylamb 1 centre bati	Non utilisé
 ILTASEU	CXLATRC	xlamb 1 projection tr	Non utilisé
 ILTASEU	CYLATRC	ylamb 1 projection tr	Non utilisé
 ILTASIT	NBABSCIS	Abscisse curviligne	plus utilisé
+ILTASIT	NBABSCIS	Abscisse curviligne	plus utilisé
 VOIEVOI	CDTRVOI	date ?	non utilisé par SIREO
 VOIEVOI	CMUTDEB	plus utilisé mais rempli	non utilisé par SIREO
 VOIEVOI	CDPARITE	code droit commune	inutilisable, plus renseigné
 VOIEVOI	CGPARITE	code gauche commune	inutilisable, plus renseigné
 VOIEVOI	CMUTFIN	plus utilisé mais rempli	non utilisé par SIREO
+VOIEVOI	CNOMVOI	nom de la voie avec complément
+VOIEVOI	CNOMVOI2	ancien nom de la voie avec complément
+VOIEVOI	CDVALVOI	Validite de la voie. Gérer par une table de log
+VOIEVOI CDRUE	"conformité avec ta_rue (validé par la commune ; aujourdh'ui Lille / Lomme / Hellemmes)". Abandonnée	
+VOIEVOI CNOMVOI1	nom de la voie sans complément
+VOIEVOI	CDTDVOI	date de début de la voie
+VOIEVOI	CDTFVOI	date de fin de la voie
 VOIECVT	CVOFTRD	?	non utilisé
 VOIECVT	CVOFTRF	?	non utilisé
 VOIECVT	CMUTDEB	plus utilisé mais rempli	non utilisé
 VOIECVT	CMUTFIN	plus utilisé mais rempli	non utilisé
-VOIECVT	CDCOTE	code coté (en rapport avec la commune)	non utilisé
-ILTADTN	CANGTRC	angle de troncon (trigo)	non utilisé par SIREO
+VOIECVT	CDCOTE	code coté (en rapport avec la commune)	non utilisé.
+VOIECVT	CDTDCVT	date début validité. Maintenant il y a une table de log.
+VOIECVT	CDTFCVT date de fin de validite. Maintenant table de log.
+VOIECVT CNUMCOM Champ remplacé par une requête spatiale au besoin
+VOIECVT CVALIDE Table de log
+ILTADTN	CANGTRC	angle de troncon (trigo)	non utilisé par SIREO.
