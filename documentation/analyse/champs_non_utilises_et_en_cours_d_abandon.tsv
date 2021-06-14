@@ -24,7 +24,7 @@ VOIEVOI	CMUTFIN	plus utilisé mais rempli	non utilisé par SIREO
 VOIEVOI	CNOMVOI	nom de la voie avec complément
 VOIEVOI	CNOMVOI2	ancien nom de la voie avec complément
 VOIEVOI	CDVALVOI	Validite de la voie. Gérer par une table de log
-VOIEVOI CDRUE	"conformité avec ta_rue (validé par la commune ; aujourdh'ui Lille / Lomme / Hellemmes)". Abandonnée	
+VOIEVOI CDRUE	"conformité avec ta_rue (validé par la commune ; aujourdh ui Lille / Lomme / Hellemmes)". Abandonnée	
 VOIEVOI CNOMVOI1	nom de la voie sans complément
 VOIEVOI	CDTDVOI	date de début de la voie
 VOIEVOI	CDTFVOI	date de fin de la voie
