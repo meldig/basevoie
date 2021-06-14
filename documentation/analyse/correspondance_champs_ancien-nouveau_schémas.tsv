@@ -1,3 +1,4 @@
+Ancien Schéma		Nouveau Schéma		
 Table	Champ	Table	Champ	Explications
 ILTATRC	CNUMTRC	TA_TRONCON	OBJECTID	Identifiant de chaque tronçon. Dans le nouveau schéma les identifiants actuels seront insérés et l'incrémentation commencera à partir du plus grand identifiant actuel.
 ILTATRC	GEOM	TA_TRONCON	GEOM	Géométrie de type ligne simple de chaque tronçon. Une contrainte sera mise afin qu'il n'y ait que des lignes simples dans ce champ.
@@ -6,9 +7,9 @@ ILTATRC	CDTMTRC	TA_TRONCON	DATE_MODIFICATION	Date de la dernière modification e
 ILTATRC	CLNGTRC	V_TRONCON	LONGUEUR	Longueur du tronçon en mètre. Dans le nouveau schéma cette longeur sera calculée en base et non plus par l'application DynMap.
 ILTAFILIA	CNUMTRC	TA_TRONCON_LOG	FID_TONCON	Identifiant du tronçon. Dans le nouveau schéma ce champ dispose d'une contrainte de clé étrangère vers TA_TRONCON.
 ILTAFILIA	TRCPERE	TA_TRONCON_LOG	FID_TRONCON_PERE	Identifiant du tronçon père (tronçon duquel est issu le tronçon actuel suite à un découpage). Ce champ disposera d'une contrainte de clé étrangère dans le nouveau schéma.
-ILTAFILIA	CDTSFILIA - 	TA_TRONCON_LOG	DATE_ACTION	"Date de saisie et date de modification des tronçons dans le schéma actuel.
+ILTAFILIA	"CDTSFILIA - 
+CDTMFILIA"	TA_TRONCON_LOG	DATE_ACTION	"Date de saisie et date de modification des tronçons dans le schéma actuel.
 Dans le nouveau schéma, il n'y a qu'un seul champ date car les actions seront catégorisées par le champ FID_TYPE_ACTION"
-ILTAFILIA	CDTMFILIA			
 ILTAFILIA	OPERATION	TA_TRONCON_LOG	FID_TYPE_ACTION	"Type d'action opérée sur chaque tronçon. Actuellement les action sont de deux types : coupé et détruit.
 Dans le nouveau schéma les actions seront de trois types : création, modification, suppression"
 ILTADTN	"CCODDFT - 
