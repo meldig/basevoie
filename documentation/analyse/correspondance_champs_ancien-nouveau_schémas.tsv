@@ -1,3 +1,5 @@
+Ancien Schéma		Nouveau Schéma		
+Table	Champ	Table	Champ	Explications
 ILTATRC	CNUMTRC	TA_TRONCON	OBJECTID	Identifiant de chaque tronçon. Dans le nouveau schéma les identifiants actuels seront insérés et l'incrémentation commencera à partir du plus grand identifiant actuel.
 ILTATRC	GEOM	TA_TRONCON	GEOM	Géométrie de type ligne simple de chaque tronçon. Une contrainte sera mise afin qu'il n'y ait que des lignes simples dans ce champ.
 ILTATRC	CDTSTRC	TA_TRONCON	DATE_SAISIE	Date de saisie en base de chaque tronçon. Ce champ est et sera mis à jour automatiquement.
@@ -46,8 +48,8 @@ ILTASEU	CDTSSEUIL	"TA_SEUIL /
 TA_INFOS_SEUIL"	"DATE_SAISIE / 
 DATE_SAISIE"	"Dates de saisie de la géométrie et des informations du seuil en base (un point pourra disposer de plusieurs seuils contenus dans TA_INFOS_SEUIL). 
 Ces dates sont et seront remplies automatiquement."
-ILTASEU	CDTMSEUIL	"TA_SEUIL
-TA_INFOS_SEUIL"	"DATE_MODIFICATION
+ILTASEU	CDTMSEUIL	"TA_SEUIL / 
+TA_INFOS_SEUIL"	"DATE_MODIFICATION / 
 DATE_MODIFICATION"	Dates de modification de la géométrie et des informations du seuil en base. Ces dates sont et seront remplies automatiquement.
 ILTASEU	NPARCELLE	TA_INFOS_SEUIL	NUMERO_PARCELLE	Numéro de la parcelle (ISSU du parcellaire cadastral) dans laquelle se situe le seuil.
 ILTASEU	NUSEUI	TA_INFOS_SEUIL	NUMERO_SEUIL	Numéro du seuil (différent de l'identifiant interne à la MEL - objectid)
