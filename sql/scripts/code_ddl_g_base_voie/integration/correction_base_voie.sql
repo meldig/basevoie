@@ -2,28 +2,36 @@
 Correction des données de la table TEMP_VOIEVOI
 */
 
--- Création d'un duplicatat du champ CCODRVO afin d'en corriger les valeurs. Objectif : passer de l'identifiant de voie au sein de la commune sur 4 caractères au code fantoir sur 7 caractères, c-à-d préfixé par le code commune.
-ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI
-ADD CCODRVO_BIS CHAR(7);
+/*
+Fusion des points des seuils
+*/
 
--- Correction du champ CCODRVO : remplacement du code de la voie dans la commune par le code fantoir
-UPDATE G_BASE_VOIE.TEMP_VOIEVOI a
-SET a.CCODRVO = CASE 
-                    WHEN LENGTH(a.cnumcom)=1 THEN CAST('00' || a.cnumcom AS CHAR(3))
-                    WHEN LENGTH(a.cnumcom)=2 THEN CAST('0' || a.cnumcom AS CHAR(3))
-                    WHEN LENGTH(a.cnumcom)=3 THEN CAST(a.cnumcom AS CHAR(3))
-                END
-                || TRIM(a.ccodrvo);
+CREATE TABLE GEO.TEST_SEUIL(
+	objectid NUMBER(38,0),
+	geom sdo_geometry
+);
 
+COMMENT ON TABLE GEO.TEST_SEUIL IS 'TABLE TEST A NE PAS UTILISER !!! Cette table est utilisée dans la migration des seuils de la base voie et permet de stocker les centroïdes de la fusion des seuils à 50cm les uns des autres.';
+COMMENT ON COLUMN GEO.TEST_SEUIL.objectid IS 'Clé primaire de la table. Il s''agit des identifiants de la table TA_POINT_TOPO_F utilisés pour sélectionner les seuils de la base voie dans un rayon de 50cm.';
+COMMENT ON COLUMN GEO.TEST_SEUIL.geom IS 'Champ géométrique de la table conteant les centroïdes des fusion de seuils.';
 
--- Remplissage du champ CCODRVO_BIS par le code fantoir sans les espaces qui ont été ajoutés (je ne sais pas pourquoi)
-UPDATE G_BASE_VOIE.TEMP_VOIEVOI a
-SET a.CCODRVO_BIS = SUBSTR(a.CCODRVO,0,7);
-
--- Suppression du champ CCODRVO disposant du mauvais code
-ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI
-DROP COLUMN CCODRVO;
-
--- Renommage du champ CCODRVO_BIS en CCODRVO
-ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI
-RENAME COLUMN CCODRVO_BIS TO CCODRVO;
+-- Sélection des centroïds des seuils après fusion des seuils dans un rayon de 50cm
+SELECT
+    a.objectid,
+    SDO_GEOM.SDO_CENTROID(
+        SDO_AGGR_UNION(
+            SDOAGGRTYPE(b.geom, 0.50)
+        ),
+        0.005
+    )AS v_centroid
+FROM
+    GEO.TA_POINT_TOPO_F a,
+    G_SIDU.ILTASEU b
+WHERE
+    a.cla_inu = 42
+    AND SDO_WITHIN_DISTANCE(b.geom, a.geom, 'DISTANCE=0.50') = 'TRUE'
+GROUP BY
+    a.objectid
+HAVING
+    COUNT(b.idseui)>1;
+-- Fait en 413, 308 secondes le 16/05/2021
