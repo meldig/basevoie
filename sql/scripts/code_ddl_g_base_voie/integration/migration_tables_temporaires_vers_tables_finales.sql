@@ -110,10 +110,10 @@ FROM
 WHERE
     b.CVALIDE = 'V';
 
-/
 
 
--- 13. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TA_SEUIL
+-- 13. Insertion des seuils
+-- 13.1. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TA_SEUIL
 INSERT INTO G_BASE_VOIE.TA_SEUIL(cote_troncon, geom)
 SELECT
     a.cdcote,
@@ -121,30 +121,49 @@ SELECT
 FROM
     G_BASE_VOIE.TEMP_FUSION_SEUIL;
 
-INSERT INTO G_BASE_VOIE.TA_SEUIL(geom)
-SELECT
-    a.cdcote,
-    a.ora_geometry
-FROM
-    G_BASE_VOIE.TEMP_ILTASEU a,
-    G_BASE_VOIE.TEMP_FUSION_SEUIL b
-WHERE
-    SDO_GEOM.WITHIN_DISTANCE(
-        a.ora_geometry,
-        0.50,
-        b.ora_geometry,
-        0.005
-    ) <> 'TRUE';
-
--- 14. Insertion des seuils dans la table TA_INFOS_SEUIL
+-- 13.2. Insertion des infos des seuils dans la table TA_INFOS_SEUIL
+INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_modification, date_saisie)
 SELECT
     a.idseui,
     a.nuseui,
     a.nparcelle,
     a.nsseui,
-    b.objectid
+    b.objectid,
+    a.cdtmseuil,
+    a.cdtsseuil
 FROM
     G_BASE_VOIE.TEMP_ILTASEU a,
     G_BASE_VOIE.TA_SEUIL b
 WHERE
     SDO_WITHIN_DISTANCE(b.geom, a.ora_geometry, 'DISTANCE=0.50') = 'TRUE';
+
+-- 13.3. Insertion des autres points géométriques des seuils dans TA_SEUIL
+INSERT INTO G_BASE_VOIE.TA_SEUIL(cote_troncon, geom, date_saisie, date_modification)
+SELECT
+    a.cdcote,
+    a.ora_geometry,
+    a.cdtsseuil,
+    a.cdtmseuil
+FROM
+    G_BASE_VOIE.TEMP_ILTASEU a
+WHERE
+    a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TA_INFOS_SEUIL);
+
+-- 13.4. Insertion des informations des autres seuils dans TA_INFOS_SEUIL
+INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_saisie, date_modification)
+SELECT DISTINCT
+    a.idseui,
+    a.nuseui,
+    a.nparcelle,
+    a.nsseui,
+    c.objectid,
+    a.cdtsseuil,
+    a.cdtmseuil
+FROM
+    G_BASE_VOIE.TEMP_ILTASEU a,
+    G_BASE_VOIE.TA_INFOS_SEUIL b,
+    G_BASE_VOIE.TA_SEUIL c
+WHERE
+    a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TA_INFOS_SEUIL)
+    AND a.ora_geometry.sdo_point.x = c.geom.sdo_point.x
+    AND a.ora_geometry.sdo_point.y = c.geom.sdo_point.y;
