@@ -25,11 +25,11 @@ BEGIN
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_fantoir, numero_voie, cote_commune, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, numero_voie, cote_commune, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
                     :old.fid_typevoie, 
-                    :old.fid_fantoir,
+                    :old.fid_rivoli,
                     :old.numero_voie,
                     :old.cote_commune,
                     :old.complement_nom_voie,
@@ -40,11 +40,11 @@ BEGIN
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_fantoir, numero_voie, cote_commune, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, numero_voie, cote_commune, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
                     :old.fid_typevoie, 
-                    :old.fid_fantoir,
+                    :old.fid_rivoli,
                     :old.numero_voie,
                     :old.cote_commune,
                     :old.complement_nom_voie,
@@ -56,11 +56,11 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-    INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_fantoir, numero_voie, cote_commune, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
+    INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, numero_voie, cote_commune, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
         VALUES(
                 :old.objectid, 
                 :old.fid_typevoie, 
-                :old.fid_fantoir,
+                :old.fid_rivoli,
                 :old.numero_voie,
                 :old.cote_commune,
                 :old.complement_nom_voie,
