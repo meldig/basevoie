@@ -8,6 +8,9 @@ SET /p MDP_D="Veuillez saisir le mot de passe de l'utilisateur Oracle de destina
 SET /p MDP_P="Veuillez saisir le mot de passe de l'utilisateur Oracle de provenance : "
 SET /p INSTANCE_D="Veuillez saisir l'instance Oracle de destination: "
 SET /p INSTANCE_P="Veuillez saisir l'instance Oracle de provenance : "
+SET /p USER_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir l'utilisateur Oracle de provenance : "
+SET /p MDP_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir le mot de passe de l'utilisateur Oracle de provenance : "
+SET /p INSTANCE_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir l'instance Oracle de provenance : "
 SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
 SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier integration : "
 
@@ -56,6 +59,9 @@ ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_P%/%MDP_P%@%INSTA
 
 :: 5.12. table VOIECVT
 ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_P%/%MDP_P%@%INSTANCE_P%:ILTALPU -sql "SELECT * FROM G_SIDU.ILTALPU" -nln TEMP_ILTALPU
+
+:: 5.13. table TEMP_FUSION_SEUIL
+ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_FUSION_SEUIL_P%/%MDP_FUSION_SEUIL_P%@%INSTANCE_FUSION_SEUIL_P%:TEMP_FUSION_SEUIL -sql "SELECT * FROM GEO.TEMP_FUSION_SEUIL" -nln TEMP_FUSION_SEUIL
 
 :: 5.13. table TEMP_AGENT
 ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_AGENT%/TEMP_AGENT.csv

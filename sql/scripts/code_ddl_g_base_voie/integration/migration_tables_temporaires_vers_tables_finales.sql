@@ -113,23 +113,38 @@ WHERE
 /
 
 
--- 13. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 20cm max dans la table TA_SEUIL
-INSERT INTO G_BASE_VOIE.TA_SEUIL(geom)
+-- 13. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TA_SEUIL
+INSERT INTO G_BASE_VOIE.TA_SEUIL(cote_troncon, geom)
 SELECT
-    geom
+    a.cdcote,
+    a.ora_geometry
 FROM
     G_BASE_VOIE.TEMP_FUSION_SEUIL;
 
 INSERT INTO G_BASE_VOIE.TA_SEUIL(geom)
 SELECT
-    a.geom
+    a.cdcote,
+    a.ora_geometry
 FROM
-    G_BASE_VOIE.TEMP_SEUIL a,
+    G_BASE_VOIE.TEMP_ILTASEU a,
     G_BASE_VOIE.TEMP_FUSION_SEUIL b
 WHERE
     SDO_GEOM.WITHIN_DISTANCE(
-        a.geom,
+        a.ora_geometry,
         0.50,
-        b.geom,
+        b.ora_geometry,
         0.005
     ) <> 'TRUE';
+
+-- 14. Insertion des seuils dans la table TA_INFOS_SEUIL
+SELECT
+    a.idseui,
+    a.nuseui,
+    a.nparcelle,
+    a.nsseui,
+    b.objectid
+FROM
+    G_BASE_VOIE.TEMP_ILTASEU a,
+    G_BASE_VOIE.TA_SEUIL b
+WHERE
+    SDO_WITHIN_DISTANCE(b.geom, a.ora_geometry, 'DISTANCE=0.50') = 'TRUE';
