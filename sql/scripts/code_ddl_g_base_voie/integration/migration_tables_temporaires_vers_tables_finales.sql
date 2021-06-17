@@ -26,7 +26,7 @@ WHERE
 	a.valeur = 'action';
 
 -- 5. Insertion des codes fantoir dans TA_FANTOIR
-INSERT INTO G_BASE_VOIE.TA_FANTOIR(code_fantoir)
+INSERT INTO G_BASE_VOIE.TA_FANTOIR(code_rivoli)
 SELECT DISTINCT
     CCODRVO
 FROM
@@ -60,11 +60,11 @@ FROM
 	G_BASE_VOIE.TEMP_TYPEVOIE;
 
 -- 10. Import des voies dans TA_VOIE
-INSERT INTO G_BASE_VOIE.TA_VOIE(FID_TYPEVOIE, FID_FANTOIR, OBJECTID, COMPLEMENT_NOM_VOIE, LIBELLE_VOIE, FID_GENRE_VOIE, DATE_SAISIE, DATE_MODIFICATION)
+INSERT INTO G_BASE_VOIE.TA_VOIE(FID_TYPEVOIE, FID_RIVOLI, OBJECTID, COMPLEMENT_NOM_VOIE, LIBELLE_VOIE, FID_GENRE_VOIE, DATE_SAISIE, DATE_MODIFICATION)
         WITH C_1 AS(
             SELECT DISTINCT
                 b.objectid AS FID_TYPE_VOIE,
-                c.objectid AS FID_CODE_FANTOIR,
+                c.objectid AS FID_CODE_RIVOLI,
                 a.CCOMVOI AS NUMERO_VOIE,
                 a.CINFOS AS COMPLEMENT_NOM_VOIE,
                 a.CNOMINUS AS LIBELLE,
@@ -80,7 +80,7 @@ INSERT INTO G_BASE_VOIE.TA_VOIE(FID_TYPEVOIE, FID_FANTOIR, OBJECTID, COMPLEMENT_
             FROM
                 G_BASE_VOIE.TEMP_VOIEVOI a
                 INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE b ON b.code_type_voie = a.ccodtvo
-                INNER JOIN G_BASE_VOIE.TA_FANTOIR c ON c.code_fantoir = a.ccodrvo,
+                INNER JOIN G_BASE_VOIE.TA_FANTOIR c ON c.code_rivoli = a.ccodrvo,
                 G_BASE_VOIE.TA_FAMILLE d
                 INNER JOIN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE e ON e.fid_famille = d.objectid
                 INNER JOIN G_BASE_VOIE.TA_LIBELLE f ON f.objectid = e.fid_libelle
@@ -112,30 +112,24 @@ WHERE
 
 /
 
--- 12. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 20cm max dans la table TA_SEUIL
-SET SERVEROUTPUT ON
-DECLARE
-BEGIN
 
--- Insertion des buffers de 10cm autour de chaque seuil dans la table temporaire TEST_BUFFER_SEUIL
-INSERT INTO G_BASE_VOIE.TEMP_BUFFER_SEUIL(idseui, geom)
+-- 13. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 20cm max dans la table TA_SEUIL
+INSERT INTO G_BASE_VOIE.TA_SEUIL(geom)
 SELECT
-    a.idseui,
-    SDO_GEOM.SDO_BUFFER(a.ORA_GEOMETRY, 0.10, 0.01) AS geom
+    geom
 FROM
-    G_BASE_VOIE.TEMP_ILTASEU a;
-COMMIT;
+    G_BASE_VOIE.TEMP_FUSION_SEUIL;
 
--- Insertion dans TEST_ILTASEU d'un seuil pour chaque groupe de seuils situés à 10cm maximum les uns des autres
-INSERT INTO G_BASE_VOIE.TEST_ILTASEU(idseui, geom)
+INSERT INTO G_BASE_VOIE.TA_SEUIL(geom)
 SELECT
-    c.idseui,
-    c.ora_geometry
+    a.geom
 FROM
-    G_BASE_VOIE.TEMP_BUFFER_SEUIL a
-    INNER JOIN G_BASE_VOIE.TEMP_ILTASEU c ON c.idseui = a.idseui,
-    G_BASE_VOIE.TEMP_BUFFER_SEUIL b
+    G_BASE_VOIE.TEMP_SEUIL a,
+    G_BASE_VOIE.TEMP_FUSION_SEUIL b
 WHERE
-    a.idseui < b.idseui
-    AND SDO_ANYINTERACT(a.geom, b.geom) = 'TRUE';
-END;
+    SDO_GEOM.WITHIN_DISTANCE(
+        a.geom,
+        0.50,
+        b.geom,
+        0.005
+    ) <> 'TRUE';
