@@ -2,6 +2,8 @@
 Vue à destination des utilisateurs ayant besoin de faire des sélections sur la table TA_TRONCON (tel que le service voirie).
 */
 
+/
+
 -- 1. Création de la vue
 CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_TRONCON(
 	objectid,
@@ -72,3 +74,5 @@ COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.fin_validite IS 'Date de fin de validit�
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.longueur IS 'Longueur du tronçon en mètre.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.startpoint IS 'Coordonnées du startpoint du tronçon - EPSG 2154';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.endpoint IS 'Coordonnées du endpoint du tronçon - EPSG 2154';
+
+/
