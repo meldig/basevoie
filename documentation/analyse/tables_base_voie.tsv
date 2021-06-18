@@ -216,7 +216,7 @@ VOIEVOI	CMUTDEB	NUMBER	plus utilisé mais rempli
 VOIEVOI	CMUTFIN	NUMBER	plus utilisé mais rempli
 VOIEVOI	CNOMINUS	VARCHAR2	nom de voie en miniscule
 VOIEVOI	CNOMVOI	VARCHAR2	nom de la voie avec complément
-VOIEVOI	CNOMVOI1	VARCHAR2	nom de la voie sans compléménet
+VOIEVOI	CNOMVOI1	VARCHAR2	nom de la voie sans complément
 VOIEVOI	CNOMVOI2	VARCHAR2	ancien nom de la voie avec complément
 VOIEVOI	CNUMCOM	NUMBER	code insee
 VOIEVOI	GENRE	VARCHAR2	Genre du nom de la voie : M => Masculin | F => Féminin | N => Neutre | C => Couple | NI => Non identifié
