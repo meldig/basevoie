@@ -21,12 +21,12 @@ ADD CONSTRAINT TA_RIVOLI_PK
 PRIMARY KEY("OBJECTID") 
 USING INDEX TABLESPACE "G_ADT_INDX";
 
--- 7. Création des index
+-- 4. Création des index
 CREATE INDEX TA_RIVOLI_code_rivoli_IDX ON G_BASE_VOIE.TA_RIVOLI(code_rivoli)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_RIVOLI_cle_controle_IDX ON G_BASE_VOIE.TA_RIVOLI(cle_controle)
     TABLESPACE G_ADT_INDX;
 
--- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
+-- 5. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_RIVOLI TO G_ADMIN_SIG;

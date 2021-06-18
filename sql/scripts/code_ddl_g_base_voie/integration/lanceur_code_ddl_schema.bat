@@ -8,6 +8,7 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du schema : "
 SET /p chemin_code_trigger="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des DECLENCHEURS du schema : "
 SET /p chemin_code_fonction="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des FONCTIONS du schema : "
+SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du schema : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
 SET /p USER="Veuillez saisir l'utilisateur Oracle : "
 SET /p MDP="Veuillez saisir le MDP : "
@@ -25,22 +26,18 @@ type %chemin_code_fonction%\creation_get_code_insee.sql > %chemin_code_temp%\tem
 | type %chemin_code_table%\creation_ta_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_relation_troncon_voie.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_relation_troncon_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_rue.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_rue_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_relation_rue_voie.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_infos_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_infos_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_relation_troncon_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
+| type %chemin_code_vue%\creation_v_troncon.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_a_iud_ta_infos_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iud_ta_rue_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iud_ta_troncon_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iud_ta_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iux_ta_infos_seuil_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_rue_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iux_ta_seuil_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql

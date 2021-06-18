@@ -25,7 +25,10 @@ DROP TABLE G_BASE_VOIE.TA_INFOS_SEUIL CASCADE CONSTRAINTS;
 DROP TABLE G_BASE_VOIE.TA_TYPE_VOIE CASCADE CONSTRAINTS;
 DROP TABLE G_BASE_VOIE.TA_RIVOLI CASCADE CONSTRAINTS;
 
--- 4. Suppression des métadonnées spatiales
+-- 4. Suppression des vues
+DROP VIEW G_BASE_VOIE.V_TRONCON;
+
+-- 5. Suppression des métadonnées spatiales
 DELETE FROM USER_SDO_GEOM_METADATA
 WHERE TABLE_NAME = 'TA_TRONCON';
 
@@ -40,5 +43,5 @@ WHERE TABLE_NAME = 'TA_SEUIL_LOG';
 
 COMMIT;
 
--- 5. Suppression des fonctions personnalisées du schéma
+-- 6. Suppression des fonctions personnalisées du schéma
 DROP FUNCTION GET_CODE_INSEE;
