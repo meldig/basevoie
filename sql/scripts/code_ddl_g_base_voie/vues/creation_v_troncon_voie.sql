@@ -23,10 +23,10 @@ CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_TRONCON_VOIE(
 AS(
     SELECT
         a.objectid AS ID_TRONCON,
-        GET_CODE_INSEE(a.geom) AS CODE_INSEE,
+        b.code_insee AS CODE_INSEE,
         b.nom AS NOM_COMMUNE,
         d.objectid AS ID_VOIE,
-        '591' || SUBSTR(GET_CODE_INSEE(a.geom), 3) || e.code_rivoli AS CODE_FANTOIR,
+        '591' || SUBSTR(b.code_insee, 3) || e.code_rivoli AS CODE_FANTOIR,
         d.libelle_voie AS NOM_VOIE,
         c.sens AS SENS,
         c.ordre_troncon AS ORDRE_TRONCON,
@@ -75,12 +75,14 @@ AS(
         USER_SDO_GEOM_METADATA m
     WHERE
         m.table_name = 'TA_TRONCON'
+        AND SDO_ANYINTERACT(a.geom, b.geom) = 'TRUE'
+        AND (SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(SDO_GEOM.SDO_INTERSECTION(b.geom, a.geom, 0.001)))/SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom)) * 100) > 50
 );
 
 -- 2. Création des commentaires de la vue
 COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_VOIE IS 'Vue regroupant tous les tronçons valides par voie avec leur longueur, coordonnés, sens de saisie, ordre des tronçon dans la voie, code fantoir, nom de la voie, commune, date de création et de modification.' ;
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.id_troncon IS 'Identifiant des tronçons valides en base.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_insee IS 'Code INSEE de la commune dans laquelle se situe le tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_insee IS 'Code INSEE de la commune dans laquelle se situe le tronçon. ATTENTION : pour les tronçons en bordure de commune, le code INSEE peut être en fait le code INS d''un arrondissement belge si plus de 50% du tronçon se situe en belgique.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.nom_commune IS 'Nom de la commune dans laquelle se situe le tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.id_voie IS 'Identifiant interne des voies.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_fantoir IS 'Code fantoir sur 10 caractères des voies (3 pour le code département + direction ; 3 pour le code commune ; 4 pour le rivoli(identifiant de la voie au sein de la commune).)';

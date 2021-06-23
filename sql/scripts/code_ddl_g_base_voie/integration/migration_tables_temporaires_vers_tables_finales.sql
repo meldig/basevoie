@@ -424,21 +424,121 @@ BEGIN
     -- 27. Désactivation du trigger de log de la table TA_RELATION_TRONCON_VOIE
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_RELATION_TRONCON_VOIE_LOG DISABLE';
 
-    -- 28. Import des relations tronçons/voies dans la table TA_RELATION_TRONCON_VOIE
-    INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON)
+    -- 28. Désactivation des contraintes de clé trangère de la table TA_RELATION_TRONCON_VOIE   
+    -- 28.1. Sélection du nom de la contrainte de FK du champ FID_TRONCON
+    SELECT
+        CONSTRAINT_NAME
+        INTO v_contrainte
+    FROM
+        USER_CONSTRAINTS
+    WHERE
+        TABLE_NAME = 'TA_RELATION_TRONCON_VOIE'
+        AND R_CONSTRAINT_NAME = 'TA_TRONCON_PK';
+    
+    -- 28.2. Désactivation de la contrainte de FK du champ FID_TRONCON    
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE DISABLE CONSTRAINT ' || v_contrainte;
+
+    -- 28.3. Sélection du nom de la contrainte de FK du champ FID_VOIE
+    SELECT
+        CONSTRAINT_NAME
+        --INTO v_contrainte
+    FROM
+        USER_CONSTRAINTS
+    WHERE
+        TABLE_NAME = 'TA_RELATION_TRONCON_VOIE'
+        AND R_CONSTRAINT_NAME = 'TA_VOIE_PK';
+
+    -- 28.4. Désactivation de la contrainte de FK du champ FID_VOIE    
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE DISABLE CONSTRAINT ' || v_contrainte;
+    
+    -- 29. Import des relations tronçon/voie invalides dans TA_RELATION_TRONCON_VOIE
+    INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_SAISIE, DATE_MODIFICATION, FID_PNOM_SAISIE, FID_PNOM_MODIFICATION) 
+        SELECT
+            a.cnumtrc,
+            a.ccomvoi,
+            a.ccodstr,
+            a.cnumtrv,
+            a.cdtscvt,
+            a.cdtmcvt,
+            f.numero_agent AS fid_pnom_saisie,
+            f.numero_agent AS fid_pnom_modification
+        FROM
+            G_BASE_VOIE.TEMP_VOIECVT a
+            INNER JOIN G_BASE_VOIE.TA_TRONCON_LOG b ON a.cnumtrc = b.fid_troncon
+            INNER JOIN G_BASE_VOIE.TA_VOIE_LOG c ON c.fid_voie = a.ccomvoi
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE d ON d.objectid = b.fid_type_action
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE e ON d.objectid = c.fid_type_action,
+            G_BASE_VOIE.TA_AGENT f
+        WHERE
+            a.CVALIDE = 'I'
+            AND d.valeur = 'insertion'
+            AND e.valeur = 'insertion'
+            AND f.pnom = 'import_donnees';
+    
+    -- 30. Import des realtions tronçons/voies invalides dans TA_RELATION_TRONCON_VOIE_LOG pour la création
+    INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(FID_RELATION_TRONCON_VOIE, FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_ACTION, FID_TYPE_ACTION, FID_PNOM) 
+        SELECT
+            a.objectid,
+            a.fid_troncon,
+            a.fid_voie,
+            a.sens,
+            a.ordre_troncon,
+            a.date_saisie AS date_action,
+            d.objectid AS fid_type_action,
+            e.numero_agent AS fid_pnom
+        FROM
+            G_BASE_VOIE.TA_RELATION_TRONCON_VOIE a,
+            G_BASE_VOIE.TA_LIBELLE d,
+            G_BASE_VOIE.TA_AGENT e
+        WHERE
+            d.valeur = 'insertion'
+            AND e.pnom = 'import_donnees';
+            
+    -- 31. Import des realtions tronçons/voies invalides dans TA_RELATION_TRONCON_VOIE_LOG pour la modification
+    INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(FID_RELATION_TRONCON_VOIE, FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_ACTION, FID_TYPE_ACTION, FID_PNOM) 
+        SELECT DISTINCT
+            a.objectid,
+            a.fid_troncon,
+            a.fid_voie,
+            a.sens,
+            a.ordre_troncon,
+            a.date_modification AS date_action,
+            d.objectid AS fid_type_action,
+            e.numero_agent AS fid_pnom
+        FROM
+            G_BASE_VOIE.TA_RELATION_TRONCON_VOIE a,
+            G_BASE_VOIE.TA_LIBELLE d,
+            G_BASE_VOIE.TA_AGENT e
+        WHERE
+            d.valeur = 'suppression'
+            AND e.pnom = 'import_donnees';
+            
+    -- 32. Suppression des relations troncon/voie invalides de la table TA_RELATION_TRONCON_VOIE
+    DELETE
+    FROM
+        G_BASE_VOIE.TA_RELATION_TRONCON_VOIE;
+
+    -- 33. Import des relations tronçons/voies dans la table TA_RELATION_TRONCON_VOIE
+    INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_SAISIE, DATE_MODIFICATION, FID_PNOM_SAISIE, FID_PNOM_MODIFICATION)
     SELECT
         a.objectid AS fid_troncon,
         c.objectid AS fid_voie,
         b.CCODSTR AS sens,
-        b.CNUMTRV AS ordre_troncon
+        b.CNUMTRV AS ordre_troncon,
+        b.cdtscvt AS date_saisie,
+        b.cdtmcvt AS date_modification,
+        d.numero_agent AS fid_pnom_saisie,
+        d.numero_agent AS fid_pnom_modification
     FROM
         G_BASE_VOIE.TA_TRONCON a
         INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.objectid
-        INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.ccomvoi
+        INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.ccomvoi,
+        G_BASE_VOIE.TA_AGENT d
     WHERE
-        b.CVALIDE = 'V';
+        b.CVALIDE = 'V'
+        AND d.pnom = 'import_donnees';
 
-    -- 29. Import des relations tronçons/voies dans la table TA_RELATION_TRONCON_VOIE_LOG pour la création
+    -- 34. Import des relations tronçons/voies valides dans la table TA_RELATION_TRONCON_VOIE_LOG pour la création
     INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(FID_RELATION_TRONCON_VOIE, FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_ACTION, FID_TYPE_ACTION, FID_PNOM)
     SELECT
         d.objectid AS fid_relation_troncon_voie,
@@ -463,7 +563,7 @@ BEGIN
         AND f.pnom = 'import_donnees'
         AND e.valeur = 'insertion';
 
-    -- 30. Import des relations tronçons/voies dans la table TA_RELATION_TRONCON_VOIE_LOG pour la modification
+    -- 35. Import des relations tronçons/voies valides dans la table TA_RELATION_TRONCON_VOIE_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(FID_RELATION_TRONCON_VOIE, FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_ACTION, FID_TYPE_ACTION, FID_PNOM)
     SELECT
         d.objectid AS fid_relation_troncon_voie,
@@ -488,21 +588,51 @@ BEGIN
         AND f.pnom = 'import_donnees'
         AND e.valeur = 'édition';
 
-    -- 31. Insertion des seuils
-    -- 32.1. Désactivation du trigger de remplissage des tables de logs et des dates/pnoms pour les seuils
+    -- 36. Réactivation des contraintes et triggers gérant les relations tronçons/voies
+    -- 36.1. Réactivation du trigger de log de la table TA_RELATION_TRONCON_VOIE
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_RELATION_TRONCON_VOIE_LOG ENABLE';
+
+    -- 36.3. Réactivation des contraintes de clé étrangère de la table TA_RELATION_TRONCON_VOIE   
+    -- 36.3.1 Sélection du nom de la contrainte de FK du champ FID_TRONCON
+    SELECT
+        CONSTRAINT_NAME
+        INTO v_contrainte
+    FROM
+        USER_CONSTRAINTS
+    WHERE
+        TABLE_NAME = 'TA_RELATION_TRONCON_VOIE'
+        AND R_CONSTRAINT_NAME = 'TA_TRONCON_PK';
+    
+    -- 36.3.2. Réactivation de la contrainte de FK du champ FID_TRONCON    
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE ENABLE CONSTRAINT ' || v_contrainte;
+
+    -- 36.3.3. Sélection du nom de la contrainte de FK du champ FID_VOIE
+    SELECT
+        CONSTRAINT_NAME
+        INTO v_contrainte
+    FROM
+        USER_CONSTRAINTS
+    WHERE
+        TABLE_NAME = 'TA_RELATION_TRONCON_VOIE'
+        AND R_CONSTRAINT_NAME = 'TA_VOIE_PK';
+
+    -- 36.3.4. Réactivation de la contrainte de FK du champ FID_VOIE    
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE ENABLE CONSTRAINT ' || v_contrainte;
+
+    -- 36. Insertion des seuils
+    -- 36.1. Désactivation du trigger de remplissage des tables de logs et des dates/pnoms pour les seuils
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG DISABLE';
-    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM DISABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG DISABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM DISABLE';
 
-    -- 32.2. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TA_SEUIL
+    -- 36.2. Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TA_SEUIL
     INSERT INTO G_BASE_VOIE.TA_SEUIL(geom)
     SELECT
         a.ora_geometry
     FROM
-        G_BASE_VOIE.TEMP_FUSION_SEUIL;
+        G_BASE_VOIE.TEMP_FUSION_SEUIL a;
 
-    -- 32.3. Insertion des infos des seuils dans la table TA_INFOS_SEUIL
+    -- 36.3. Insertion des infos des seuils dans la table TA_INFOS_SEUIL
     INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_modification, date_saisie)
     SELECT
         a.idseui,
@@ -518,7 +648,10 @@ BEGIN
     WHERE
         SDO_WITHIN_DISTANCE(b.geom, a.ora_geometry, 'DISTANCE=0.50') = 'TRUE';
 
-    -- 32.4. Insertion des autres points géométriques des seuils dans TA_SEUIL
+    -- 36.4. Désactivation du trigger B_IUX_TA_SEUIL_DATE_PNOM
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM DISABLE';
+
+    -- 36.4. Insertion des autres points géométriques des seuils dans TA_SEUIL
     INSERT INTO G_BASE_VOIE.TA_SEUIL(geom, date_saisie, date_modification)
     SELECT
         a.ora_geometry,
@@ -551,7 +684,6 @@ BEGIN
     -- 33. Réactivation de tous les triggers et contraintes désacitivées au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE ENABLE CONSTRAINT ' || v_contrainte;
-    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_RELATION_TRONCON_VOIE_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
