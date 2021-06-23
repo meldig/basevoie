@@ -1,0 +1,203 @@
+# Etude des proccédures de mise à jour du schéma SIDU
+
+## L'ordre des proccédures à faire fonctionner :
+
+|Nom proccédure|Ordre|
+|:-------------|-----|
+|prc_export_basevoie|1|
+|prc_export_majdtn|2|
+|prc_export_newcvt|3|
+|prc_export_newdtn|4|
+|prc_export_voiecvt|5|
+|prc_export_seuil|6|
+
+
+### Explications des proccédures :
+
+#### 1. PRC_EXPORT_BASEVOIE
+##### 1.1. Objectif :
+Chargement dans SIDU des nouveaux objets et mises à jour des tables suivantes :
+
+|Nom schéma|Nom table|Détails|Actions|
+|:---------|:--------|:------|:------|
+|G_SIDU|ILTATRC|tronçons|création/édition|
+|G_SIDU|ILTAPTZ|nœuds|création/édition|
+|G_SIDU|VOIEVOI|voies|création/édition|
+|G_SIDU|ILTAFILIA|table de log de ILTATRC|création/édition|
+|G_SIDU|ILTADTN|Relation tronçons/nœuds|édition|
+
+##### 1.2. Les objets utilisés :
+###### Les vues :
+
+|Nom schéma|Nom vue|Détails|
+|:---------|:------|:------|
+|G_SIDU|NEW_ILTATRC|Vue comportant tous les nouveaux tronçons qui ont été ajoutés dans G_SIDU depuis la mise à jour de SIDU.|
+|G_SIDU|NEW_ILTAPTZ|Vue comportant tous les nouveaux noeuds qui ont été ajoutés dans G_SIDU depuis la mise à jour de SIDU.|
+|G_SIDU|NEW_VOIEVOI|Vue comportant toutes les nouvelles voies qui ont été ajoutées dans G_SIDU depuis la mise à jour de SIDU.|
+|G_SIDU|NEW_ILTAFILIA|Vue comportant tous les nouveaux logs qui ont été ajoutés dans G_SIDU depuis la mise à jour de SIDU.|
+|G_SIDU|NEW_VOIECVT|Vue comportant toutes les nouvelles associations tronçons / voies qui ont été ajoutées dans G_SIDU depuis dernière la mise à jour et qui sont donc absentes de SIDU.|
+|G_SIDU|MAJ_ILTATRC|Vue faisant la différence entre les tronçons de G_SIDU et ceux de SIDU|
+|G_SIDU|MAJ_ILTAPTZ|Vue faisant la différence entre les noeuds de G_SIDU et ceux de SIDU|
+|G_SIDU|MAJ_ILTADTN|Vue faisant la différence entre les relations tronçons/noeuds de G_SIDU et ceux de SIDU|
+|G_SIDU|MAJ_VOIEVOI|Vue faisant la différence entre les voies de G_SIDU et ceux de SIDU|
+|G_SIDU|MAJ_ILTAFILIA|Vue faisant la différence entre les logs de G_SIDU et ceux de SIDU|
+|G_SIDU|MAJ_VOIECVT|Vue faisant la différence entre les associations voies/tronçons de G_SIDU et ceux de SIDU|
+|G_SIDU|MAJG_LITATRC|Vue faisant la différence entre les tronçons de G_SIDU et ceux de SIDU avec une condition sur le champ cgeotrc avec la fonction sdo2geotrc que je ne comprends pas.|
+|G_SIDU|MAJG_ILTAPTZ|Vue faisant la différence entre les noeuds de G_SIDU et ceux de SIDU avec une condition sur le champ cnumptz et une autre sur les coordonnées.|
+
+###### Les tables :
+
+|Nom schéma|Nom table|Détails|
+|:---------|:--------|:------|
+|SIDU|ILTAPTZ|Table de nœuds|
+|SIDU|ILTATRC|Table des tronçons|
+|SIDU|VOIEVOI|Table des voies|
+|SIDU|ILTAFILIA|Table de log des tronçons|
+|SIDU|ILTADTN|Table de relation tronçons/nœuds|
+
+###### La fonction :
+
+La fonction *SDO2GEOTRC* est utilisée. Cependant, sert-elle à obtenir les coordonnées des start/end points des tronçons en Lambert1 Nord ? Dans ce cas pour proccéder ainsi ?
+
+##### 1.3. La méthode utilisée :
+
+- Insertion dans les tables ILTATRC, ILTAFILIA, ILTAPTZ et VOIEVOI de tous les objets présents dans les vues NEW_ILTATRC, NEW_ILTAFILIA, NEW_ILTAPTZ et NEW_VOIEVOI. Toutes ces insertions fonctionnent grâce à des requêtes PL/SQL ;
+- Mise à jour de la table ILTAPTZ sur le champ CNUMPTZ, en mettant , entre autre, toujours le champ CTYPCAR à 0, ce qui interroge sur l'utilité réelle du champ. Plusieurs curseurs sont utilisés ;
+- Mise à jour de la table ILTATRC en faisant une jointure sur le champ CNUMTRC. Plusieurs curseurs sont utilisés ;
+- Mise à jour de la table VOICVT en faisant une jointure sur les champs CNUMPTZ, CNUMTRC et CCODDFT. Plusieurs curseurs sont utilisés ;
+- Mise à jour de la table VOIEVOI en faisant une jointure sur le champ CCOMVOI. Plusieurs curseurs sont utilisés ;
+
+##### 1.4. Incompréhensions :
+
+- Pourquoi les tables ILTATRC et ILTAPTZ sont-elles mises à jour deux fois, à partir de deux vues différentes ? D'après les code DDL des vues, celles-ci auraient très bien pu^ne faire qu'une seule et même vue ; 
+- Je ne comprends pas la fonction SDO2GEOTRC ;
+
+#### 2. PRC_EXPORT_MAJDTN
+##### 2.1. Objectif :
+
+Mettre à jour la table ILTADTN à partir de la vue MAJ_ILTADTN.
+
+##### 2.2. Les objets utilisés :
+###### Les vues :
+
+|Nom schéma|Nom vue|Détails|
+|:---------|:------|:------|
+|G_SIDU|MAJ_ILTADTN|tronçons|
+
+###### Les tables :
+
+|Nom schéma|Nom table|Détails|
+|:---------|:------|:------|
+|SIDU|ILTADTN|table de relation entre les tronçons et les noeuds|
+
+##### 2.3. La méthode utilisée :
+
+Sélection de tous les champs de la vue G_SIDU.MAJ_ILTADTN afin de mettre à jour les mêmes champs dans la table SIDU.ILTADTN, sur une condition d'égalité des champs CNUMTRC, CNUMPTZ et CCODDFT. Un curseur est utilisé.  
+La vue sélectionne les tronçons associés à leur noeuds dans G_SIDU, à condition qu'ils soient présents dans SIDU et que la date de mise à jour (ILTADTN.CDTMDTN) de SIDU soit plus récente que dans G_SIDU.
+
+#### 3. PRC_EXPORT_NEWCVT
+##### 3.1. Objectif :
+
+Insérer dans la table VOIECVT les nouvelles associations Tronçons/voies. Cette procédure doit obligatoirement être effectuée après celle intitulée PRC_EXPORT_BASEVOIE car celle-ci rempli les tables ILTATRC et VOIEVOI avec respectivement les nouveaux tronçons et voies. 
+
+##### 3.2. Les objets utilisés :
+###### Les vues :
+
+|Nom schéma|Nom vue|Détails|
+|:---------|:------|:------|
+|G_SIDU|NEW_VOIECVT|Association tronçons/voies|
+
+Cette vue sélectionne toutes les associations tronçons/voies présentes dans G_SIDU, mais absentes de SIDU.
+
+###### Les tables :
+
+|Nom schéma|Nom table|Détails|
+|:---------|:--------|:------|
+|SIDU|VOIECVT|Association tronçons/nœuds|
+
+###### Les fonctions :
+
+La fonction *get_voi_trc* permet de savoir si les relations tronçons/voies sont présentes **à la fois** dans G_SIDU.NEW_VOIECVT **et** dans SIDU.VOIECVT.
+
+##### 3.3. La méthode utilisée :
+
+Insertion de toutes les données de la vue G_SIDU.NEW_VOIECVT dans la table SIDU.VOIECVT.
+La procédure vérifie d'abord la présence de doublons dans la table de destination via la fonction *get_voi_trc*. En cas d'erreur un message est envoyé dans la console de résultats de sqldevelopper indiquant les doublons.
+
+#### 4. PRC_EXPORT_NEWDTN
+##### 4.1. Objectif :
+
+Insérer les nouvelles relations tronçons/noeuds dans la table SIDU.ILTADTN.
+
+##### 4.2. Les objets utilisés :
+###### Les vues :
+
+|Nom schéma|Nom vue|Détails|
+|:---------|:------|:------|
+|G_SIDU|NEW_ILTADTN|Association tronçons/nœuds|
+
+Cette vue sélectionne toutes les associations tronçons/noeuds présentes dans G_SIDU, mais absentes de SIDU. Cependant, je ne comprends pas l'utilisation de "cible(+)."
+
+###### Les tables :
+
+|Nom schéma|Nom table|Détails|
+|:---------|:------|:------|
+|SIDU|ILTADTN|Association tronçons/nœuds|
+
+###### Les fonctions :
+
+La fonction *get_trc_debut_fin* est utilisée pour récupérer les noeuds des tronçons présents **à la fois** dans G_SIDU.NEW_ILTADTN **et** dans SIDU.ILTADTN.
+
+##### 4.3. La méthode utilisée :
+
+La procédure vérifie que les nouveaux noeuds présents dans G_SIDU.NEW_ILTADTN sont absents de SIDU.ILTADTN. S'ils sont absents alors les nouvelles relations sont insérées, dans le cas contraire les relations sont d'abord supprimées de SIDU.ILTADTN, puis insérées de nouveau.  
+Les suppressions se font sur une condition d'égalité sur les champs cnumtrc et cnumptz.
+
+#### 5. PRC_EXPORT_VOIECVT
+##### 5.1. Objectif :
+
+Mise à jour des relations tronçons/voies dans la table SIDU.VOIECVT.
+
+##### 5.2. Les objets utilisés :
+###### Les vues :
+
+|Nom schéma|Nom vue|Détails|
+|:---------|:------|:------|
+|G_SIDU|MAJ_VOIECVT|Association tronçons/voies|
+
+Sélection des relations tronçons/voies présentes **à la fois** dans G_SIDU.MAJ_VOIEVOI **et** dans SIDU.VOICVT. Cependant, il existe une condition sur le champ CMUTFIN que je ne comprends pas et qui n'est plus utilisé, ce qui interroge donc sur la fiabilité de la vue...
+
+###### Les tables :
+
+|Nom schéma|Nom table|Détails|
+|:---------|:------|:------|
+|SIDU|VOIECVT|Association tronçons/voies|
+
+##### 5.3. La méthode utilisée :
+
+La procédure met à jour tous les champs de la table SIDU.VOIECVT par rapport à ceux de la vue G_SIDU.MAJ_VOIECVT, sur une condition d'égalité d'identifiants de voie et de tronçon.
+
+#### 6. PRC_EXPORT_SEUIL
+##### 6.1. Objectif :
+
+- Insérer les nouveaux seuils dans SID.ILTASEU et les nouvelles relations seuils/tronçons dans ILTASIT ;
+- Mettre à jour les seuils dans SIDU.ILTASEU et les nouvelles relations seuils/tronçons dans ILTASIT ;
+
+##### 6.2. Les objets utilisés :
+###### Les vues :
+
+|Nom schéma|Nom vue|Détails|
+|:---------|:------|:------|
+|G_SIDU|NEW_ILTASEU|Nouveaux seuils|
+|G_SIDU|NEW_ILTASIT|Associations tronçons/seuils|
+
+###### Les tables :
+
+|Nom schéma|Nom table|Détails|
+|:---------|:------|:--------|
+|SIDU|ILTASEU|Table de seuils|
+|SIDU|ILTASIT|Associations seuils/tronçons|
+
+##### 6.3. La méthode utilisée :
+
+Je n'ai pas étudié de près cette procédure puisqu'elle ne porte que sur les points d'intérêts dont nous ne faisons pas actuellement la refonte. Cette étude se fera prochainement.
