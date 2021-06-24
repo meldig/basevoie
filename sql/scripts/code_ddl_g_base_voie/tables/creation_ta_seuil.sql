@@ -11,7 +11,8 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL
+    fid_pnom_modification NUMBER(38,0) NOT NULL,
+    temp_idseui NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -24,6 +25,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_saisie IS 'date de saisie du seuil (
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_modification IS 'Dernière date de modification du seuil (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.temp_idseui IS 'Champ temporaire servant à l''import des données. Ce champ sera supprimé une fois l''import terminé.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_SEUIL 

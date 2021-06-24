@@ -1,25 +1,27 @@
 /*
-la fonction ci-dessus a pour objectif de retouver le code insee de la commune dans laquelle est contenu le nouvel objet géographique d'une table. L'utilisation de cette fonction est nécessaire dans le champ virtuel code_insee de la base voie car les expressions des champs virtuels ne peuvent utiliser que des champs de la table.
+la fonction ci-dessous a pour objectif de retouver le code insee de la commune dans laquelle se trouve un objet linéaire.
+Cette fonction retourne le code insee de la commune dans laquelle plus de 50% de l'objet se trouve.
 */
 
 create or replace FUNCTION GET_CODE_INSEE(v_geometry SDO_GEOMETRY) RETURN CHAR
--- Cette fonction a pour objectid de récupérer le code insse de la commune dans laquelle est contenu un objet géométrique
+-- Cette fonction a pour objectif de récupérer le code insse de la commune dans laquelle se situe un objet géométrique.
+-- ATTENTION : Cette fonction est à utiliser principalement pour des objets de types points ou pour des objets dont vous savez à l'avance qu'ils sont totalement contenus dans les communes, sinon le "code INSEE" retourné sera 'error'...
     DETERMINISTIC
     As
-    v_code_insee CHAR(5);
-    BEGIN      
-        Begin
-            SELECT
-                b.code_insee INTO v_code_insee
-            FROM
-                G_REFERENTIEL.A_COMMUNE b
-            WHERE
-                SDO_CONTAINS(b.geom, v_geometry) = 'TRUE';
-            return v_code_insee;
+    v_code_insee CHAR(8);
+    BEGIN         
+        -- Sélection du code insee de la commune dans laquelle l'objet est entièrement contenu
+        SELECT
+            b.code_insee INTO v_code_insee
+        FROM
+            G_REFERENTIEL.A_COMMUNE b
+         WHERE
+            SDO_CONTAINS(b.geom, v_geometry) = 'TRUE';
+
+        RETURN v_code_insee;
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
              RETURN 'error';
-        END;        
     END GET_CODE_INSEE;
 
 /
@@ -614,7 +616,8 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL
+    fid_pnom_modification NUMBER(38,0) NOT NULL,
+    temp_idseui NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -627,6 +630,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_saisie IS 'date de saisie du seuil (
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_modification IS 'Dernière date de modification du seuil (via un trigger).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.temp_idseui IS 'Champ temporaire servant à l''import des données. Ce champ sera supprimé une fois l''import terminé.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_SEUIL 
@@ -920,7 +924,7 @@ GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL TO G_ADMIN_SIG;
 /
  
 /*
-Déclencheur permettant de remplir la table de logs TA_INFOS_SEUIL_LOG dans laquelle sont enregistrés chaque création, 
+Déclencheur permettant de remplir la table de logs TA_INFOS_SEUIL_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_INFOS_SEUIL avec leur date et le pnom de l'agent les ayant effectuées.
 */
 
@@ -941,11 +945,11 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'création';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
     SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_infos_seuil, numero_seuil, numero_parcelle, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
@@ -990,7 +994,7 @@ END;
 /
  
 /*
-Déclencheur permettant de remplir la table de logs TA_RELATION_TRONCON_VOIE_LOG dans laquelle sont enregistrés chaque création, 
+Déclencheur permettant de remplir la table de logs TA_RELATION_TRONCON_VOIE_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_RELATION_TRONCON_VOIE avec leur date et le pnom de l'agent les ayant effectuées.
 */
 
@@ -1011,11 +1015,11 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'création';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
     SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
@@ -1054,7 +1058,7 @@ END;
 /
  
 /*
-Déclencheur permettant de remplir la table de logs TA_SEUIL_LOG dans laquelle sont enregistrés chaque création, 
+Déclencheur permettant de remplir la table de logs TA_SEUIL_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_SEUIL avec leur date et le pnom de l'agent les ayant effectuées.
 */
 
@@ -1075,11 +1079,11 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'création';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
     SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
@@ -1116,7 +1120,7 @@ END;
 /
  
 /*
-Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque création, 
+Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_TRONCON avec leur date et le pnom de l'agent les ayant effectuées.
 */
 
@@ -1137,11 +1141,11 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'création';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
     SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
@@ -1177,7 +1181,7 @@ END;
 /
  
 /*
-Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque création, 
+Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_TRONCON avec leur date et le pnom de l'agent les ayant effectuées.
 */
 
@@ -1198,11 +1202,11 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'création';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
     SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 

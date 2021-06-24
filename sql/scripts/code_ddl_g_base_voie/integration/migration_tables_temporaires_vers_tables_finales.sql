@@ -7,6 +7,7 @@ DECLARE
     v_nbr_objectid NUMBER(38,0);
     v_contrainte VARCHAR2(100);
 BEGIN
+
     SAVEPOINT POINT_SAUVEGARDE_REMPLISSAGE;
 
     -- 1. Import des données des agents de la base voie + gestionnaires de données
@@ -441,7 +442,7 @@ BEGIN
     -- 28.3. Sélection du nom de la contrainte de FK du champ FID_VOIE
     SELECT
         CONSTRAINT_NAME
-        --INTO v_contrainte
+        INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
@@ -633,55 +634,64 @@ BEGIN
         G_BASE_VOIE.TEMP_FUSION_SEUIL a;
 
     -- 36.3. Insertion des infos des seuils dans la table TA_INFOS_SEUIL
-    INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_modification, date_saisie)
+    INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification)
     SELECT
         a.idseui,
         a.nuseui,
         a.nparcelle,
         a.nsseui,
         b.objectid,
+        a.cdtsseuil,
         a.cdtmseuil,
-        a.cdtsseuil
+        c.numero_agent AS fid_pnom_saisie,
+        c.numero_agent AS fid_pnom_modification
     FROM
         G_BASE_VOIE.TEMP_ILTASEU a,
-        G_BASE_VOIE.TA_SEUIL b
+        G_BASE_VOIE.TA_SEUIL b,
+        G_BASE_VOIE.TA_AGENT c
     WHERE
-        SDO_WITHIN_DISTANCE(b.geom, a.ora_geometry, 'DISTANCE=0.50') = 'TRUE';
+        SDO_WITHIN_DISTANCE(b.geom, a.ora_geometry, 'DISTANCE=0.50') = 'TRUE'
+        AND c.pnom = 'import_donnees';
 
     -- 36.4. Désactivation du trigger B_IUX_TA_SEUIL_DATE_PNOM
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM DISABLE';
+    
+    -- 36.6. Insertion des autres points géométriques des seuils dans TA_SEUIL
+        INSERT INTO G_BASE_VOIE.TA_SEUIL(geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, temp_idseui)
+        SELECT
+            a.ora_geometry,
+            a.cdtsseuil,
+            a.cdtmseuil,
+            b.numero_agent AS fid_pnom_saisie,
+            b.numero_agent AS fid_pnom_modification,
+            a.idseui
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU a,
+            G_BASE_VOIE.TA_AGENT b
+        WHERE
+            a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TA_INFOS_SEUIL)
+            AND b.pnom = 'import_donnees';
+    
+    -- 36.7. Import des infos des seuils dans TA_INFOS_SEUIL pour les seuils non-concernés par la fusion
+        INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification)
+        SELECT DISTINCT
+            a.idseui,
+            a.nuseui,
+            a.nparcelle,
+            a.nsseui,
+            b.objectid,
+            a.cdtsseuil,
+            a.cdtmseuil,
+            c.numero_agent AS fid_pnom_saisie,
+            c.numero_agent AS fid_pnom_modification
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU a
+            INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.temp_idseui = a.idseui,
+            G_BASE_VOIE.TA_AGENT c
+        WHERE
+            c.pnom = 'import_donnees';
 
-    -- 36.4. Insertion des autres points géométriques des seuils dans TA_SEUIL
-    INSERT INTO G_BASE_VOIE.TA_SEUIL(geom, date_saisie, date_modification)
-    SELECT
-        a.ora_geometry,
-        a.cdtsseuil,
-        a.cdtmseuil
-    FROM
-        G_BASE_VOIE.TEMP_ILTASEU a
-    WHERE
-        a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TA_INFOS_SEUIL);
-
-    -- 32.5. Insertion des informations des autres seuils dans TA_INFOS_SEUIL
-    INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_saisie, date_modification)
-    SELECT DISTINCT
-        a.idseui,
-        a.nuseui,
-        a.nparcelle,
-        a.nsseui,
-        c.objectid,
-        a.cdtsseuil,
-        a.cdtmseuil
-    FROM
-        G_BASE_VOIE.TEMP_ILTASEU a,
-        G_BASE_VOIE.TA_INFOS_SEUIL b,
-        G_BASE_VOIE.TA_SEUIL c
-    WHERE
-        a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TA_INFOS_SEUIL)
-        AND a.ora_geometry.sdo_point.x = c.geom.sdo_point.x
-        AND a.ora_geometry.sdo_point.y = c.geom.sdo_point.y;
-
-    -- 33. Réactivation de tous les triggers et contraintes désacitivées au cours de la procédure
+    -- 37. Réactivation de tous les triggers et contraintes désacitivées au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE ENABLE CONSTRAINT ' || v_contrainte;
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG ENABLE';
@@ -689,10 +699,9 @@ BEGIN
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM ENABLE';
 
-
--- En cas d'erreur une exception est levée et un rollback effectué, empêchant ainsi toute insertion de se faire et de retourner à l'état des tables précédent l'insertion.
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('L''erreur ' || SQLCODE || 'est survenue. Un rollback a été effectué : ' || SQLERRM(SQLCODE));
-        ROLLBACK TO POINT_SAUVEGARDE_REMPLISSAGE;
+    -- En cas d'erreur une exception est levée et un rollback effectué, empêchant ainsi toute insertion de se faire et de retourner à l'état des tables précédent l'insertion.
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('L''erreur ' || SQLCODE || 'est survenue. Un rollback a été effectué : ' || SQLERRM(SQLCODE));
+            ROLLBACK TO POINT_SAUVEGARDE_REMPLISSAGE;
 END;
