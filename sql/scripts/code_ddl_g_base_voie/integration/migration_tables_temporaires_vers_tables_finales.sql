@@ -638,7 +638,10 @@ BEGIN
     SELECT
         a.idseui,
         a.nuseui,
-        a.nparcelle,
+        CASE
+            WHEN a.nparcelle IS NOT NULL THEN a.nparcelle
+            WHEN a.nparcelle IS NULL THEN 'NR'
+        END AS numero_parcelle,
         a.nsseui,
         b.objectid,
         a.cdtsseuil,
@@ -677,7 +680,10 @@ BEGIN
         SELECT DISTINCT
             a.idseui,
             a.nuseui,
-            a.nparcelle,
+            CASE
+                WHEN a.nparcelle IS NOT NULL THEN a.nparcelle
+                WHEN a.nparcelle IS NULL THEN 'NR'
+            END AS numero_parcelle,
             a.nsseui,
             b.objectid,
             a.cdtsseuil,
@@ -691,13 +697,25 @@ BEGIN
         WHERE
             c.pnom = 'import_donnees';
 
-    -- 37. Réactivation de tous les triggers et contraintes désacitivées au cours de la procédure
+    -- 37. Réactivation de tous les triggers désacitivés au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
-    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE ENABLE CONSTRAINT ' || v_contrainte;
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM ENABLE';
+
+    -- 38. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
+    SELECT
+        CONSTRAINT_NAME
+        INTO v_contrainte
+    FROM
+        USER_CONSTRAINTS
+    WHERE
+        TABLE_NAME = 'TA_TYPE_VOIE'
+        AND CONSTRAINT_TYPE = 'C'
+        AND SEARCH_CONDITION_VC LIKE '%LIBELLE%';
+
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE ENABLE CONSTRAINT ' || v_contrainte;
 
     -- En cas d'erreur une exception est levée et un rollback effectué, empêchant ainsi toute insertion de se faire et de retourner à l'état des tables précédent l'insertion.
     EXCEPTION

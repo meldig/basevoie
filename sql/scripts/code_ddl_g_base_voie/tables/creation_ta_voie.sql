@@ -13,7 +13,7 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE(
     fid_pnom_modification NUMBER(38,0) NOT NULL,
     fid_typevoie NUMBER(38,0) NOT NULL,
     fid_genre_voie NUMBER(38,0) NOT NULL,
-    fid_rivoli NUMBER(38,0) NOT NULL
+    fid_rivoli NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
