@@ -36,12 +36,12 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
                     THEN VC --voie communale
 
                 END AS CLASSEMENT,
-                c.objectid AS CODE_RUE_G
-                UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_G
-                e.CODE_INSEE AS INSEE_G
-                c.ibjectid AS CODE_RUE_D
-                UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_D
-                e.CODE_INSEE AS INSEE_D
+                c.objectid AS CODE_RUE_G,
+                UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_G,
+                e.CODE_INSEE AS INSEE_G,
+                c.ibjectid AS CODE_RUE_D,
+                UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_D,
+                e.CODE_INSEE AS INSEE_D,
                 'NULL' AS LARGEUR
             FROM
                 G_BASE_VOIE.TA_TRONCON a
