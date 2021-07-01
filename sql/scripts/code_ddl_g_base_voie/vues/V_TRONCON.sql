@@ -39,7 +39,7 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
                 c.objectid AS CODE_RUE_G,
                 UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_G,
                 e.CODE_INSEE AS INSEE_G,
-                c.ibjectid AS CODE_RUE_D,
+                c.objectid AS CODE_RUE_D,
                 UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_D,
                 e.CODE_INSEE AS INSEE_D,
                 'NULL' AS LARGEUR
@@ -54,7 +54,7 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
             -- Pour rechercher l'INSEE du troncon nous analysons sur quelle commune se situe le point median du troncon.
                 SDO_CONTAINS(
                             SDO_LRS.LOCATE_PT(
-                                            SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom,m.dimingo),
+                                            SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom,m.diminfo),
                                             SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom, m.diminfo)/2)
                                             ),
                             e.geom
