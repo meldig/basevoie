@@ -687,14 +687,25 @@ BEGIN
         WHERE
             c.pnom = 'import_donnees';
 
-    -- 37. Réactivation de tous les triggers désacitivés au cours de la procédure
+    -- 37. Import des relation tronçons - seuils dans TA_RELATION_TRONCON_SEUIL
+    INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL(fid_seuil, fid_troncon)
+    SELECT DISTINCT
+        a.objectid AS fid_seuil,
+        d.objectid AS fid_troncon
+    FROM
+        G_BASE_VOIE.TA_SEUIL a
+        INNER JOIN G_BASE_VOIE.TA_INFOS_SEUIL b ON b.fid_seuil = a.objectid
+        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT c ON c.idseui = b.objectid
+        INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.cnumtrc;
+
+    -- 38. Réactivation de tous les triggers désactivés au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM ENABLE';
 
-    -- 38. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
+    -- 39. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
         INTO v_contrainte
