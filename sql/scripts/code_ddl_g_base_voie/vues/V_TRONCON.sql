@@ -13,47 +13,38 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
             SELECT
                 a.objectid AS CODE_TRONC,
                 CASE 
-
-                    WHEN d.objectid IN (2,3,16)
-                    THEN A
-
-                    WHEN d.objectid IN ()
-                    THEN RN --(route nationale)
-
-                    WHEN d.objectid IN ()
-                    THEN RD (route departementale)
-
-                    WHEN d.objectid IN (12)
-                    THEN VP --voie privée
-
-                    WHEN d.objectid IN (9)
-                    THEN CR --(chemin rural)
-
-                    WHEN d.objectid IN ()
-                    THEN VF --voie forestiere
-
-                    WHEN d.objectid IN (1,4,5,)
-                    THEN VC --voie communale
-
+                    WHEN e.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
+                    THEN 'A'
+                    WHEN e.domania = 'ROUTE NATIONALE'
+                    THEN 'RN' --(route nationale)
+                    -- WHEN e.domania IN ()
+                    -- THEN 'RD' --(route departementale)
+                    WHEN e.domania IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
+                    THEN 'VP' --voie privée
+                    WHEN e.domania = 'CHEMIN RURAL'
+                    THEN 'CR' --(chemin rural)
+                    WHEN e.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
+                    THEN 'VC' --voie communale
                 END AS CLASSEMENT,
                 c.objectid AS CODE_RUE_G,
                 UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_G,
-                e.CODE_INSEE AS INSEE_G,
+                f.CODE_INSEE AS INSEE_G,
                 c.objectid AS CODE_RUE_D,
                 UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_D,
-                e.CODE_INSEE AS INSEE_D,
+                f.CODE_INSEE AS INSEE_D,
                 'NULL' AS LARGEUR
             FROM
                 G_BASE_VOIE.TA_TRONCON a
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
                 INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.fid_voie
-                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = c.fid_typevoie,
-                G_REFERENTIEL.MEL_COMMUNE e,
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = c.fid_typevoie
+                INNER JOIN SIREO_LEC.OUT_DOMANIALITE e ON e.cnumtrc = a.objectid,
+                G_REFERENTIEL.MEL_COMMUNE f,
                 USER_SDO_GEOM_METADATA m
             WHERE
             -- Pour rechercher l'INSEE du troncon nous analysons sur quelle commune se situe le point median du troncon.
 		    SDO_CONTAINS(
-		                e.geom,
+		                f.geom,
 		                 SDO_LRS.CONVERT_TO_STD_GEOM(
 		                                            SDO_LRS.LOCATE_PT(
 		                                                            SDO_LRS.CONVERT_TO_LRS_GEOM(a.GEOM,m.diminfo),
