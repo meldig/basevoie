@@ -27,7 +27,6 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSES (
                 INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.fid_troncon
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE e ON e.fid_troncon = d.objectid
                 INNER JOIN G_BASE_VOIE.TA_VOIE f ON f.objectid = e.fid_voie
-                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE g ON g.objectid = f.fid_typevoie
         );
 
 
