@@ -18,7 +18,7 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSES (
                 'LesDeuxCotes' AS COTE
 
             FROM
-                G_BASE_VOIE.TA_INFO_SEUIL a
+                G_BASE_VOIE.TA_INFOS_SEUIL a
                 INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
                 INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.fid_troncon
