@@ -52,13 +52,15 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
                 USER_SDO_GEOM_METADATA m
             WHERE
             -- Pour rechercher l'INSEE du troncon nous analysons sur quelle commune se situe le point median du troncon.
-                SDO_CONTAINS(
-                            SDO_LRS.LOCATE_PT(
-                                            SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom,m.diminfo),
-                                            SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom, m.diminfo)/2)
-                                            ),
-                            e.geom
-                            )='TRUE'
+		    SDO_CONTAINS(
+		                e.geom,
+		                 SDO_LRS.CONVERT_TO_STD_GEOM(
+		                                            SDO_LRS.LOCATE_PT(
+		                                                            SDO_LRS.CONVERT_TO_LRS_GEOM(a.GEOM,m.diminfo),
+		                                                            SDO_GEOM.SDO_LENGTH(a.GEOM,m.diminfo)/2
+		                                                            )
+		                                             )
+		                )='TRUE'
             AND
                 m.table_name = 'TA_TRONCON'
         );
