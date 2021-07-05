@@ -40,19 +40,19 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
                 )
                 SELECT
                     ROWNUM AS IDENTIFIANT,
-                    a.CODE_TRONC,
-                    a.CLASSEMENT,
-                    a.CODE_RUE_G,
-                    a.NOM_RUE_G,
+                    C_1.CODE_TRONC,
+                    C_1.CLASSEMENT,
+                    C_1.CODE_RUE_G,
+                    C_1.NOM_RUE_G,
                     f.CODE_INSEE AS INSEE_G,
-                    a.CODE_RUE_D,
-                    a.NOM_RUE_D,
+                    C_1.CODE_RUE_D,
+                    C_1.NOM_RUE_D,
                     f.CODE_INSEE AS INSEE_D,
                     'NULL' AS LARGEUR,
                     b.geom AS GEOMETRY
                 FROM
                     C_1 a
-                    INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.code_tronc,
+                    INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = C_1.code_tronc,
                     G_REFERENTIEL.MEL_COMMUNE f,
                     USER_SDO_GEOM_METADATA m
                 WHERE
