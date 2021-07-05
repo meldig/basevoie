@@ -1,4 +1,4 @@
-CREATE OR REPLACE FORCE VIEW V_ADRESSES (
+CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
     CODE_VOIE,
     CODE_POINT,
     NATURE,
@@ -6,7 +6,7 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSES (
     NUMERO,
     REPETITION,
     COTE,
-    CONSTRAINT "V_ADRESSES_PK" PRIMARY KEY ("CODE_POINT") DISABLE)
+    CONSTRAINT "V_ADRESSE_LITTERALIS_PK" PRIMARY KEY ("CODE_POINT") DISABLE)
     AS (
             SELECT
                 f.objectid AS CODE_VOIE,
@@ -31,11 +31,11 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSES (
 
 
 -- 2. Création des commentaires de la vue
-COMMENT ON TABLE G_BASE_VOIE.V_ADRESSES IS 'Vue regroupant la liste des adresses postales par rue.' ;
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.CODE_VOIE IS 'Liaison avec la classe TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.CODE_POINT IS 'Identificateur unique et immuable du point partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.NATURE IS 'Indique la nature du point: ADR = Adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.LIBELLE IS 'Libellé du point affiché dans les textes (dans les actes…).';
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.NUMERO IS 'Code INSEE de la commune côté gauche du tronçon..';
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.REPETITION IS 'Indique la valeur de répétition d’un numéro sur une rue. La saisie de la répétition est libre.';
-COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSES.COTE IS 'Définit sur quel côté de la voie s’appuie l’adresse: LesDeuxCotes, Impair, Pair.';
+COMMENT ON TABLE G_BASE_VOIE.V_ADRESSE_LITTERALIS IS 'Vue regroupant la liste des adresses postales par rue pour LITTERALIS' ;
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.CODE_VOIE IS 'Liaison avec la classe TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.CODE_POINT IS 'Identificateur unique et immuable du point partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.NATURE IS 'Indique la nature du point: ADR = Adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.LIBELLE IS 'Libellé du point affiché dans les textes (dans les actes…).';
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.NUMERO IS 'Code INSEE de la commune côté gauche du tronçon..';
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.REPETITION IS 'Indique la valeur de répétition d’un numéro sur une rue. La saisie de la répétition est libre.';
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.COTE IS 'Définit sur quel côté de la voie s’appuie l’adresse: LesDeuxCotes, Impair, Pair.';
