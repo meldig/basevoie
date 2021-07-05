@@ -70,7 +70,7 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
                     m.table_name = 'TA_TRONCON';
 
 -- 2. Création des commentaires de la vue
-COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_LITTERALIS IS 'Vue regroupant la liste des tronçons constituant une voie. Chaque objet de cette vue décrit un tronçon de voie LITTERALIS';
+COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_LITTERALIS IS 'Vue regroupant la liste des tronçons constituant une voie, dont les catégorisations répondent aux exigences du prestataire Sogelink afin de remplir la base de données Litteralis.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.IDENTIFIANT IS 'Cle primaire de la vue';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CODE_TRONC IS 'Identificateur unique et immuable du tronçon de voie partagé entre Littéralis Expert et le SIG.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CLASSEMENT IS 'Classement de la voie.';
