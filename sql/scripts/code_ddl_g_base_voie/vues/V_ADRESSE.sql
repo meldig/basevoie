@@ -1,4 +1,5 @@
 CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
+    IDENTIFIANT,
     CODE_VOIE,
     CODE_POINT,
     NATURE,
@@ -6,9 +7,11 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
     NUMERO,
     REPETITION,
     COTE,
+    GEOMETRY,
     CONSTRAINT "V_ADRESSE_LITTERALIS_PK" PRIMARY KEY ("CODE_POINT") DISABLE)
     AS (
             SELECT
+                ROWNUM AS IDENTIFIANT,
                 f.objectid AS CODE_VOIE,
                 b.objectid AS CODE_POINT,
                 'ADR' AS NATURE,
@@ -18,8 +21,8 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
                 END AS LIBELLE,
                 a.numero_seuil AS NUMERO,
                 a.complement_numero_seuil AS REPETITION,
-                'LesDeuxCotes' AS COTE
-
+                'LesDeuxCotes' AS COTE,
+                b.geom AS GEOMETRY
             FROM
                 G_BASE_VOIE.TA_INFOS_SEUIL a
                 INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
@@ -32,6 +35,7 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
 
 -- 2. Création des commentaires de la vue
 COMMENT ON TABLE G_BASE_VOIE.V_ADRESSE_LITTERALIS IS 'Vue regroupant la liste des adresses postales par rue pour LITTERALIS' ;
+COMMENT ON COLUMN G_BASE_VOIE.V_ADRESS_LITTERALIS.IDENTIFIANT IS "Cle primaire de la vue"
 COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.CODE_VOIE IS 'Liaison avec la classe TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
 COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.CODE_POINT IS 'Identificateur unique et immuable du point partagé entre Littéralis Expert et le SIG.';
 COMMENT ON COLUMN G_BASE_VOIE.V_ADRESSE_LITTERALIS.NATURE IS 'Indique la nature du point: ADR = Adresse.';
