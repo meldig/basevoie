@@ -1,4 +1,4 @@
-CREATE OR REPLACE FORCE VIEW V_TRONCON (
+CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
     CODE_TRONC,
     CLASSEMENT,
     CODE_RUE_G,
@@ -8,7 +8,7 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
     NOM_RUE_D,
     INSEE_D,
     LARGEUR,
-    CONSTRAINT "V_TRONCON_PK" PRIMARY KEY ("CODE_TRONC") DISABLE)
+    CONSTRAINT "V_TRONCON_LITTERALIS_PK" PRIMARY KEY ("CODE_TRONC") DISABLE)
     AS (
             SELECT
                 a.objectid AS CODE_TRONC,
@@ -16,15 +16,13 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
                     WHEN e.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
                     THEN 'A'
                     WHEN e.domania = 'ROUTE NATIONALE'
-                    THEN 'RN' --(route nationale)
-                    -- WHEN e.domania IN ()
-                    -- THEN 'RD' --(route departementale)
+                    THEN 'RN' -- Route Nationale
                     WHEN e.domania IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
-                    THEN 'VP' --voie privée
+                    THEN 'VP' -- Voie Privée
                     WHEN e.domania = 'CHEMIN RURAL'
-                    THEN 'CR' --(chemin rural)
+                    THEN 'CR' -- Chemin Rural
                     WHEN e.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
-                    THEN 'VC' --voie communale
+                    THEN 'VC' -- Voie Communale
                 END AS CLASSEMENT,
                 c.objectid AS CODE_RUE_G,
                 UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_G,
@@ -57,13 +55,13 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON (
         );
 
 -- 2. Création des commentaires de la vue
-COMMENT ON TABLE G_BASE_VOIE.TRONCON IS 'Vue regroupant la liste des tronçons constituant une voie. Chaque objet de cette vue décrit un tronçon de voie.' ;
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.CODE_TRONC IS 'Identificateur unique et immuable du tronçon de voie partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.CLASSEMENT IS 'Classement de la voie.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.CODE_RUE_G IS 'Code unique de la rue côté gauche du tronçon partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.NOM_RUE_G IS 'Nom de la voie côté gauche du tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.INSEE_G IS 'Code INSEE de la commune côté gauche du tronçon..';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.CODE_RUE_D IS 'Code unique de la rue côté droit du tronçon partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.NOM_RUE_D IS 'Nom de la voie côté droit du tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.INSEE_D IS 'Code INSEE de la commune côté droit du tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON.LARGEUR IS 'Valeur indiquant une largeur de la voie.';
+COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_LITTERALIS IS 'Vue regroupant la liste des tronçons constituant une voie. Chaque objet de cette vue décrit un tronçon de voie LITTERALIS';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CODE_TRONC IS 'Identificateur unique et immuable du tronçon de voie partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CLASSEMENT IS 'Classement de la voie.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CODE_RUE_G IS 'Code unique de la rue côté gauche du tronçon partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.NOM_RUE_G IS 'Nom de la voie côté gauche du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.INSEE_G IS 'Code INSEE de la commune côté gauche du tronçon..';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CODE_RUE_D IS 'Code unique de la rue côté droit du tronçon partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.NOM_RUE_D IS 'Nom de la voie côté droit du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.INSEE_D IS 'Code INSEE de la commune côté droit du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.LARGEUR IS 'Valeur indiquant une largeur de la voie.';
