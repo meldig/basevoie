@@ -39,7 +39,7 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
                 C_1.NUMERO AS NUMERO,
                 C_1.REPETITION AS REPETITION,
                 C_1.COTE AS COTE,
-                a.geom AS GEOMETRY
+                b.geom AS GEOMETRY
             FROM
                 C_1 a INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.OBJECTID = a.CODE_POINT
         ;
