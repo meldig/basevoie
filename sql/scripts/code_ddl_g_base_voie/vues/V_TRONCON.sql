@@ -1,4 +1,5 @@
 CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
+    IDENTIFIANT,
     CODE_TRONC,
     CLASSEMENT,
     CODE_RUE_G,
@@ -8,9 +9,11 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
     NOM_RUE_D,
     INSEE_D,
     LARGEUR,
+    GEOMETRY,
     CONSTRAINT "V_TRONCON_LITTERALIS_PK" PRIMARY KEY ("CODE_TRONC") DISABLE)
     AS (
             SELECT
+                ROWNUM AS IDENTIFIANT,
                 a.objectid AS CODE_TRONC,
                 CASE 
                     WHEN e.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
@@ -30,7 +33,8 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
                 c.objectid AS CODE_RUE_D,
                 UPPER(d.libelle) || ' ' || UPPER(c.libelle_voie) AS NOM_RUE_D,
                 f.CODE_INSEE AS INSEE_D,
-                'NULL' AS LARGEUR
+                'NULL' AS LARGEUR,
+                a.geom AS GEOMETRY
             FROM
                 G_BASE_VOIE.TA_TRONCON a
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
@@ -56,6 +60,7 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
 
 -- 2. Création des commentaires de la vue
 COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_LITTERALIS IS 'Vue regroupant la liste des tronçons constituant une voie. Chaque objet de cette vue décrit un tronçon de voie LITTERALIS';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.IDENTIFIANT IS "Cle primaire de la vue"
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CODE_TRONC IS 'Identificateur unique et immuable du tronçon de voie partagé entre Littéralis Expert et le SIG.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CLASSEMENT IS 'Classement de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_LITTERALIS.CODE_RUE_G IS 'Code unique de la rue côté gauche du tronçon partagé entre Littéralis Expert et le SIG.';
