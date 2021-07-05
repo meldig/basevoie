@@ -41,7 +41,7 @@ CREATE OR REPLACE FORCE VIEW V_ADRESSE_LITTERALIS (
                 C_1.COTE AS COTE,
                 a.geom AS GEOMETRY
             FROM
-                C_1 INNER JOIN G_BASE_VOIE.TA_TRONCON a ON a.OBJECTID = C_1.CODE_POINT
+                C_1 a INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.OBJECTID = a.CODE_POINT
         ;
 
 -- 2. Création des commentaires de la vue
