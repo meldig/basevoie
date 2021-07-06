@@ -52,7 +52,7 @@ CREATE OR REPLACE FORCE VIEW V_TRONCON_LITTERALIS (
                     b.geom AS GEOMETRY
                 FROM
                     C_1
-                    INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = C_1.code_tronc,
+                    INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = C_1.CODE_TRONC,
                     G_REFERENTIEL.MEL_COMMUNE f,
                     USER_SDO_GEOM_METADATA m
                 WHERE
