@@ -76,7 +76,15 @@ AS(
     WHERE
         m.table_name = 'TA_TRONCON'
         AND SDO_ANYINTERACT(a.geom, b.geom) = 'TRUE'
-        AND (SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(SDO_GEOM.SDO_INTERSECTION(b.geom, a.geom, 0.001)))/SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom)) * 100) > 50
+        AND SDO_CONTAINS(
+                            b.geom,
+                             SDO_LRS.CONVERT_TO_STD_GEOM(
+                                                        SDO_LRS.LOCATE_PT(
+                                                                        SDO_LRS.CONVERT_TO_LRS_GEOM(a.GEOM,m.diminfo),
+                                                                        SDO_GEOM.SDO_LENGTH(a.GEOM,m.diminfo)/2
+                                                                        )
+                                                         )
+                            )='TRUE'
 );
 
 -- 2. Création des commentaires de la vue
