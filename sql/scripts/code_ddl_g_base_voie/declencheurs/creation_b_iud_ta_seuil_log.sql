@@ -1,5 +1,5 @@
 /*
-Déclencheur permettant de remplir la table de logs TA_SEUIL_LOG dans laquelle sont enregistrés chaque création, 
+Déclencheur permettant de remplir la table de logs TA_SEUIL_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_SEUIL avec leur date et le pnom de l'agent les ayant effectuées.
 */
 
@@ -20,21 +20,22 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'création';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
     SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, fid_infos_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
+
                     :old.cote_troncon,
                     sysdate,
                     v_id_creation,
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, fid_infos_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
                     :old.cote_troncon,
@@ -44,7 +45,7 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, fid_infos_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
         VALUES(
                 :old.objectid, 
                 :old.cote_troncon,

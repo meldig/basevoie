@@ -9,6 +9,7 @@ CREATE TABLE G_BASE_VOIE.TA_INFOS_SEUIL_LOG(
     numero_parcelle CHAR(9) NOT NULL,
     complement_numero_seuil VARCHAR2(10),
     date_action DATE NOT NULL,
+    fid_infos_seuil NUMBER(38,0) NOT NULL,
     fid_seuil NUMBER(38,0) NOT NULL,
     fid_type_action NUMBER(38,0) NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL
@@ -21,6 +22,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.numero_seuil IS 'Numéro de seu
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.numero_parcelle IS 'Numéro de parcelle issu du cadastre.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.complement_numero_seuil IS 'Complément du numéro de seuil. Exemple : 1 bis';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.date_action IS 'Date de chaque action effectuée sur les objets de la table TA_INFOS_SEUILS.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.fid_infos_seuil IS 'Identifiant du seuil dans la table TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.fid_seuil IS 'Identifiant de la table TA_SEUIL, permettant d''affecter une géométrie à un ou plusieurs seuils, dans le cas où plusieurs se superposent sur le même point.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de catégoriser les actions effectuées sur la table TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_SEUIL_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé, modifié ou supprimé des données dans TA_INFOS_SEUIL.';
@@ -42,11 +44,14 @@ ADD CONSTRAINT TA_INFOS_SEUIL_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
--- 5. Création des index sur les clés étrangères
+-- 5. Création des index sur les clés étrangères et les autres champs
 CREATE INDEX TA_INFOS_SEUIL_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_type_action)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_INFOS_SEUIL_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_pnom)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_INFOS_SEUIL_LOG_FID_INFOS_SEUIL_IDX ON G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_infos_seuil)
     TABLESPACE G_ADT_INDX;
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
