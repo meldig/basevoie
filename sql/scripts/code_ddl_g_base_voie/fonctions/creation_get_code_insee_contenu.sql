@@ -21,6 +21,6 @@ create or replace FUNCTION GET_CODE_INSEE_CONTENU(v_geometry SDO_GEOMETRY) RETUR
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
              RETURN 'error';
-    END GET_CODE_INSEE;
+    END GET_CODE_INSEE_CONTENU;
 
 /

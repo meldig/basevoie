@@ -48,10 +48,10 @@ BEGIN
         AND b.valeur IN('masculin', 'féminin', 'neutre', 'couple', 'non-identifié', 'non-renseigné');
 
     -- 5. Insertion du code fantoir dans TEMP_VOIEVOI
-    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
-    COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
+    --EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
+    --COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
 
-    MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
+    /*MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
     USING(
         SELECT
             b.ccomvoi,
@@ -73,7 +73,7 @@ BEGIN
     )t
     ON (a.ccomvoi = t.ccomvoi)
     WHEN MATCHED THEN
-        UPDATE SET a.temp_code_fantoir = t.code_fantoir_et_cle_ctrl;
+        UPDATE SET a.temp_code_fantoir = t.code_fantoir_et_cle_ctrl;*/
 
     -- 6. Insertion des codes rivoli dans TA_RIVOLI
     -- 6.1. Insertion des codes rivoli complet (avec clé)
@@ -727,8 +727,9 @@ BEGIN
         INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.cnumtrc;
 
     -- 38. Insertion des points d'intérêt
-    -- 38.1. Désactivation du trigger de remplissage de la table de log
+    -- 38.1. Désactivation des triggers
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG DISABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_DATE_PNOM DISABLE';
 
     -- 38.2. Import des données invalides dans la table TA_POINT_INTERET
     INSERT INTO G_BASE_VOIE.TA_POINT_INTERET(objectid, geom, complement_infos, nom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_libelle)
@@ -862,7 +863,8 @@ BEGIN
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM ENABLE';
-
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_DATE_PNOM ENABLE';
+    
     -- 40. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
