@@ -1,329 +1,30 @@
-
-CREATE OR REPLACE FUNCTION GET_CODE_INSEE_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
+la fonction ci-dessous a pour objectif de retouver le code insee de la commune dans laquelle se trouve un objet totalement inclut dedans.
 */
+
+create or replace FUNCTION GET_CODE_INSEE_CONTENU(v_geometry SDO_GEOMETRY) RETURN CHAR
+-- Cette fonction a pour objectif de récupérer le code insse de la commune dans laquelle se situe un objet géométrique.
+-- ATTENTION : Cette fonction est à utiliser principalement pour des objets de types points ou pour des objets dont vous savez à l'avance qu'ils sont totalement contenus dans les communes, sinon le "code INSEE" retourné sera 'error'...
     DETERMINISTIC
     As
     v_code_insee CHAR(8);
-    BEGIN
-        SELECT 
-            TRIM(b.code_insee)
-            INTO v_code_insee 
-        FROM 
-            G_REFERENTIEL.MEL_COMMUNE b, 
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND SDO_CONTAINS(
-                    b.geom,
-                    SDO_LRS.CONVERT_TO_STD_GEOM(
-                        SDO_LRS.LOCATE_PT(
-                                        SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
-                                        SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
-                        )
-                    )
-                )='TRUE';
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_CONTAIN_LINE;
-
-/
-
-create or replace FUNCTION GET_CODE_INSEE_CONTAIN_POINT(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet ponctuel (de type point).
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
+    BEGIN         
+        -- Sélection du code insee de la commune dans laquelle l'objet est entièrement contenu
         SELECT
-            TRIM(b.code_insee)
-            INTO v_code_insee
+            b.code_insee INTO v_code_insee
         FROM
-            G_REFERENTIEL.MEL_COMMUNE b,
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND SDO_CONTAINS(
-                    b.geom,
-                    v_geometry
-                )='TRUE';
+            G_REFERENTIEL.A_COMMUNE b
+         WHERE
+            SDO_CONTAINS(b.geom, v_geometry) = 'TRUE';
+
         RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_CONTAIN_POINT;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+             RETURN 'error';
+    END GET_CODE_INSEE_CONTENU;
 
 /
-
-CREATE OR REPLACE FUNCTION GET_CODE_INSEE_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        SELECT 
-            TRIM(b.code_insee)
-            INTO v_code_insee 
-        FROM 
-            G_REFERENTIEL.MEL_COMMUNE b, 
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND SDO_CONTAINS(
-                    b.geom,
-                    SDO_LRS.CONVERT_TO_STD_GEOM(
-                        SDO_LRS.LOCATE_PT(
-                                        SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
-                                        SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
-                        )
-                    )
-                )='TRUE';
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_CONTAIN_LINE;
-
-/
-
-CREATE OR REPLACE FUNCTION GET_CODE_INSEE_POURCENTAGE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe plus de 50% d'un objet linéaire.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        SELECT 
-            TRIM(b.code_insee)
-            INTO v_code_insee 
-        FROM 
-            G_REFERENTIEL.MEL_COMMUNE b, 
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND (SDO_GEOM.SDO_LENGTH(SDO_GEOM.SDO_INTERSECTION(v_geometry, b.geom, 0.005))/ SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo))*100 > 50;
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_POURCENTAGE;
-
-/
-
-CREATE OR REPLACE FUNCTION GET_CODE_INSEE_WITHIN_DISTANCE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune située à deux mètres maximum de l'objet interrogé, sachant que ce dernier n'est pas dans les communes de la MEL.
-La fonction localise le point médian de l'objet (situé en-dehors de la MEL) et, s'il se trouve à plus de deux mètres d'une commune, elle renvoie 'error', sinon, elle renvoie le code INSEE de la commune.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        SELECT 
-            TRIM(b.code_insee)
-            INTO v_code_insee 
-        FROM 
-            G_REFERENTIEL.MEL_COMMUNE b, 
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND SDO_FILTER(b.geom, v_geometry) <> 'TRUE'
-            AND SDO_GEOM.WITHIN_DISTANCE(SDO_LRS.CONVERT_TO_STD_GEOM(
-                SDO_LRS.LOCATE_PT(
-                                SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
-                                SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
-                )
-            ), 2, b.geom, 0.005) = 'TRUE';
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_WITHIN_DISTANCE;
-    
-/
-
-CREATE OR REPLACE FUNCTION GET_CODE_INSEE_TRONCON(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de chaque tronçon.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-Pour cela elle traite différents cas via les fonctions ci-dessous :
-- GET_CODE_INSEE_CONTAIN ;
-- GET_CODE_INSEE_POURCENTAGE ;
-- GET_CODE_INSEE_WITHIN_DISTANCE ;
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        IF GET_CODE_INSEE_CONTAIN_LINE(v_table_name, v_geometry) <> 'error' THEN
-            v_code_insee := GET_CODE_INSEE_CONTAIN_LINE(v_table_name, v_geometry);
-        ELSIF GET_CODE_INSEE_POURCENTAGE(v_table_name, v_geometry) <> 'error' THEN
-            v_code_insee := GET_CODE_INSEE_POURCENTAGE(v_table_name, v_geometry);
-        ELSIF GET_CODE_INSEE_WITHIN_DISTANCE(v_table_name, v_geometry) <> 'error' THEN
-            v_code_insee := GET_CODE_INSEE_WITHIN_DISTANCE(v_table_name, v_geometry);
-        END IF;
-        RETURN v_code_insee;
-
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'erreur';
-    END GET_CODE_INSEE_TRONCON;
-    
-/
-
-create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        SELECT
-            TRIM(b.code_insee)
-            INTO v_code_insee
-        FROM
-            G_REFERENTIEL.MEL_COMMUNE_LLH b,
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND SDO_CONTAINS(
-                    b.geom,
-                    SDO_LRS.CONVERT_TO_STD_GEOM(
-                        SDO_LRS.LOCATE_PT(
-                                        SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
-                                        SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
-                        )
-                    )
-                )='TRUE';
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE;
-
-/
-
-
-create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_POURCENTAGE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe plus de 50% d'un objet linéaire.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
-ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        SELECT
-            TRIM(b.code_insee)
-            INTO v_code_insee
-        FROM
-            G_REFERENTIEL.MEL_COMMUNE_LLH b,
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND (SDO_GEOM.SDO_LENGTH(SDO_GEOM.SDO_INTERSECTION(v_geometry, b.geom, 0.005))/ SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo))*100 > 50;
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_97_COMMUNES_POURCENTAGE;
-
-/
-
-
-create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de la commune située à deux mètres maximum de l'objet interrogé, sachant que ce dernier n'est pas dans les communes de la MEL.
-La fonction localise le point médian de l'objet (situé en-dehors de la MEL) et, s'il se trouve à plus de deux mètres d'une commune, elle renvoie 'error', sinon, elle renvoie le code INSEE de la commune.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        SELECT
-            TRIM(b.code_insee)
-            INTO v_code_insee
-        FROM
-            G_REFERENTIEL.MEL_COMMUNE_LLH b,
-            USER_SDO_GEOM_METADATA m
-        WHERE
-            m.table_name = v_table_name
-            AND SDO_FILTER(b.geom, v_geometry) <> 'TRUE'
-            AND SDO_GEOM.WITHIN_DISTANCE(SDO_LRS.CONVERT_TO_STD_GEOM(
-                SDO_LRS.LOCATE_PT(
-                                SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
-                                SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
-                )
-            ), 2, b.geom, 0.005) = 'TRUE';
-        RETURN v_code_insee;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'error';
-    END GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE;
-
-/
-
-
-create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_TRONCON(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
-/*
-Cette fonction a pour objectif de récupérer le code INSEE de chaque tronçon. Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
-La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
-La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
-Pour cela elle traite différents cas via les fonctions ci-dessous :
-- GET_CODE_INSEE_CONTAIN ;
-- GET_CODE_INSEE_POURCENTAGE ;
-- GET_CODE_INSEE_WITHIN_DISTANCE ;
-*/
-    DETERMINISTIC
-    As
-    v_code_insee CHAR(8);
-    BEGIN
-        IF GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE(v_table_name, v_geometry) <> 'error' THEN
-            v_code_insee := GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE(v_table_name, v_geometry);
-        ELSIF GET_CODE_INSEE_97_COMMUNES_POURCENTAGE(v_table_name, v_geometry) <> 'error' THEN
-            v_code_insee := GET_CODE_INSEE_97_COMMUNES_POURCENTAGE(v_table_name, v_geometry);
-        ELSIF GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE(v_table_name, v_geometry) <> 'error' THEN
-            v_code_insee := GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE(v_table_name, v_geometry);
-        END IF;
-        RETURN v_code_insee;
-
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'erreur';
-    END GET_CODE_INSEE_97_COMMUNES_TRONCON;
-
-/
-
+ 
 /*
 La table TA_AGENT regroupant les pnoms de tous les agents ayant travaillés et qui travaillent encore pour la base voie.
 */
@@ -349,6 +50,31 @@ USING INDEX TABLESPACE "G_ADT_INDX";
 
 -- 4. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_AGENT TO G_ADMIN_SIG;
+ 
+/*
+La table TA_FAMILLE regroupe toutes les familles des types détats et d''objets de la base base voie.
+*/
+
+-- 1. Création de la table TA_FAMILLE
+CREATE TABLE G_BASE_VOIE.TA_FAMILLE(
+    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
+    valeur VARCHAR2(400) NOT NULL
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_FAMILLE IS 'Table listant toutes les familles des types d''états et d''objets de la base base voie, ce qui permet de les catégoriser.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_FAMILLE.objectid IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_FAMILLE.valeur IS 'Famille d''objets ou d''actions permettant de catégoriser un état ou un objet dans la base voie.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_FAMILLE 
+ADD CONSTRAINT TA_FAMILLE_PK 
+PRIMARY KEY("OBJECTID") 
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Affectation du droit de sélection sur les objets de la table aux administrateurs
+GRANT SELECT ON G_BASE_VOIE.TA_FAMILLE TO G_ADMIN_SIG;
+ 
 /*
 La table TA_RIVOLI regroupe tous les tronçons de la base voie.
 */
@@ -380,7 +106,76 @@ CREATE INDEX TA_RIVOLI_cle_controle_IDX ON G_BASE_VOIE.TA_RIVOLI(cle_controle)
     TABLESPACE G_ADT_INDX;
 
 -- 5. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.TA_RIVOLI TO G_ADMIN_SIG;/*
+GRANT SELECT ON G_BASE_VOIE.TA_RIVOLI TO G_ADMIN_SIG; 
+/*
+La table TA_LIBELLE regroupant tous les types et états permettant de catégoriser les objets de la base voie.
+*/
+
+-- 1. Création de la table TA_LIBELLE
+CREATE TABLE G_BASE_VOIE.TA_LIBELLE(
+    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
+    valeur VARCHAR2(400) NOT NULL
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_LIBELLE IS 'Table listant les types et états permettant de catégoriser les objets de la base voie.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_LIBELLE.objectid IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_LIBELLE.valeur IS 'Nom des types d''objets ou des états permettant de catégoriser les objets de la base voie. Ces libellés sont catégorisés par famille.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_LIBELLE 
+ADD CONSTRAINT TA_LIBELLE_PK 
+PRIMARY KEY("OBJECTID") 
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Affectation du droit de sélection sur les objets de la table aux administrateurs
+GRANT SELECT ON G_BASE_VOIE.TA_LIBELLE TO G_ADMIN_SIG;
+ 
+/*
+La table TA_RELATION_FAMILLE_LIBELLE regroupant tous les types et états permettant de catégoriser les objets de la base voie.
+*/
+
+-- 1. Création de la table TA_RELATION_FAMILLE_LIBELLE
+CREATE TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(
+    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
+    fid_famille NUMBER(38,0) NOT NULL,
+    fid_libelle NUMBER(38,0) NOT NULL
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE IS 'Table pivot permettant d''associer des libellés à des familles afin de catégoriser les états et les objets de la base voie. Exemple : La famille action dipose des libellés création, modification et suppression ; La famile genre dispose des libellés masculin, féminin et neutre.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE.objectid IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE.fid_famille IS 'Clé étrangère vers la table TA_FAMILLE permettant d''associer une ou plusieurs familles à un ou plusieurs libellés afin de catégoriser les états et les objets de la base voie.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE.fid_libelle IS 'Clé étrangère vers la table TA_LIBELLE permettant d''associer un ou plusieurs libellés à une ou plusieurs familles, afin de catégoriser les états et les objets de la base voie.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE 
+ADD CONSTRAINT TA_RELATION_FAMILLE_LIBELLE_PK 
+PRIMARY KEY("OBJECTID") 
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des clés étrangères
+ALTER TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE
+ADD CONSTRAINT TA_RELATION_FAMILLE_LIBELLE_FID_FAMILLE_FK
+FOREIGN KEY (fid_famille)
+REFERENCES G_BASE_VOIE.ta_famille(objectid);
+
+ALTER TABLE G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE
+ADD CONSTRAINT TA_RELATION_FAMILLE_LIBELLE_FID_LIBELLE_FK
+FOREIGN KEY (fid_libelle)
+REFERENCES G_BASE_VOIE.ta_libelle(objectid);
+
+-- 5. Création des index sur les clés étrangères
+CREATE INDEX TA_RELATION_FAMILLE_LIBELLE_FID_FAMILLE_IDX ON G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(fid_famille)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_RELATION_FAMILLE_LIBELLE_FID_LIBELLE_IDX ON G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(fid_libelle)
+    TABLESPACE G_ADT_INDX;
+
+-- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
+GRANT SELECT ON G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE TO G_ADMIN_SIG;
+ 
+/*
 La table TA_TRONCON regroupe tous les tronçons de la base voie.
 */
 
@@ -391,8 +186,7 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL,
-    fid_metadonnee NUMBER(38,0) NULL
+    fid_pnom_modification NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -403,7 +197,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_saisie IS 'date de saisie du tron�
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_modification IS 'Dernière date de modification du tronçon (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des tronçons (MEL ou IGN).';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TRONCON 
@@ -442,29 +235,16 @@ ADD CONSTRAINT TA_TRONCON_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
-ALTER TABLE G_BASE_VOIE.TA_TRONCON
-ADD CONSTRAINT TA_TRONCON_FID_METADONNEE_FK
-FOREIGN KEY (fid_metadonnee)
-REFERENCES G_GEO.ta_metadonnee(objectid);
-
--- 7. Création des index sur les clés étrangères et autres
+-- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TRONCON_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_TRONCON_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_metadonnee)
-    TABLESPACE G_ADT_INDX;
-
--- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du tronçon. 
--- Il créé également un champ virtuel dans lequel on peut aller chercher ce code INSEE.
-CREATE INDEX TA_TRONCON_CODE_INSEE_IDX
-ON G_BASE_VOIE.TA_TRONCON(GET_CODE_INSEE_TRONCON('TA_TRONCON', geom))
-TABLESPACE G_ADT_INDX;
-
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TRONCON TO G_ADMIN_SIG;
+ 
 /*
 La table TA_TRONCON_LOG regroupe toutes les évolutions des tronçons de la base voie situés dans TA_TRONCON.
 */
@@ -477,8 +257,7 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON_LOG(
     fid_type_action NUMBER(38,0) NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL,
     fid_troncon NUMBER(38,0) NOT NULL,
-    fid_troncon_pere NUMBER(38,0),
-    fid_metadonnee NUMBER(38,0) NULL
+    fid_troncon_pere NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -490,7 +269,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_type_action IS 'Clé étrangèr
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au tronçon qu''il a créé, modifié ou supprimé.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_troncon IS 'Clé étrangère vers la table TA_TRONCON permettant de savoir sur quel tronçon ont été effectué les actions.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_troncon_pere IS 'Clé étrangère vers la table TA_TRONCON permettant, en cas de coupure de tronçon, de savoir quel était le tronçon original.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître notamment la source et l''organisme créateur de la données.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG 
@@ -522,17 +300,12 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_table
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
 ADD CONSTRAINT TA_TRONCON_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.ta_libelle(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
 ADD CONSTRAINT TA_TRONCON_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
-REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
-
-ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
-ADD CONSTRAINT TA_TRONCON_LOG_FID_METADONNEE_FK
-FOREIGN KEY (fid_metadonnee)
-REFERENCES G_GEO.TA_METADONNEE(objectid);
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_TRONCON_LOG_FID_TRONCON_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon)
@@ -547,11 +320,9 @@ CREATE INDEX TA_TRONCON_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fi
 CREATE INDEX TA_TRONCON_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_TRONCON_LOG_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_metadonnee)
-    TABLESPACE G_ADT_INDX;
-    
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TRONCON_LOG TO G_ADMIN_SIG;
+ 
 /*
 La table TA_TYPE_VOIE regroupe tous les types de voies de la base voie tels que les avenues, boulevards, rues, senteir, etc.
 */
@@ -581,6 +352,7 @@ CREATE INDEX TA_TYPE_VOIE_CODE_TYPE_VOIE_IDX ON G_BASE_VOIE.TA_TYPE_VOIE(code_ty
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TYPE_VOIE TO G_ADMIN_SIG;
+ 
 /*
 La table TA_VOIE regroupe tous les informations de chaque voie de la base voie.
 */
@@ -596,8 +368,7 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE(
     fid_pnom_modification NUMBER(38,0) NOT NULL,
     fid_typevoie NUMBER(38,0) NOT NULL,
     fid_genre_voie NUMBER(38,0) NOT NULL,
-    fid_rivoli NUMBER(38,0) NULL,
-    fid_metadonnee NUMBER(38,0) NULL
+    fid_rivoli NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -612,7 +383,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_pnom_modification IS 'Clé étrangère
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_typevoie IS 'Clé étangère vers la table TA_TYPE_VOIE permettant de catégoriser les voies de la base.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_genre_voie IS 'Clé étrangère vers la table TA_LIBELLE permettant de connaître le genre du nom de la voie : masculin, féminin, neutre et non-identifié.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_rivoli IS 'Clé étrangère vers la table TA_RIVOLI permettant d''associer un code RIVOLI à chaque voie.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des voies (MEL ou IGN).';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_VOIE 
@@ -639,17 +409,12 @@ REFERENCES G_BASE_VOIE.ta_type_voie(objectid);
 ALTER TABLE G_BASE_VOIE.TA_VOIE
 ADD CONSTRAINT TA_VOIE_FID_GENRE_VOIE_FK
 FOREIGN KEY (fid_genre_voie)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.ta_libelle(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_VOIE
 ADD CONSTRAINT TA_VOIE_FID_RIVOLI_FK
 FOREIGN KEY (fid_rivoli)
 REFERENCES G_BASE_VOIE.ta_rivoli(objectid);
-
-ALTER TABLE G_BASE_VOIE.TA_VOIE
-ADD CONSTRAINT TA_VOIE_FID_METADONNEE_FK
-FOREIGN KEY (fid_metadonnee)
-REFERENCES G_GEO.ta_metadonnee(objectid);
 
 -- 5. Création des index sur les clés étrangères
 CREATE INDEX TA_VOIE_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_VOIE(fid_pnom_saisie)
@@ -667,55 +432,9 @@ CREATE INDEX TA_VOIE_FID_GENRE_VOIE_IDX ON G_BASE_VOIE.TA_VOIE(fid_genre_voie)
 CREATE INDEX TA_VOIE_FID_RIVOLI_IDX ON G_BASE_VOIE.TA_VOIE(fid_rivoli)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_VOIE_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_VOIE(fid_metadonnee)
-    TABLESPACE G_ADT_INDX;
-    
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_VOIE TO G_ADMIN_SIG;
-/*
-La table TA_HIERARCHISATION_VOIE permet de hiérarchiser les voies en associant les voies secondaires à leur voie principale.
-*/
-
--- 1. Création de la table TA_HIERARCHISATION_VOIE
-CREATE TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE(
-    fid_voie_principale NUMBER(38,0) NOT NULL,
-    fid_voie_secondaire NUMBER(38,0) NOT NULL
-);
-
--- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE IS 'Table permettant de hiérarchiser les voies en associant les voies secondaires à leur voie principale.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_HIERARCHISATION_VOIE.fid_voie_principale IS 'Clé primaire (partie 1) de la table et clé étrangère vers TA_VOIE permettant d''associer une voie principale à une voie secondaire';
-COMMENT ON COLUMN G_BASE_VOIE.TA_HIERARCHISATION_VOIE.fid_voie_secondaire IS 'Clé primaire (partie 2) et clé étrangère vers TA_VOIE permettant d''associer une voie secondaire à une voie principale.';
-
--- 3. Création de la clé primaire
-ALTER TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE 
-ADD CONSTRAINT TA_HIERARCHISATION_VOIE_PK 
-PRIMARY KEY("FID_VOIE_PRINCIPALE", "FID_VOIE_SECONDAIRE") 
-USING INDEX TABLESPACE "G_ADT_INDX";
-
--- 4. Création des clés étrangères
-ALTER TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE
-ADD CONSTRAINT TA_HIERARCHISATION_VOIE_FID_VOIE_PRINCIPALE_FK 
-FOREIGN KEY (fid_voie_principale)
-REFERENCES G_BASE_VOIE.ta_voie(objectid);
-
-ALTER TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE
-ADD CONSTRAINT TA_HIERARCHISATION_VOIE_FID_VOIE_SECONDAIRE_FK 
-FOREIGN KEY (fid_voie_secondaire)
-REFERENCES G_BASE_VOIE.ta_voie(objectid);
-
--- 5. Création des index sur les clés étrangères et autres champs
-CREATE INDEX TA_HIERARCHISATION_VOIE_FID_VOIE_PRINCIPALE_IDX ON G_BASE_VOIE.TA_HIERARCHISATION_VOIE(fid_voie_principale)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_HIERARCHISATION_VOIE_FID_VOIE_SECONDAIRE_IDX ON G_BASE_VOIE.TA_HIERARCHISATION_VOIE(fid_voie_secondaire)
-    TABLESPACE G_ADT_INDX;
-
--- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.TA_HIERARCHISATION_VOIE TO G_ADMIN_SIG;
-
-/
-
+ 
 /*
 La table TA_VOIE_LOG rassemble toutes les évolutions de chaque voie issue de TA_VOIE.
 */
@@ -731,8 +450,7 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE_LOG(
     fid_rivoli NUMBER(38,0) NOT NULL,
     fid_voie NUMBER(38,0) NOT NULL,
     fid_type_action NUMBER(38,0) NOT NULL,
-    fid_pnom NUMBER(38,0),
-    fid_metadonnee NUMBER(38,0) NULL
+    fid_pnom NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -747,7 +465,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_rivoli IS 'Clé étrangère vers l
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_voie IS 'Identifiant de tronçon de la table TA_VOIE permettant d''identifier la voie qui a été créée, modifiée ou supprimée.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE, permettant d''associer un type d''action à une voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent à la voie qu''il a créé, modifié ou supprimé.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître notamment la source et l''organisme créateur de la données.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG 
@@ -759,17 +476,12 @@ USING INDEX TABLESPACE "G_ADT_INDX";
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG
 ADD CONSTRAINT TA_VOIE_LOG_FID_TYPE_ACTION_FK
 FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.ta_libelle(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG
 ADD CONSTRAINT TA_VOIE_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
-
-ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG
-ADD CONSTRAINT TA_VOIE_LOG_FID_METADONNEE_FK
-FOREIGN KEY (fid_metadonnee)
-REFERENCES G_GEO.ta_metadonnee(objectid);
 
 -- 5. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_VOIE_LOG_FID_TYPEVOIE_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_voie)
@@ -781,11 +493,9 @@ CREATE INDEX TA_VOIE_LOG_FID_FANTOIR_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_type_act
 CREATE INDEX TA_VOIE_LOG_FID_GENRE_VOIE_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_VOIE_LOG_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_metadonnee)
-    TABLESPACE G_ADT_INDX;
-
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.TA_VOIE_LOG TO G_ADMIN_SIG;/*
+GRANT SELECT ON G_BASE_VOIE.TA_VOIE_LOG TO G_ADMIN_SIG; 
+/*
 La table TA_RELATION_TRONCON_VOIE regroupant tous les types et états permettant de catégoriser les objets de la base voie.
 */
 
@@ -840,6 +550,7 @@ CREATE INDEX TA_RELATION_TRONCON_VOIE_FID_TRONCON_IDX ON G_BASE_VOIE.TA_RELATION
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE TO G_ADMIN_SIG;
+ 
 /*
 La table TA_RELATION_TRONCON_VOIE_LOG regroupant tous les types et états permettant de catégoriser les objets de la base voie.
 */
@@ -879,7 +590,7 @@ USING INDEX TABLESPACE "G_ADT_INDX";
 ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG
 ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_LOG_FID_TYPE_ACTION_FK
 FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG
 ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_LOG_FID_PNOM_FK
@@ -898,6 +609,7 @@ CREATE INDEX TA_RELATION_TRONCON_VOIE_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_RELATIO
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG TO G_ADMIN_SIG;
+ 
 /*
 La table TA_SEUIL regroupe tous les seuils de la base voie.
 */
@@ -907,6 +619,7 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
     geom SDO_GEOMETRY,
     cote_troncon CHAR(1),
+    code_insee VARCHAR2(4000) AS(GET_CODE_INSEE_CONTENU(geom)),
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
@@ -919,6 +632,7 @@ COMMENT ON TABLE G_BASE_VOIE.TA_SEUIL IS 'Table contenant les seuils de la Base 
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.objectid IS 'Clé primaire auto-incrémentée de la table identifiant chaque seuil. Cette pk remplace l''ancien identifiant idseui.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.geom IS 'Géométrie de type point de chaque seuil présent dans la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.cote_troncon IS 'Côté du tronçon auquel est rattaché le seuil. G = gauche ; D = droite. En agglomération le sens des tronçons est déterminé par ses numéros de seuils. En d''autres termes il commence au niveau du seuil dont le numéro est égal à 1. Hors agglomération, le sens du tronçon dépend du sens de circulation pour les rues à sens unique. Pour les rues à double-sens chaque tronçon est doublé donc leur sens dépend aussi du sens de circulation;';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque voie le code insee de la commune dans laquelle elle se trouve (issue de la table G_REFERENTIEL.MEL_COMMUNES).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_saisie IS 'date de saisie du seuil (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_modification IS 'Dernière date de modification du seuil(par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un seuil.';
@@ -962,21 +676,16 @@ ADD CONSTRAINT TA_SEUIL_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
 
--- 7. Création des index sur les clés étrangères et autres
+-- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_SEUIL_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
 
--- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du seuil. 
--- Il créé également un champ virtuel dans lequel on peut aller chercher ce code INSEE.
-CREATE INDEX TA_SEUIL_CODE_INSEE_IDX
-ON G_BASE_VOIE.TA_SEUIL(GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', geom))
-TABLESPACE G_ADT_INDX;
-
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_SEUIL TO G_ADMIN_SIG;
+ 
 /*
 La table TA_SEUIL_LOG  permet d''avoir l''historique de toutes les évolutions des seuils de la base voie.
 */
@@ -998,7 +707,7 @@ COMMENT ON TABLE G_BASE_VOIE.TA_SEUIL_LOG IS 'Table de log de la table TA_SEUIL 
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.objectid IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.geom IS 'Géométrie de type point de chaque seuil présent dans la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.cote_troncon IS 'Côté du tronçon auquel est rattaché le seuil. G = gauche ; D = droite. En agglomération le sens des tronçons est déterminé par ses numéros de seuils. En d''autres termes il commence au niveau du seuil dont le numéro est égal à 1. Hors agglomération, le sens du tronçon dépend du sens de circulation pour les rues à sens unique. Pour les rues à double-sens chaque tronçon est doublé donc leur sens dépend aussi du sens de circulation.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque seuil le code insee de la commune dans laquelle il se trouve (issue de la table G_REFERENTIEL.MEL_COMMUNES).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque rue le code insee de la commune dans laquelle elle se trouve (issue de la table G_REFERENTIEL.A_COMMUNES).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.date_action IS 'Date de création, modification ou suppression d''un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_seuil IS 'Clé étrangère vers la table TA_SEUIL permettant de savoir sur quel seuil les actions ont été entreprises.';
@@ -1034,28 +743,26 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tabl
 ALTER TABLE G_BASE_VOIE.TA_SEUIL_LOG
 ADD CONSTRAINT TA_SEUIL_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_SEUIL_LOG
 ADD CONSTRAINT TA_SEUIL_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
--- 7. Création des index sur les clés étrangères et autres
+-- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_SEUIL_LOG_FID_SEUIL_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil)
     TABLESPACE G_ADT_INDX;
-    
+
 CREATE INDEX TA_SEUIL_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_type_action)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_SEUIL_LOG_CODE_INSEE_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(code_insee)
-    TABLESPACE G_ADT_INDX;
-
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_SEUIL_LOG TO G_ADMIN_SIG;
+ 
 /*
 La table TA_INFOS_SEUIL regroupe le détail des seuils de la base voie.
 */
@@ -1122,6 +829,7 @@ CREATE INDEX TA_INFOS_SEUIL_NUMERO_SEUIL_IDX ON G_BASE_VOIE.TA_INFOS_SEUIL(numer
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_SEUIL TO G_ADMIN_SIG;
+ 
 /*
 La table TA_INFOS_SEUIL_LOG regroupe toutes les évlutions des objets présents dans la table TA_INFOS_SEUIL de la base voie.
 */
@@ -1161,7 +869,7 @@ USING INDEX TABLESPACE "G_ADT_INDX";
 ALTER TABLE G_BASE_VOIE.TA_INFOS_SEUIL_LOG
 ADD CONSTRAINT TA_INFOS_SEUIL_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.ta_libelle(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_INFOS_SEUIL_LOG
 ADD CONSTRAINT TA_INFOS_SEUIL_LOG_FID_PNOM_FK
@@ -1180,6 +888,7 @@ CREATE INDEX TA_INFOS_SEUIL_LOG_FID_INFOS_SEUIL_IDX ON G_BASE_VOIE.TA_INFOS_SEUI
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_SEUIL_LOG TO G_ADMIN_SIG;
+ 
 /*
 La table TA_RELATION_TRONCON_SEUIL fait la relation entre les tronçons de la table TA_TRONCON et les seuils de la table TA_SEUIl qui s''y rattachent dans la base voie.
 */
@@ -1223,30 +932,36 @@ CREATE INDEX TA_RELATION_TRONCON_SEUIL_FID_SEUIL_IDX ON G_BASE_VOIE.TA_RELATION_
 GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL TO G_ADMIN_SIG;
 
 /
+ 
 /*
-La table TA_POINT_INTERET regroupe toutes les géométries des point d''intérêts de la base voie.
+La table TA_POINT_INTERET regroupe tous les point d''intérêts de la base voie.
 */
 
 -- 1. Création de la table TA_POINT_INTERET
 CREATE TABLE G_BASE_VOIE.TA_POINT_INTERET(
     objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
     geom SDO_GEOMETRY,
+    nom VARCHAR2(200),
+    complement_infos VARCHAR2(250),
+    code_insee VARCHAR2(4000 BYTE) GENERATED ALWAYS AS (GET_CODE_INSEE_CONTENU(geom)) VIRTUAL, 
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
+    fid_libelle NUMBER(38,0),
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL,
-    temp_idpoi NUMBER(38,0) NOT NULL
+    fid_pnom_modification NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_POINT_INTERET IS 'Table regroupant toutes les géométries des points d''intérêt de type mairie ou mairie de quartier. Ancienne table : ILTALPU.';
+COMMENT ON TABLE G_BASE_VOIE.TA_POINT_INTERET IS 'Table regroupant les points d''intérêt de type mairie ou mairie de quartier. Ancienne table : ILTALPU.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.objectid IS 'Clé primaire auto-incrémentée de la table identifiant chaque point d''intérêt. Cette pk remplace l''ancien identifiant cnumlpu.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.geom IS 'Géométrie de type point de chaque point d''intérêt présent dans la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.nom IS 'Nom du Point d''intérêt correspondant au champ CLIBLPU de l''ancienne table ILTALPU.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.complement_infos IS 'Complément d''informations du point d''intérêt.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque point d''intérêt le code insee de la commune dans laquelle il se trouve (issue de la table G_REFERENTIEL.MEL_COMMUNE).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.date_saisie IS 'Date de saisie du point d''intérêt (par défaut il s''agit de la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.date_modification IS 'Dernière date de modification du point d''intérêt (par défaut il s''agit de la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un point d''intérêt.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un point d''intérêt.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.temp_idpoi IS 'Champ temporaire permettant de stocker l''identifiant de chaque POI et de faire la migration. A l''issue de cette dernière, ce champ doit être supprimé.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET 
@@ -1285,19 +1000,24 @@ ADD CONSTRAINT TA_POINT_INTERET_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
 
--- 7. Création des index sur les clés étrangères et autres
+ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET
+ADD CONSTRAINT TA_POINT_INTERET_FID_LIBELLE_FK
+FOREIGN KEY (fid_libelle)
+REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
+
+-- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_POINT_INTERET_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_POINT_INTERET(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_POINT_INTERET_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_POINT_INTERET(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_POINT_INTERET_CODE_INSEE_IDX
-ON G_BASE_VOIE.TA_POINT_INTERET(GET_CODE_INSEE_CONTAIN_POINT('TA_POINT_INTERET', geom))
-TABLESPACE G_ADT_INDX;
+CREATE INDEX TA_POINT_INTERET_FID_LIBELLE_IDX ON G_BASE_VOIE.TA_POINT_INTERET(fid_libelle)
+    TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_POINT_INTERET TO G_ADMIN_SIG;
+ 
 /*
 La table TA_POINT_INTERET_LOG  permet d''avoir l''historique de toutes les évolutions des seuils de la base voie.
 */
@@ -1306,8 +1026,11 @@ La table TA_POINT_INTERET_LOG  permet d''avoir l''historique de toutes les évol
 CREATE TABLE G_BASE_VOIE.TA_POINT_INTERET_LOG(
     objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
     geom SDO_GEOMETRY NOT NULL,
+    complement_infos VARCHAR2(250) NULL,
     code_insee VARCHAR2(4000) NOT NULL,
+    nom VARCHAR2(200) NOT NULL,
     date_action DATE NOT NULL,
+    fid_libelle NUMBER(38,0) NOT NULL,
     fid_point_interet NUMBER(38,0) NOT NULL,
     fid_type_action NUMBER(38,0),
     fid_pnom NUMBER(38,0) NOT NULL
@@ -1317,8 +1040,11 @@ CREATE TABLE G_BASE_VOIE.TA_POINT_INTERET_LOG(
 COMMENT ON TABLE G_BASE_VOIE.TA_POINT_INTERET_LOG IS 'Table de log de la table TA_POINT_INTERET permettant d''avoir l''historique de toutes les évolutions des POI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.objectid IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.geom IS 'Géométrie de type point de chaque objet de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.complement_infos IS 'Complément d''informations du point d''intérêt.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.code_insee IS 'Code INSEE de la commune d''appartenance du POI.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.nom IS 'Nom du point d''intérêt correspondant au champ CLIBLPU de l''ancienne table ILTALPU.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.fid_libelle IS 'Identifiant de la table TA_LIBELLE permettant de connaître le type de chaque POI (point d''intérêt).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.fid_point_interet IS 'Identifiant de la table TA_POINT_INTERET permettant de savoir sur quel POI les actions ont été entreprises.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.code_insee IS 'Champ permettant d''associer à chaque POI le code insee de la commune dans laquelle il se trouve (issue de la table G_REFERENTIEL.MEL_COMMUNES).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.date_action IS 'Date de création, modification ou suppression d''un POI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le POI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au POI qu''il a créé, modifié ou supprimé.';
@@ -1353,7 +1079,7 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tabl
 ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET_LOG
 ADD CONSTRAINT TA_POINT_INTERET_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
+REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET_LOG
 ADD CONSTRAINT TA_POINT_INTERET_LOG_FID_PNOM_FK
@@ -1370,156 +1096,10 @@ CREATE INDEX TA_POINT_INTERET_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_POINT_IN
 CREATE INDEX TA_POINT_INTERET_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_POINT_INTERET_LOG_CODE_INSEE_IDX ON G_BASE_VOIE.TA_POINT_INTERET_LOG(code_insee)
-    TABLESPACE G_ADT_INDX;
-
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_POINT_INTERET_LOG TO G_ADMIN_SIG;
-
+ 
 /*
-La table TA_INFOS_POINT_INTERET regroupe tous les point d''intérêts de la base voie.
-*/
-
--- 1. Création de la table TA_INFOS_POINT_INTERET
-CREATE TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET(
-    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
-    nom VARCHAR2(200),
-    complement_infos VARCHAR2(250),
-    date_saisie DATE DEFAULT sysdate NOT NULL,
-    date_modification DATE DEFAULT sysdate NOT NULL,
-    fid_libelle NUMBER(38,0),
-    fid_point_interet NUMBER(38,0),
-    fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL
-);
-
--- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET IS 'Table contenant les informations de tous les points d''intérêts que nous gérons, c''est-à-dire les mairies et les mairies annexes. Ancienne table : ILTALPU.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.objectid IS 'Clé primaire auto-incrémentée de la table identifiant chaque point d''intérêt. Cette pk remplace l''ancien identifiant cnumlpu.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.nom IS 'Nom du Point d''intérêt correspondant au champ CLIBLPU de l''ancienne table ILTALPU.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.complement_infos IS 'Complément d''informations du point d''intérêt.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.date_saisie IS 'Date de saisie du point d''intérêt (par défaut il s''agit de la date du jour).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.date_modification IS 'Dernière date de modification du point d''intérêt (par défaut il s''agit de la date du jour).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.fid_libelle IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un point d''intérêt.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.fid_point_interet IS 'Clé étrangère vers la table TA_POINT_INTERET permettant d''associer un POI à sa géométrie.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un point d''intérêt.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un point d''intérêt.';
-
--- 3. Création de la clé primaire
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET 
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_PK 
-PRIMARY KEY("OBJECTID") 
-USING INDEX TABLESPACE "G_ADT_INDX";
-
--- 6. Création des clés étrangères
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_FID_PNOM_SAISIE_FK
-FOREIGN KEY (fid_pnom_saisie)
-REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
-
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_FID_PNOM_MODIFICATION_FK
-FOREIGN KEY (fid_pnom_modification)
-REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
-
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_FID_LIBELLE_FK
-FOREIGN KEY (fid_libelle)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
-
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_FID_POINT_INTERET_FK
-FOREIGN KEY (fid_point_interet)
-REFERENCES G_BASE_VOIE.TA_POINT_INTERET(objectid);
-
--- 7. Création des index sur les clés étrangères
-CREATE INDEX TA_INFOS_POINT_INTERET_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET(fid_pnom_saisie)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_INFOS_POINT_INTERET_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET(fid_pnom_modification)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_INFOS_POINT_INTERET_FID_LIBELLE_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET(fid_libelle)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_INFOS_POINT_INTERET_FID_INFOS_POINT_INTERET_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET(fid_point_interet)
-    TABLESPACE G_ADT_INDX;
-
--- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET TO G_ADMIN_SIG;
-
-/
-
-
-/*
-La table TA_INFOS_POINT_INTERET_LOG  permet d''avoir l''historique de toutes les évolutions des seuils de la base voie.
-*/
-
--- 1. Création de la table TA_INFOS_POINT_INTERET_LOG
-CREATE TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(
-    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
-    complement_infos VARCHAR2(250) NULL,
-    nom VARCHAR2(200) NOT NULL,
-    date_action DATE NOT NULL,
-    fid_infos_point_interet NUMBER(38,0) NOT NULL,
-    fid_point_interet NUMBER(38,0) NOT NULL,
-    fid_libelle NUMBER(38,0) NOT NULL,
-    fid_type_action NUMBER(38,0),
-    fid_pnom NUMBER(38,0) NOT NULL
-);
-
--- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG IS 'Table d''historisation des actions effectuées sur les POI de la base voie.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.objectid IS 'Clé primaire auto-incrémentée de la table.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.complement_infos IS 'Complément d''informations du point d''intérêt.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.nom IS 'Nom du point d''intérêt correspondant au champ CLIBLPU de l''ancienne table ILTALPU.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.date_action IS 'Date de création, modification ou suppression d''un POI.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_infos_point_interet IS 'Identifiant de la table TA_INFOS_POINT_INTERET permettant de savoir sur quel POI les actions ont été entreprises.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_point_interet IS 'Identifiant de la table TA_POINT_INTERET permettant de relier la géométrie du point d''intérêt (TA_POINT_INTERET) à ses informations.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_libelle IS 'Identifiant de la table TA_LIBELLE permettant de connaître le type de chaque POI (point d''intérêt).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le POI.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au POI qu''il a créé, modifié ou supprimé.';
-
--- 3. Création de la clé primaire
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG 
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_LOG_PK 
-PRIMARY KEY("OBJECTID") 
-USING INDEX TABLESPACE "G_ADT_INDX";
-
--- 4. Création des clés étrangères
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_LOG_FID_TYPE_ACTION_FK 
-FOREIGN KEY (fid_type_action)
-REFERENCES G_GEO.TA_LIBELLE(objectid);
-
-ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG
-ADD CONSTRAINT TA_INFOS_POINT_INTERET_LOG_FID_PNOM_FK
-FOREIGN KEY (fid_pnom)
-REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
-
--- 5. Création des index sur les clés étrangères et autres champs
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_INFOS_POINT_INTERET_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_POINT_INTERET_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_point_interet)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_type_action)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_pnom)
-    TABLESPACE G_ADT_INDX;
-
--- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG TO G_ADMIN_SIG;
-
-/
-/*
-Création d'un champ temporaire nécessaire à l'import des données dans les tables finales de la Base Voie
-*/
-
-ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11);
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';/*
 Déclencheur permettant de remplir la table de logs TA_INFOS_SEUIL_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_INFOS_SEUIL avec leur date et le pnom de l'agent les ayant effectuées.
 */
@@ -1530,7 +1110,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    v_id_insertion NUMBER(38,0);
+    v_id_creation NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
 BEGIN
@@ -1541,40 +1121,20 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'insertion';
-
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'édition';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'suppression';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
+    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
+    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_infos_seuil, numero_seuil, numero_parcelle, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :new.numero_seuil, 
-                    :new.numero_parcelle, 
-                    :new.complement_numero_seuil, 
+                    :old.numero_seuil, 
+                    :old.numero_parcelle, 
+                    :old.complement_numero_seuil, 
                     sysdate,
-                    :new.fid_seuil,
-                    v_id_insertion,
+                    :old.fid_seuil,
+                    v_id_creation,
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
@@ -1608,6 +1168,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de remplir la table de logs TA_RELATION_TRONCON_VOIE_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_RELATION_TRONCON_VOIE avec leur date et le pnom de l'agent les ayant effectuées.
@@ -1619,7 +1180,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    v_id_insertion NUMBER(38,0);
+    v_id_creation NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
 BEGIN
@@ -1630,38 +1191,18 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'insertion';
-
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'édition';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'suppression';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
+    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
+    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :new.fid_voie, 
-                    :new.fid_troncon, 
+                    :old.fid_voie, 
+                    :old.fid_troncon, 
                     sysdate,
-                    v_id_insertion,
+                    v_id_creation,
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
@@ -1691,6 +1232,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de remplir la table de logs TA_SEUIL_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_SEUIL avec leur date et le pnom de l'agent les ayant effectuées.
@@ -1702,7 +1244,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    v_id_insertion NUMBER(38,0);
+    v_id_creation NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
 BEGIN
@@ -1713,47 +1255,24 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'insertion';
-
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'édition';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'suppression';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
+    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
+    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :new.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :new.geom),
-                    :new.cote_troncon,
+
+                    :old.cote_troncon,
                     sysdate,
-                    v_id_insertion,
+                    v_id_creation,
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
-                    :old.objectid,
-                    :old.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
+                    :old.objectid, 
                     :old.cote_troncon,
                     sysdate,
                     v_id_modification,
@@ -1761,11 +1280,9 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
         VALUES(
-                :old.objectid,
-                :old.geom,
-                GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom), 
+                :old.objectid, 
                 :old.cote_troncon,
                 sysdate,
                 v_id_suppression,
@@ -1777,6 +1294,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_TRONCON avec leur date et le pnom de l'agent les ayant effectuées.
@@ -1788,7 +1306,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    v_id_insertion NUMBER(38,0);
+    v_id_creation NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
 BEGIN
@@ -1799,60 +1317,37 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT
-        a.objectid INTO v_id_insertion
-    FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
-    WHERE
-        b.valeur = 'insertion';
-
-    SELECT
-        a.objectid INTO v_id_modification
-    FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
-    WHERE
-        b.valeur = 'édition';
-
-    SELECT
-        a.objectid INTO v_id_suppression
-    FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
-    WHERE
-        b.valeur = 'suppression';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
+    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'édition';
+    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
-                    :new.geom,
+                    :old.geom,
                     sysdate,
-                    v_id_insertion,
-                    v_id_agent,
-                    :new.fid_metadonnee);
+                    v_id_creation,
+                    v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
             VALUES(
-                    :old.objectid,
+                    :old.objectid, 
                     :old.geom,
                     sysdate,
                     v_id_modification,
-                    v_id_agent,
-                    :old.fid_metadonnee);
+                    v_id_agent);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
         VALUES(
-                :old.objectid,
+                :old.objectid, 
                 :old.geom,
                 sysdate,
                 v_id_suppression,
-                v_id_agent,
-                :old.fid_metadonnee);
+                v_id_agent);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -1860,6 +1355,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_TRONCON avec leur date et le pnom de l'agent les ayant effectuées.
@@ -1871,7 +1367,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    v_id_insertion NUMBER(38,0);
+    v_id_creation NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
 BEGIN
@@ -1882,72 +1378,49 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT
-        a.objectid INTO v_id_insertion
-    FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
-    WHERE
-        b.valeur = 'insertion';
-
-    SELECT
-        a.objectid INTO v_id_modification
-    FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
-    WHERE
-        b.valeur = 'édition';
-
-    SELECT
-        a.objectid INTO v_id_suppression
-    FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
-    WHERE
-        b.valeur = 'suppression';
+    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
+    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
+    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
-                    :new.objectid,
-                    :new.fid_typevoie,
-                    :new.fid_rivoli,
-                    :new.complement_nom_voie,
-                    :new.libelle_voie,
-                    :new.fid_genre_voie,
+                    :new.objectid, 
+                    :old.fid_typevoie, 
+                    :old.fid_rivoli,
+                    :old.complement_nom_voie,
+                    :old.libelle_voie,
+                    :old.fid_genre_voie,
                     sysdate,
-                    v_id_insertion,
-                    v_id_agent,
-                    :new.fid_metadonnee);
+                    v_id_creation,
+                    v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
-                    :old.objectid,
-                    :old.fid_typevoie,
+                    :old.objectid, 
+                    :old.fid_typevoie, 
                     :old.fid_rivoli,
                     :old.complement_nom_voie,
                     :old.libelle_voie,
                     :old.fid_genre_voie,
                     sysdate,
                     v_id_modification,
-                    v_id_agent,
-                    :old.fid_metadonnee);
+                    v_id_agent);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-    INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+    INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
         VALUES(
-                :old.objectid,
-                :old.fid_typevoie,
+                :old.objectid, 
+                :old.fid_typevoie, 
                 :old.fid_rivoli,
                 :old.complement_nom_voie,
                 :old.libelle_voie,
                 :old.fid_genre_voie,
                 sysdate,
                 v_id_suppression,
-                v_id_agent,
-                :old.fid_metadonnee);
+                v_id_agent);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -1955,6 +1428,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de remplir la table de logs TA_POINT_INTERET_LOG dans laquelle sont enregistrés chaque création, 
 modification et suppression des données de la table TA_POINT_INTERET avec leur date et le pnom de l'agent les ayant effectuées.
@@ -1977,60 +1451,46 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'insertion';
-
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'édition';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'suppression';
+    SELECT a.objectid INTO v_id_insertion FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
+    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
+    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, complement_infos, nom, code_insee, date_action, fid_type_action, fid_pnom, fid_libelle)
             VALUES(
                     :new.objectid,
-                    :new.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :new.geom),
+                    :old.complement_infos,
+                    :old.nom,
+                    :old.code_insee,
                     sysdate,
                     v_id_insertion,
-                    v_id_agent);
+                    v_id_agent,
+                    :old.fid_libelle);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, complement_infos, nom, code_insee, date_action, fid_type_action, fid_pnom, fid_libelle)
             VALUES(
                     :new.objectid,
-                    :old.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
+                    :old.complement_infos,
+                    :old.nom,
+                    :old.code_insee,
                     sysdate,
                     v_id_modification,
-                    v_id_agent);
+                    v_id_agent,
+                    :old.fid_libelle);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, complement_infos, nom, code_insee, date_action, fid_type_action, fid_pnom, fid_libelle)
         VALUES(
                     :new.objectid,
-                    :old.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
+                    :old.complement_infos,
+                    :old.nom,
+                    :old.code_insee,
                     sysdate,
                     v_id_suppression,
-                    v_id_agent);
+                    v_id_agent,
+                    :old.fid_libelle);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -2038,89 +1498,7 @@ BEGIN
 END;
 
 /
-/*
-Déclencheur permettant de remplir la table de logs TA_INFOS_POINT_INTERET_LOG dans laquelle sont enregistrés chaque création, 
-modification et suppression des données de la table TA_INFOS_POINT_INTERET avec leur date et le pnom de l'agent les ayant effectuées.
-*/
-
-CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUD_TA_INFOS_POINT_INTERET_LOG
-BEFORE INSERT OR UPDATE OR DELETE ON G_BASE_VOIE.TA_INFOS_POINT_INTERET
-FOR EACH ROW
-DECLARE
-    username VARCHAR2(100);
-    v_id_agent NUMBER(38,0);
-    v_id_insertion NUMBER(38,0);
-    v_id_modification NUMBER(38,0);
-    v_id_suppression NUMBER(38,0);
-BEGIN
-    -- Sélection du pnom
-    SELECT sys_context('USERENV','OS_USER') into username from dual;
-
-    -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
-    SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
-
-    -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'insertion';
-
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'édition';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'suppression';
-
-    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
-            VALUES(
-                    :new.objectid,
-                    :new.complement_infos,
-                    :new.nom,
-                    sysdate,
-                    v_id_insertion,
-                    v_id_agent);
-    ELSE
-        IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
-            VALUES(
-                    :new.objectid,
-                    :old.complement_infos,
-                    :old.nom,
-                    sysdate,
-                    v_id_modification,
-                    v_id_agent);
-        END IF;
-    END IF;
-    IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
-        VALUES(
-                    :new.objectid,
-                    :old.complement_infos,
-                    :old.nom,
-                    sysdate,
-                    v_id_suppression,
-                    v_id_agent);
-    END IF;
-    EXCEPTION
-        WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_INFOS_POINT_INTERET_LOG','bjacq@lillemetropole.fr');
-END;
-
-/
+ 
 /*
 Déclencheur permettant de récupérer dans la table TA_INFOS_SEUIL, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
 */
@@ -2154,6 +1532,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de récupérer dans la table TA_SEUIL, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
 */
@@ -2188,6 +1567,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de récupérer dans la table TA_TRONCON, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
 */
@@ -2198,7 +1578,6 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    fid_mtd NUMBER(38,0);
 
 BEGIN
     -- Sélection du pnom
@@ -2207,15 +1586,13 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
-    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TA_AGENT. 
-    IF INSERTING THEN 
+    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TA_AGENT.
        :new.fid_pnom_saisie := v_id_agent;
        :new.fid_pnom_modification := v_id_agent;
     ELSE
-        -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le tronçon, présent dans TA_AGENT.
-        IF UPDATING THEN 
+        IF UPDATING THEN -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le tronçon, présent dans TA_AGENT.
              :new.date_modification := sysdate;
-             :new.fid_pnom_modification := v_id_agent;
+             :new.fid_pnom_modification := v_id_agent; 
         END IF;
     END IF;
 
@@ -2225,6 +1602,7 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de récupérer dans la table TA_VOIE, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
 */
@@ -2235,8 +1613,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    fid_mtd NUMBER(38,0);
-    
+         
 BEGIN
     -- Sélection du pnom
     SELECT sys_context('USERENV','OS_USER') into username from dual;
@@ -2244,8 +1621,7 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
-    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
-    IF INSERTING THEN
+    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
        :new.fid_pnom_saisie := v_id_agent;
        :new.fid_pnom_modification := v_id_agent;
     ELSE
@@ -2261,11 +1637,12 @@ BEGIN
 END;
 
 /
+ 
 /*
 Déclencheur permettant de récupérer dans la table TA_POINT_INTERET le pnom de l'agent ayant effectué la création et l'édition des objets.
 */
 
-CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_TA_POINT_INTERET_DATE_PNOM
+CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_POINT_INTERET_DATE_PNOM
 BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TA_POINT_INTERET
 FOR EACH ROW
 DECLARE
@@ -2294,37 +1671,4 @@ BEGIN
 END;
 
 /
-/*
-Déclencheur permettant de récupérer dans la table TA_INFOS_POINT_INTERET, les dates de création/modification des géométries des POI ainsi que le pnom de l'agent les ayant effectués.
-*/
-
-CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_TA_INFOS_POINT_INTERET_DATE_PNOM
-BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TA_INFOS_POINT_INTERET
-FOR EACH ROW
-DECLARE
-    username VARCHAR2(100);
-    v_id_agent NUMBER(38,0);
-             
-BEGIN
-    -- Sélection du pnom
-    SELECT sys_context('USERENV','OS_USER') into username from dual;
-
-    -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
-    SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
-
-    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la géométrie du POI, présent dans TA_AGENT.
-       :new.fid_pnom_saisie := v_id_agent;
-       :new.fid_pnom_modification := v_id_agent;
-    ELSE
-        IF UPDATING THEN -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié la géométrie du POI, présent dans TA_AGENT.
-             :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
-             :new.fid_pnom_modification := v_id_agent;
-        END IF;
-    END IF;
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - B_IUX_TA_INFOS_POINT_INTERET_DATE_PNOM','bjacq@lillemetropole.fr');
-END;
-
-/
+ 
