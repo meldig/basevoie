@@ -47,11 +47,23 @@ BEGIN
         a.valeur = 'genre du nom des voies'
         AND b.valeur IN('masculin', 'féminin', 'neutre', 'couple', 'non-identifié', 'non-renseigné');
 
+    -- 4.3. Pour les familles des points d'intérêts
+    INSERT INTO G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(fid_famille, fid_libelle)
+    SELECT
+        a.objectid,
+        b.objectid
+    FROM
+        G_BASE_VOIE.TA_FAMILLE a,
+        G_BASE_VOIE.TA_LIBELLE b
+    WHERE
+        a.valeur = 'administration: mairies, lmcu, prefecture, cg, cr,cite a,justice, tresor public'
+        AND b.valeur IN('mairie', 'mairie annexe', 'mairie quartier');
+
     -- 5. Insertion du code fantoir dans TEMP_VOIEVOI
-    --EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
     --COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
 
-    /*MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
+    MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
     USING(
         SELECT
             b.ccomvoi,
@@ -73,7 +85,7 @@ BEGIN
     )t
     ON (a.ccomvoi = t.ccomvoi)
     WHEN MATCHED THEN
-        UPDATE SET a.temp_code_fantoir = t.code_fantoir_et_cle_ctrl;*/
+        UPDATE SET a.temp_code_fantoir = t.code_fantoir_et_cle_ctrl;
 
     -- 6. Insertion des codes rivoli dans TA_RIVOLI
     -- 6.1. Insertion des codes rivoli complet (avec clé)
@@ -232,7 +244,7 @@ BEGIN
     -- 17. Désactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
-        INTO v_contrainte
+        --INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
@@ -241,6 +253,7 @@ BEGIN
         AND SEARCH_CONDITION_VC LIKE '%LIBELLE%';
 
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE DISABLE CONSTRAINT ' || v_contrainte;
+    ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE DISABLE CONSTRAINT SYS_C00449210;
 
     -- 18. Import des données dans TA_TYPE_VOIE
     -- 18.1. Import des type présents dans TYPEVOIE
@@ -249,7 +262,18 @@ BEGIN
         CCODTVO,
         LITYVOIE
     FROM
-        G_BASE_VOIE.TEMP_TYPEVOIE;
+        G_BASE_VOIE.TEMP_TYPEVOIE
+    WHERE
+        LITYVOIE IS NOT NULL;
+
+    INSERT INTO G_BASE_VOIE.TA_TYPE_VOIE(code_type_voie, libelle)
+    SELECT
+        CCODTVO,
+        'Libellé non-renseigné avant la migration'
+    FROM
+        G_BASE_VOIE.TEMP_TYPEVOIE
+    WHERE
+        LITYVOIE IS NULL;
     
     -- 18.2. Import des types de voies présents dans VOIEVOI mais absents de TYPEVOIE
     INSERT INTO G_BASE_VOIE.TA_TYPE_VOIE(code_type_voie, libelle)
@@ -481,7 +505,7 @@ BEGIN
 
     -- 27.4. Désactivation de la contrainte de FK du champ FID_VOIE    
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE DISABLE CONSTRAINT ' || v_contrainte;
-    
+
     -- 28. Import des relations tronçon/voie invalides dans TA_RELATION_TRONCON_VOIE
     INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_SAISIE, DATE_MODIFICATION, FID_PNOM_SAISIE, FID_PNOM_MODIFICATION) 
         SELECT
@@ -615,7 +639,7 @@ BEGIN
     -- 35.2.1 Sélection du nom de la contrainte de FK du champ FID_TRONCON
     SELECT
         CONSTRAINT_NAME
-        INTO v_contrainte
+        --INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
@@ -729,7 +753,7 @@ BEGIN
     -- 38. Insertion des points d'intérêt
     -- 38.1. Désactivation des triggers
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG DISABLE';
-    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_DATE_PNOM DISABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_POINT_INTERET_DATE_PNOM DISABLE';
 
     -- 38.2. Import des données invalides dans la table TA_POINT_INTERET
     INSERT INTO G_BASE_VOIE.TA_POINT_INTERET(objectid, geom, complement_infos, nom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_libelle)
@@ -863,12 +887,12 @@ BEGIN
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_SEUIL_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM ENABLE';
-    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_DATE_PNOM ENABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_POINT_INTERET_DATE_PNOM ENABLE';
     
     -- 40. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
-        INTO v_contrainte
+        --INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
