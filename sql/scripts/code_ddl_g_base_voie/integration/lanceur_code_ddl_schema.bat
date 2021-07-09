@@ -12,7 +12,8 @@ SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integratio
 SET /p USER="Veuillez saisir l'utilisateur Oracle : "
 SET /p MDP="Veuillez saisir le MDP : "
 SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
-type %chemin_code_fonction%\creation_get_code_insee.sql > %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
+type %chemin_code_fonction%\creation_get_code_insee_contenu.sql > %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
+|type %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql > %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 |type %chemin_code_table%\creation_ta_agent.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_famille.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
 | type %chemin_code_table%\creation_ta_rivoli.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^

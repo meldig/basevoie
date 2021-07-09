@@ -21,8 +21,8 @@ COMMENT ON TABLE G_BASE_VOIE.TA_VOIE IS 'Table rassemblant toutes les informatio
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.objectid IS 'Clé primaire auto-incrémentée de la table. Elle remplace l''ancien identifiant ccomvoie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.libelle_voie IS 'Nom de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.complement_nom_voie IS 'Complément du nom de la voie.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_saisie IS 'Date de saisie de la voie (automatique).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_modification IS 'Date de modification de la voie (via un trigger).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_saisie IS 'Date de saisie de la voie (par défaut la date du jour).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.date_modification IS 'Date de modification de la voie (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé une voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié une voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_typevoie IS 'Clé étangère vers la table TA_TYPE_VOIE permettant de catégoriser les voies de la base.';

@@ -287,7 +287,7 @@ BEGIN
                 GENRE IS NOT NULL;
                 
     -- 21. Mise à jour de la clé étrangère TA_VOIE.FID_RIVOLI 
-    -- 21.1. Pour les voies disposant d'un code fantoir complet
+    -- 21.1. Pour les voies dont le code fantoir ne disposent pas de clé de contrôle
     MERGE INTO G_BASE_VOIE.TA_VOIE a
     USING(
         SELECT
@@ -304,7 +304,7 @@ BEGIN
     WHEN MATCHED THEN
     UPDATE SET a.fid_rivoli = t.objectid;
      
-    -- 21.2. Pour les voies dont le code fantoir ne disposant pas de clé de contrôle
+    -- 21.2. Pour les voies disposant d'un code fantoir complet
     MERGE INTO G_BASE_VOIE.TA_VOIE a
     USING(
         SELECT
@@ -427,7 +427,7 @@ BEGIN
     -- 25. Désactivation du trigger de log de la table TA_RELATION_TRONCON_VOIE
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_RELATION_TRONCON_VOIE_LOG DISABLE';
 
-    -- 26. Désactivation des contraintes de clé trangère de la table TA_RELATION_TRONCON_VOIE   
+    -- 26. Désactivation des contraintes de clé étrangère de la table TA_RELATION_TRONCON_VOIE   
     -- 26.1. Sélection du nom de la contrainte de FK du champ FID_TRONCON
     SELECT
         CONSTRAINT_NAME
@@ -521,7 +521,7 @@ BEGIN
     FROM
         G_BASE_VOIE.TA_RELATION_TRONCON_VOIE;
 
-    -- 33. Import des relations tronçons/voies dans la table TA_RELATION_TRONCON_VOIE
+    -- 33. Import des relations tronçons/voies valides dans la table TA_RELATION_TRONCON_VOIE
     INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_SAISIE, DATE_MODIFICATION, FID_PNOM_SAISIE, FID_PNOM_MODIFICATION)
     SELECT
         a.objectid AS fid_troncon,
