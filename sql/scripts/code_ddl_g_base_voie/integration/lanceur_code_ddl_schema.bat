@@ -12,38 +12,41 @@ SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integratio
 SET /p USER="Veuillez saisir l'utilisateur Oracle : "
 SET /p MDP="Veuillez saisir le MDP : "
 SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
-type %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql > %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_fonction%\creation_get_code_insee_contenu.sql > %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_agent.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_famille.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_rivoli.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_libelle.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_relation_famille_libelle.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_troncon.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_troncon_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_type_voie.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_voie.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_relation_troncon_voie.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_relation_troncon_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_infos_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_infos_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_relation_troncon_seuil.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_point_interet.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_table%\creation_ta_point_interet_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_a_iud_ta_infos_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iud_ta_troncon_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iud_ta_voie_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iud_ta_point_interet_log.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_infos_seuil_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_seuil_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql ^
-| type %chemin_code_trigger%\creation_b_iux_ta_point_interet_date_pnom.sql >> %chemin_code_temp%\temp_code_ddl_schema.sql | echo. >> temp_code_ddl_schema.sql
+
+copy /b %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_contenu.sql + ^
+%chemin_code_table%\creation_ta_agent.sql + ^
+%chemin_code_table%\creation_ta_famille.sql + ^
+%chemin_code_table%\creation_ta_rivoli.sql + ^
+%chemin_code_table%\creation_ta_libelle.sql + ^
+%chemin_code_table%\creation_ta_relation_famille_libelle.sql + ^
+%chemin_code_table%\creation_ta_troncon.sql + ^
+%chemin_code_table%\creation_ta_troncon_log.sql + ^
+%chemin_code_table%\creation_ta_type_voie.sql + ^
+%chemin_code_table%\creation_ta_voie.sql + ^
+%chemin_code_table%\creation_ta_voie_log.sql + ^
+%chemin_code_table%\creation_ta_relation_troncon_voie.sql + ^
+%chemin_code_table%\creation_ta_relation_troncon_voie_log.sql + ^
+%chemin_code_table%\creation_ta_seuil.sql + ^
+%chemin_code_table%\creation_ta_seuil_log.sql + ^
+%chemin_code_table%\creation_ta_infos_seuil.sql + ^
+%chemin_code_table%\creation_ta_infos_seuil_log.sql + ^
+%chemin_code_table%\creation_ta_relation_troncon_seuil.sql + ^
+%chemin_code_table%\creation_ta_point_interet.sql + ^
+%chemin_code_table%\creation_ta_point_interet_log.sql + ^
+%chemin_code_vue%\creation_v_troncon_voie.sql + ^
+%chemin_code_trigger%\creation_a_iud_ta_infos_seuil_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_troncon_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_voie_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_point_interet_log.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_infos_seuil_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_seuil_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_point_interet_date_pnom.sql ^
+%chemin_code_temp%\temp_code_ddl_schema.sql
 
 :: 3. lancement de SQL plus.
 CD C:/ora12c/R1/BIN
