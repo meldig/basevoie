@@ -58,12 +58,18 @@ ADD CONSTRAINT TA_TRONCON_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
--- 7. Création des index sur les clés étrangères
+-- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TRONCON_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
+
+-- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du tronçon. 
+-- Il créé également un champ virtuel dans lequel on peut aller chercher ce code INSEE.
+CREATE INDEX TA_TRONCON_CODE_INSEE_IDX
+ON G_BASE_VOIE.TA_TRONCON(GET_CODE_INSEE_CHEVAUCHEMENT('TA_TRONCON', geom))
+TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TRONCON TO G_ADMIN_SIG;

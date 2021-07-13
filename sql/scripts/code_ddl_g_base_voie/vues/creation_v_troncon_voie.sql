@@ -78,13 +78,13 @@ AS(
         AND SDO_ANYINTERACT(a.geom, b.geom) = 'TRUE'
         AND SDO_CONTAINS(
                             b.geom,
-                             SDO_LRS.CONVERT_TO_STD_GEOM(
-                                                        SDO_LRS.LOCATE_PT(
-                                                                        SDO_LRS.CONVERT_TO_LRS_GEOM(a.GEOM,m.diminfo),
-                                                                        SDO_GEOM.SDO_LENGTH(a.GEOM,m.diminfo)/2
-                                                                        )
-                                                         )
-                            )='TRUE'
+                            SDO_LRS.CONVERT_TO_STD_GEOM(
+                                SDO_LRS.LOCATE_PT(
+                                    SDO_LRS.CONVERT_TO_LRS_GEOM(a.GEOM,m.diminfo),
+                                    SDO_GEOM.SDO_LENGTH(a.GEOM,m.diminfo)/2
+                                )
+                            )
+            )='TRUE'
 );
 
 -- 2. Création des commentaires de la vue
