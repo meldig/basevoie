@@ -12,7 +12,7 @@ ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
     As
     v_code_insee CHAR(8);
     BEGIN
-        -- Sélection du code insee de la commune dans laquelle l'objet est entièrement contenu
+        -- Sélection du code insee de la commune dans laquelle le centroïde de l''entité se situe
         SELECT
             b.code_insee INTO v_code_insee
         FROM
@@ -29,6 +29,15 @@ ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
                         )
                     )
                 )='TRUE';
+
+        IF v_code_insee IS NULL THEN -- Pour les lignes ou polygones situés à la frontière de la MEL et dont le centroïde peut être en-dehors de la métropole.
+            SELECT
+                b.code_insee INTO v_code_insee
+            FROM
+                G_REFERENTIEL.MEL_COMMUNE b,
+            WHERE
+                SDO_ANYINTERACT(v_geometry, b.geom) = 'TRUE';
+        END IF;
 
         RETURN v_code_insee;
         EXCEPTION

@@ -28,11 +28,11 @@ BEGIN
         INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_infos_seuil, numero_seuil, numero_parcelle, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :old.numero_seuil, 
-                    :old.numero_parcelle, 
-                    :old.complement_numero_seuil, 
+                    :new.numero_seuil, 
+                    :new.numero_parcelle, 
+                    :new.complement_numero_seuil, 
                     sysdate,
-                    :old.fid_seuil,
+                    :new.fid_seuil,
                     v_id_creation,
                     v_id_agent);
     ELSE

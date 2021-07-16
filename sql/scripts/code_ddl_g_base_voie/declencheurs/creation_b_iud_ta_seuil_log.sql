@@ -25,19 +25,22 @@ BEGIN
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-
-                    :old.cote_troncon,
+                    :new.geom,
+                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :new.geom),
+                    :new.cote_troncon,
                     sysdate,
                     v_id_creation,
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
-                    :old.objectid, 
+                    :old.objectid,
+                    :old.geom,
+                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :old.geom),
                     :old.cote_troncon,
                     sysdate,
                     v_id_modification,
@@ -45,9 +48,11 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, cote_troncon, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom)
         VALUES(
-                :old.objectid, 
+                :old.objectid,
+                :old.geom,
+                GET_CODE_INSEE_CONTENU('TA_SEUIL', :old.geom), 
                 :old.cote_troncon,
                 sysdate,
                 v_id_suppression,

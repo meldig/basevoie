@@ -28,11 +28,11 @@ BEGIN
         INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :old.fid_typevoie, 
-                    :old.fid_rivoli,
-                    :old.complement_nom_voie,
-                    :old.libelle_voie,
-                    :old.fid_genre_voie,
+                    :new.fid_typevoie, 
+                    :new.fid_rivoli,
+                    :new.complement_nom_voie,
+                    :new.libelle_voie,
+                    :new.fid_genre_voie,
                     sysdate,
                     v_id_creation,
                     v_id_agent);

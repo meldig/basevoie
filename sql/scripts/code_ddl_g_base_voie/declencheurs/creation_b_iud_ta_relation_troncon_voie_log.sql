@@ -28,8 +28,8 @@ BEGIN
         INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :old.fid_voie, 
-                    :old.fid_troncon, 
+                    :new.fid_voie, 
+                    :new.fid_troncon, 
                     sysdate,
                     v_id_creation,
                     v_id_agent);

@@ -33,7 +33,8 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql + ^
 %chemin_code_table%\creation_ta_infos_seuil_log.sql + ^
 %chemin_code_table%\creation_ta_relation_troncon_seuil.sql + ^
 %chemin_code_table%\creation_ta_point_interet.sql + ^
-%chemin_code_table%\creation_ta_point_interet_log.sql + ^
+%chemin_code_table%\creation_ta_infos_point_interet.sql + ^
+%chemin_code_table%\creation_ta_infos_point_interet_log.sql + ^
 %chemin_code_vue%\creation_v_troncon_voie.sql + ^
 %chemin_code_trigger%\creation_a_iud_ta_infos_seuil_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql + ^
@@ -41,11 +42,13 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_troncon_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_voie_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_point_interet_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_infos_point_interet_log.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_infos_seuil_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_seuil_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_point_interet_date_pnom.sql ^
+%chemin_code_trigger%\creation_b_iux_ta_infos_point_interet_date_pnom.sql ^
 %chemin_code_temp%\temp_code_ddl_schema.sql
 
 :: 3. lancement de SQL plus.

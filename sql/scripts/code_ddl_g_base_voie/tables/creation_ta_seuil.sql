@@ -64,12 +64,16 @@ ADD CONSTRAINT TA_SEUIL_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
 
--- 7. Création des index sur les clés étrangères
+-- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_SEUIL_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_SEUIL_CODE_INSEE_IDX
+ON G_BASE_VOIE.TA_SEUIL(GET_CODE_INSEE_CONTENU('TA_SEUIL', geom))
+TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_SEUIL TO G_ADMIN_SIG;

@@ -28,7 +28,7 @@ BEGIN
         INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
-                    :old.geom,
+                    :new.geom,
                     sysdate,
                     v_id_creation,
                     v_id_agent);
