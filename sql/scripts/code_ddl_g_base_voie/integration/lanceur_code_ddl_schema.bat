@@ -8,13 +8,16 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du schema : "
 SET /p chemin_code_trigger="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des DECLENCHEURS du schema : "
 SET /p chemin_code_fonction="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des FONCTIONS du schema : "
+SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du schema : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
 SET /p USER="Veuillez saisir l'utilisateur Oracle : "
 SET /p MDP="Veuillez saisir le MDP : "
 SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 
-copy /b %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql + ^
-%chemin_code_fonction%\creation_get_code_insee_contenu.sql + ^
+copy /b %chemin_code_fonction%\creation_get_code_insee_contain.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_pourcentage.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_within_distance.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_troncon.sql + ^
 %chemin_code_table%\creation_ta_agent.sql + ^
 %chemin_code_table%\creation_ta_famille.sql + ^
 %chemin_code_table%\creation_ta_rivoli.sql + ^
@@ -47,7 +50,7 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_chevauchement.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_seuil_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql + ^
-%chemin_code_trigger%\creation_b_iux_ta_point_interet_date_pnom.sql ^
+%chemin_code_trigger%\creation_b_iux_ta_point_interet_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_infos_point_interet_date_pnom.sql ^
 %chemin_code_temp%\temp_code_ddl_schema.sql
 

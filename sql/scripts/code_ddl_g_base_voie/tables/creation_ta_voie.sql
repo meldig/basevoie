@@ -13,7 +13,8 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE(
     fid_pnom_modification NUMBER(38,0) NOT NULL,
     fid_typevoie NUMBER(38,0) NOT NULL,
     fid_genre_voie NUMBER(38,0) NOT NULL,
-    fid_rivoli NUMBER(38,0) NULL
+    fid_rivoli NUMBER(38,0) NULL,
+    fid_metadonnee NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -28,6 +29,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_pnom_modification IS 'Clé étrangère
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_typevoie IS 'Clé étangère vers la table TA_TYPE_VOIE permettant de catégoriser les voies de la base.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_genre_voie IS 'Clé étrangère vers la table TA_LIBELLE permettant de connaître le genre du nom de la voie : masculin, féminin, neutre et non-identifié.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_rivoli IS 'Clé étrangère vers la table TA_RIVOLI permettant d''associer un code RIVOLI à chaque voie.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des voies (MEL ou IGN).';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_VOIE 
@@ -61,6 +63,11 @@ ADD CONSTRAINT TA_VOIE_FID_RIVOLI_FK
 FOREIGN KEY (fid_rivoli)
 REFERENCES G_BASE_VOIE.ta_rivoli(objectid);
 
+ALTER TABLE G_BASE_VOIE.TA_VOIE
+ADD CONSTRAINT TA_VOIE_FID_METADONNEE_FK
+FOREIGN KEY (fid_metadonnee)
+REFERENCES G_GEO.ta_metadonnee(objectid);
+
 -- 5. Création des index sur les clés étrangères
 CREATE INDEX TA_VOIE_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_VOIE(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
@@ -77,5 +84,8 @@ CREATE INDEX TA_VOIE_FID_GENRE_VOIE_IDX ON G_BASE_VOIE.TA_VOIE(fid_genre_voie)
 CREATE INDEX TA_VOIE_FID_RIVOLI_IDX ON G_BASE_VOIE.TA_VOIE(fid_rivoli)
     TABLESPACE G_ADT_INDX;
 
+CREATE INDEX TA_VOIE_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_VOIE(fid_metadonnee)
+    TABLESPACE G_ADT_INDX;
+    
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_VOIE TO G_ADMIN_SIG;
