@@ -20,7 +20,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.objectid IS 'Clé prima
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.complement_infos IS 'Complément d''informations du point d''intérêt.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.nom IS 'Nom du point d''intérêt correspondant au champ CLIBLPU de l''ancienne table ILTALPU.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.date_action IS 'Date de création, modification ou suppression d''un POI.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_info_point_interet IS 'Identifiant de la table TA_INFOS_POINT_INTERET permettant de savoir sur quel POI les actions ont été entreprises.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_infos_point_interet IS 'Identifiant de la table TA_INFOS_POINT_INTERET permettant de savoir sur quel POI les actions ont été entreprises.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_libelle IS 'Identifiant de la table TA_LIBELLE permettant de connaître le type de chaque POI (point d''intérêt).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le POI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au POI qu''il a créé, modifié ou supprimé.';
@@ -31,27 +31,7 @@ ADD CONSTRAINT TA_INFOS_POINT_INTERET_LOG_PK
 PRIMARY KEY("OBJECTID") 
 USING INDEX TABLESPACE "G_ADT_INDX";
 
--- 4. Création des métadonnées spatiales
-INSERT INTO USER_SDO_GEOM_METADATA(
-    TABLE_NAME, 
-    COLUMN_NAME, 
-    DIMINFO, 
-    SRID
-)
-VALUES(
-    'TA_INFOS_POINT_INTERET_LOG',
-    'geom',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
-    2154
-);
-
--- 5. Création de l'index spatial sur le champ geom
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_SIDX
-ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
-PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
-
--- 6. Création des clés étrangères
+-- 4. Création des clés étrangères
 ALTER TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG
 ADD CONSTRAINT TA_INFOS_POINT_INTERET_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
@@ -62,8 +42,8 @@ ADD CONSTRAINT TA_INFOS_POINT_INTERET_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
--- 7. Création des index sur les clés étrangères et autres champs
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_fid_point_interet_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_point_interet)
+-- 5. Création des index sur les clés étrangères et autres champs
+CREATE INDEX TA_INFOS_POINT_INTERET_LOG_fid_point_interet_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_type_action)
@@ -72,6 +52,7 @@ CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_IN
 CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
--- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
+-- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG TO G_ADMIN_SIG;
- 
+
+/

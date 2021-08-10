@@ -78,7 +78,7 @@ CREATE INDEX TA_TRONCON_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_metadon
 -- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du tronçon. 
 -- Il créé également un champ virtuel dans lequel on peut aller chercher ce code INSEE.
 CREATE INDEX TA_TRONCON_CODE_INSEE_IDX
-ON G_BASE_VOIE.TA_TRONCON(GET_CODE_INSEE_CHEVAUCHEMENT('TA_TRONCON', geom))
+ON G_BASE_VOIE.TA_TRONCON(GET_CODE_INSEE_TRONCON('TA_TRONCON', geom))
 TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs

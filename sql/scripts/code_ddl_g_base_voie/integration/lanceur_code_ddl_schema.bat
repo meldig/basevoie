@@ -14,7 +14,8 @@ SET /p USER="Veuillez saisir l'utilisateur Oracle : "
 SET /p MDP="Veuillez saisir le MDP : "
 SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 
-copy /b %chemin_code_fonction%\creation_get_code_insee_contain.sql + ^
+copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_contain_point.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_pourcentage.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_within_distance.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_troncon.sql + ^
@@ -36,6 +37,7 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_contain.sql + ^
 %chemin_code_table%\creation_ta_infos_seuil_log.sql + ^
 %chemin_code_table%\creation_ta_relation_troncon_seuil.sql + ^
 %chemin_code_table%\creation_ta_point_interet.sql + ^
+%chemin_code_table%\creation_ta_point_interet_log.sql + ^
 %chemin_code_table%\creation_ta_infos_point_interet.sql + ^
 %chemin_code_table%\creation_ta_infos_point_interet_log.sql + ^
 %chemin_code_vue%\creation_v_troncon_voie.sql + ^

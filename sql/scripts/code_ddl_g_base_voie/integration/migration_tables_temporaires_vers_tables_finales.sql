@@ -777,11 +777,10 @@ BEGIN
         AND a.cdvallpu = 'I';
 
     -- 38.3. Import des POI invalides dans TA_POINT_INTERET_LOG pour la création
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, CODE_INSEE, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
         a.complement_infos,
-        a.code_insee,
         a.nom,
         a.date_saisie,
         a.fid_libelle,
@@ -797,11 +796,10 @@ BEGIN
         AND b.valeur = 'insertion';
 
     -- 38.4. Import des POI invalides dans TA_POINT_INTERET_LOG pour la suppression
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, CODE_INSEE, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
         a.complement_infos,
-        a.code_insee,
         a.nom,
         a.date_modification,
         a.fid_libelle,
@@ -841,11 +839,10 @@ BEGIN
         AND a.cdvallpu = 'V';
 
     -- 38.7. Import des POI invalides dans TA_POINT_INTERET_LOG pour la création
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, CODE_INSEE, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
         a.complement_infos,
-        a.code_insee,
         a.nom,
         a.date_saisie,
         a.fid_libelle,
@@ -861,11 +858,10 @@ BEGIN
         AND b.valeur = 'insertion';
 
     -- 38.8. Import des POI invalides dans TA_POINT_INTERET_LOG pour la suppression
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, CODE_INSEE, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
         a.complement_infos,
-        a.code_insee,
         a.nom,
         a.date_modification,
         a.fid_libelle,

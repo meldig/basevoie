@@ -15,7 +15,7 @@ SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
 SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier integration : "
 
 :: 2. se mettre dans l'environnement QGIS
-cd C:\Program Files\QGIS 3.16\bin
+cd C:\Program Files\QGIS 3.16.9\bin
 
 :: 3. Configurer le système d'encodage des caractères en UTF-8
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8

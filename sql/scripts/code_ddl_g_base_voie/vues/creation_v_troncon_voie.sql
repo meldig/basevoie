@@ -102,3 +102,5 @@ COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.endpoint_troncon IS 'Coordonnées d
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.longueur_troncon IS 'Longueur du tronçon calculée automatiquement.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.date_saisie IS 'Date de saisie du tronçon en base.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.date_modification IS 'Date de la dernière modification du tronçon en base.';
+
+/

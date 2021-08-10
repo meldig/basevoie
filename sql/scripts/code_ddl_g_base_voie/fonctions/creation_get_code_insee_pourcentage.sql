@@ -1,6 +1,8 @@
 CREATE OR REPLACE FUNCTION GET_CODE_INSEE_POURCENTAGE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe plus de 50% d'un objet linéaire.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
 ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
 */
     DETERMINISTIC

@@ -25,42 +25,35 @@ BEGIN
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom, fid_libelle)
+        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
                     :new.geom,
-                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :new.geom),
+                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :new.geom),
                     sysdate,
                     v_id_insertion,
-                    v_id_agent,
-                    :new.fid_libelle);
+                    v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, complement_infos, nom, code_insee, date_action, fid_type_action, fid_pnom, fid_libelle)
+            INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
                     :old.geom,
-                    :old.complement_infos,
-                    :old.nom,
-                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :old.geom),
+                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
                     sysdate,
                     v_id_modification,
-                    v_id_agent,
-                    :old.fid_libelle);
+                    v_id_agent);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, complement_infos, nom, code_insee, date_action, fid_type_action, fid_pnom, fid_libelle)
+        INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(fid_point_interet, geom, code_insee, date_action, fid_type_action, fid_pnom)
         VALUES(
                     :new.objectid,
                     :old.geom,
-                    :old.complement_infos,
-                    :old.nom,
-                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :old.geom),
+                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
                     sysdate,
                     v_id_suppression,
-                    v_id_agent,
-                    :old.fid_libelle);
+                    v_id_agent);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN

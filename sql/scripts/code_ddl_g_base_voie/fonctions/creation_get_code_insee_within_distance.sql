@@ -2,6 +2,8 @@ CREATE OR REPLACE FUNCTION GET_CODE_INSEE_WITHIN_DISTANCE(v_table_name VARCHAR2,
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune située à deux mètres maximum de l'objet interrogé, sachant que ce dernier n'est pas dans les communes de la MEL.
 La fonction localise le point médian de l'objet (situé en-dehors de la MEL) et, s'il se trouve à plus de deux mètres d'une commune, elle renvoie 'error', sinon, elle renvoie le code INSEE de la commune.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
 */
     DETERMINISTIC
     As

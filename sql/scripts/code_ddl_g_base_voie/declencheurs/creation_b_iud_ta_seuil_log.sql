@@ -29,7 +29,7 @@ BEGIN
             VALUES(
                     :new.objectid, 
                     :new.geom,
-                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :new.geom),
+                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :new.geom),
                     :new.cote_troncon,
                     sysdate,
                     v_id_creation,
@@ -40,7 +40,7 @@ BEGIN
             VALUES(
                     :old.objectid,
                     :old.geom,
-                    GET_CODE_INSEE_CONTENU('TA_SEUIL', :old.geom),
+                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
                     :old.cote_troncon,
                     sysdate,
                     v_id_modification,
@@ -52,7 +52,7 @@ BEGIN
         VALUES(
                 :old.objectid,
                 :old.geom,
-                GET_CODE_INSEE_CONTENU('TA_SEUIL', :old.geom), 
+                GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom), 
                 :old.cote_troncon,
                 sysdate,
                 v_id_suppression,

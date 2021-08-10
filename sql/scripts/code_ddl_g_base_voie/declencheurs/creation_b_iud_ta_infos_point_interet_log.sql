@@ -25,38 +25,35 @@ BEGIN
     SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom, fid_libelle)
+        INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
                     :new.complement_infos,
                     :new.nom,
                     sysdate,
                     v_id_insertion,
-                    v_id_agent,
-                    :new.fid_libelle);
+                    v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom, fid_libelle)
+            INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
                     :old.complement_infos,
                     :old.nom,
                     sysdate,
                     v_id_modification,
-                    v_id_agent,
-                    :old.fid_libelle);
+                    v_id_agent);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom, fid_libelle)
+        INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
         VALUES(
                     :new.objectid,
                     :old.complement_infos,
                     :old.nom,
                     sysdate,
                     v_id_suppression,
-                    v_id_agent,
-                    :old.fid_libelle);
+                    v_id_agent);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN

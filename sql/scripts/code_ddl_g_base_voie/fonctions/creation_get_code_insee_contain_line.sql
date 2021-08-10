@@ -1,6 +1,8 @@
-CREATE OR REPLACE FUNCTION GET_CODE_INSEE_CONTAIN(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
+CREATE OR REPLACE FUNCTION GET_CODE_INSEE_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
 */
     DETERMINISTIC
     As
@@ -26,6 +28,6 @@ Cette fonction a pour objectif de récupérer le code INSEE de la commune dans l
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             RETURN 'error';
-    END GET_CODE_INSEE_CONTAIN;
+    END GET_CODE_INSEE_CONTAIN_LINE;
 
 /
