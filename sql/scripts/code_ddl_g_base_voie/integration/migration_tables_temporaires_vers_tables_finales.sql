@@ -60,7 +60,7 @@ BEGIN
         AND b.valeur IN('mairie', 'mairie annexe', 'mairie quartier');
 
     -- 5. Insertion du code fantoir dans TEMP_VOIEVOI
-    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
+    --EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
     --COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
 
     MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
@@ -244,7 +244,7 @@ BEGIN
     -- 17. Désactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
-        --INTO v_contrainte
+        INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
@@ -253,7 +253,7 @@ BEGIN
         AND SEARCH_CONDITION_VC LIKE '%LIBELLE%';
 
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE DISABLE CONSTRAINT ' || v_contrainte;
-    ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE DISABLE CONSTRAINT SYS_C00449210;
+    --ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE DISABLE CONSTRAINT SYS_C00449210;
 
     -- 18. Import des données dans TA_TYPE_VOIE
     -- 18.1. Import des type présents dans TYPEVOIE
@@ -639,7 +639,7 @@ BEGIN
     -- 35.2.1 Sélection du nom de la contrainte de FK du champ FID_TRONCON
     SELECT
         CONSTRAINT_NAME
-        --INTO v_contrainte
+        INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
@@ -750,26 +750,28 @@ BEGIN
         INNER JOIN G_BASE_VOIE.TEMP_ILTASIT c ON c.idseui = b.objectid
         INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.cnumtrc;
 
-    -- 38. Insertion des points d'intérêt
+    -- 38. Suppression du champ temporaire temp_idseui
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_SEUIL DROP COLUMN IDSEUI'; 
+
+-- 38. Insertion des points d'intérêt
     -- 38.1. Désactivation des triggers
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG DISABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_POINT_INTERET_DATE_PNOM DISABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_POINT_INTERET_LOG DISABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_POINT_INTERET_DATE_PNOM DISABLE';
 
     -- 38.2. Import des données invalides dans la table TA_POINT_INTERET
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET(objectid, geom, complement_infos, nom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_libelle)
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET(geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, temp_idpoi)
     SELECT
-        a.cnumlpu,
         a.ora_geometry,
-        a.cinfos,
-        a.cliblpu,
         a.cdtslpu,
         a.cdtmlpu,
         c.numero_agent AS fid_pnom_saisie,
         c.numero_agent AS fid_pnom_modification,
-        b.objectid
+        a.cnumlpu
     FROM
         G_BASE_VOIE.TEMP_ILTALPU a
-        INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = a.libelle_court,
+        INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = UPPER(a.libelle_court),
         G_BASE_VOIE.TA_AGENT c
     WHERE
         b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
@@ -777,13 +779,11 @@ BEGIN
         AND a.cdvallpu = 'I';
 
     -- 38.3. Import des POI invalides dans TA_POINT_INTERET_LOG pour la création
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, CODE_INSEE, DATE_ACTION, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
-        a.complement_infos,
-        a.nom,
+        GET_CODE_INSEE_CONTAIN_POINT('TA_POINT_INTERET', a.geom) AS code_insee,
         a.date_saisie,
-        a.fid_libelle,
         a.objectid,
         b.objectid,
         c.numero_agent
@@ -796,13 +796,11 @@ BEGIN
         AND b.valeur = 'insertion';
 
     -- 38.4. Import des POI invalides dans TA_POINT_INTERET_LOG pour la suppression
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, CODE_INSEE, DATE_ACTION, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
-        a.complement_infos,
-        a.nom,
+        GET_CODE_INSEE_CONTAIN_POINT('TA_POINT_INTERET', a.geom) AS code_insee,
         a.date_modification,
-        a.fid_libelle,
         a.objectid,
         b.objectid,
         c.numero_agent
@@ -814,38 +812,96 @@ BEGIN
         c.pnom = 'import_donnees'
         AND b.valeur = 'suppression';
 
+     -- Insertion des informations des point d'intérêts invalides   
+    INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET(objectid, nom, complement_infos, date_saisie, date_modification, fid_libelle, fid_point_interet, fid_pnom_saisie, fid_pnom_modification)
+        SELECT
+            a.cnumlpu,
+            a.cliblpu,
+            a.cinfos,
+            a.cdtslpu,
+            a.cdtmlpu,
+            b.objectid,
+            d.objectid,
+            c.numero_agent AS fid_pnom_saisie,
+            c.numero_agent AS fid_pnom_modification
+        FROM
+            G_BASE_VOIE.TEMP_ILTALPU a
+            INNER JOIN G_BASE_VOIE.TA_POINT_INTERET d ON d.temp_idpoi = a.cnumlpu
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = UPPER(a.libelle_court),
+            G_BASE_VOIE.TA_AGENT c
+        WHERE
+            b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
+            AND c.numero_agent = 99999
+            AND a.cdvallpu = 'I';
+        
+    -- Import des POI invalides dans TA_INFOS_POINT_INTERET_LOG pour la création
+    INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(NOM, COMPLEMENT_INFOS, DATE_ACTION, FID_INFOS_POINT_INTERET, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    SELECT
+        a.nom,
+        a.complement_infos,
+        a.date_saisie,
+        a.objectid,
+        a.fid_libelle,
+        a.fid_point_interet,
+        b.objectid,
+        c.numero_agent
+    FROM
+        G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
+        G_BASE_VOIE.TA_LIBELLE b,
+        G_BASE_VOIE.TA_AGENT c
+    WHERE
+        c.pnom = 'import_donnees'
+        AND b.valeur = 'insertion';
+
+    -- Import des POI invalides dans TA_INFOS_POINT_INTERET_LOG pour la suppression
+    INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(NOM, COMPLEMENT_INFOS, DATE_ACTION, FID_INFOS_POINT_INTERET, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    SELECT
+        a.nom,
+        a.complement_infos,
+        a.date_modification,
+        a.objectid,
+        a.fid_libelle,
+        a.fid_point_interet,
+        b.objectid,
+        c.numero_agent
+    FROM
+        G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
+        G_BASE_VOIE.TA_LIBELLE b,
+        G_BASE_VOIE.TA_AGENT c
+    WHERE
+        c.pnom = 'import_donnees'
+        AND b.valeur = 'suppression';
+        
+    -- Suppression des POI invalides de la table TA_INFOS_POINT_INTERET
+    DELETE FROM G_BASE_VOIE.TA_INFOS_POINT_INTERET;
+
     -- 38.5. Suppression des POI invalides dans la table TA_POINT_INTERET
     DELETE FROM G_BASE_VOIE.TA_POINT_INTERET;
 
     -- 38.6. Insertion des données valides dans la table TA_POINT_INTERET
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET(objectid, geom, complement_infos, nom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_libelle)
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET(geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, temp_idpoi)
     SELECT
-        a.cnumlpu,
         a.ora_geometry,
-        a.cinfos,
-        a.cliblpu,
         a.cdtslpu,
         a.cdtmlpu,
         c.numero_agent AS fid_pnom_saisie,
         c.numero_agent AS fid_pnom_modification,
-        b.objectid
+        a.cnumlpu
     FROM
         G_BASE_VOIE.TEMP_ILTALPU a
-        INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = a.libelle_court,
+        INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = UPPER(a.libelle_court),
         G_BASE_VOIE.TA_AGENT c
     WHERE
         b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
         AND c.numero_agent = 99999
         AND a.cdvallpu = 'V';
 
-    -- 38.7. Import des POI invalides dans TA_POINT_INTERET_LOG pour la création
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    -- 38.7. Import des POI valides dans TA_POINT_INTERET_LOG pour la création
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, CODE_INSEE, DATE_ACTION, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
     SELECT
         a.geom,
-        a.complement_infos,
-        a.nom,
+        GET_CODE_INSEE_CONTAIN_POINT('TA_POINT_INTERET', a.geom) AS code_insee,
         a.date_saisie,
-        a.fid_libelle,
         a.objectid,
         b.objectid,
         c.numero_agent
@@ -857,14 +913,12 @@ BEGIN
         c.pnom = 'import_donnees'
         AND b.valeur = 'insertion';
 
-    -- 38.8. Import des POI invalides dans TA_POINT_INTERET_LOG pour la suppression
-    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, COMPLEMENT_INFOS, NOM, DATE_ACTION, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    -- 38.8. Import des POI valides dans TA_POINT_INTERET_LOG pour la modification
+    INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, CODE_INSEE, DATE_ACTION, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)    
     SELECT
         a.geom,
-        a.complement_infos,
-        a.nom,
+        GET_CODE_INSEE_CONTAIN_POINT('TA_POINT_INTERET', a.geom) AS code_insee,
         a.date_modification,
-        a.fid_libelle,
         a.objectid,
         b.objectid,
         c.numero_agent
@@ -875,6 +929,66 @@ BEGIN
     WHERE
         c.pnom = 'import_donnees'
         AND b.valeur = 'édition';
+              
+    -- Insertion des informations des point d'intérêts valides   
+    INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET(objectid, nom, complement_infos, date_saisie, date_modification, fid_libelle, fid_point_interet, fid_pnom_saisie, fid_pnom_modification)
+        SELECT
+            a.cnumlpu,
+            a.cliblpu,
+            a.cinfos,
+            a.cdtslpu,
+            a.cdtmlpu,
+            b.objectid,
+            d.objectid,
+            c.numero_agent AS fid_pnom_saisie,
+            c.numero_agent AS fid_pnom_modification
+        FROM
+            G_BASE_VOIE.TEMP_ILTALPU a
+            INNER JOIN G_BASE_VOIE.TA_POINT_INTERET d ON d.temp_idpoi = a.cnumlpu
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = a.libelle_court,
+            G_BASE_VOIE.TA_AGENT c
+        WHERE
+            b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
+            AND c.numero_agent = 99999
+            AND a.cdvallpu = 'V';
+            
+    -- Import des POI valides dans TA_INFOS_POINT_INTERET_LOG pour la création
+    INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(NOM, COMPLEMENT_INFOS, DATE_ACTION, FID_INFOS_POINT_INTERET, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    SELECT
+        a.nom,
+        a.complement_infos,
+        a.date_saisie,
+        a.objectid,
+        a.fid_libelle,
+        a.fid_point_interet,
+        c.objectid,
+        d.numero_agent
+    FROM
+        G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
+        G_BASE_VOIE.TA_LIBELLE c,
+        G_BASE_VOIE.TA_AGENT d
+    WHERE
+        d.pnom = 'import_donnees'
+        AND c.valeur = 'insertion';
+
+    -- Import des POI invalides dans TA_INFOS_POINT_INTERET_LOG pour la modification
+    INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(NOM, COMPLEMENT_INFOS, DATE_ACTION, FID_INFOS_POINT_INTERET, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
+    SELECT
+        a.nom,
+        a.complement_infos,
+        a.date_modification,
+        a.objectid,
+        a.fid_libelle,
+        a.fid_point_interet,
+        c.objectid,
+        d.numero_agent
+    FROM
+        G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
+        G_BASE_VOIE.TA_LIBELLE c,
+        G_BASE_VOIE.TA_AGENT d
+    WHERE
+        d.pnom = 'import_donnees'
+        AND c.valeur = 'édition';
 
     -- 39. Réactivation de tous les triggers désactivés au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG ENABLE';
@@ -884,11 +998,14 @@ BEGIN
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_SEUIL_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_SEUIL_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_POINT_INTERET_DATE_PNOM ENABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_INFOS_POINT_INTERET_LOG ENABLE';
+    EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_POINT_INTERET_DATE_PNOM ENABLE';
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET DROP COLUMN TEMP_IDPOI';
     
     -- 40. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
-        --INTO v_contrainte
+        INTO v_contrainte
     FROM
         USER_CONSTRAINTS
     WHERE
@@ -901,6 +1018,6 @@ BEGIN
     -- En cas d'erreur une exception est levée et un rollback effectué, empêchant ainsi toute insertion de se faire et de retourner à l'état des tables précédent l'insertion.
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('L''erreur ' || SQLCODE || 'est survenue. Un rollback a été effectué : ' || SQLERRM(SQLCODE));
             ROLLBACK TO POINT_SAUVEGARDE_REMPLISSAGE;
+            DBMS_OUTPUT.PUT_LINE('L''erreur ' || SQLCODE || 'est survenue. Un rollback a été effectué : ' || SQLERRM(SQLCODE));
 END;
