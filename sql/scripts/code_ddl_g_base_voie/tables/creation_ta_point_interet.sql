@@ -9,7 +9,8 @@ CREATE TABLE G_BASE_VOIE.TA_POINT_INTERET(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL
+    fid_pnom_modification NUMBER(38,0) NOT NULL,
+    temp_idpoi NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -20,6 +21,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.date_saisie IS 'Date de saisie du
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.date_modification IS 'Dernière date de modification du point d''intérêt (par défaut il s''agit de la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un point d''intérêt.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un point d''intérêt.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_POINT_INTERET.temp_idpoi IS 'Champ temporaire permettant de stocker l''identifiant de chaque POI et de faire la migration. A l''issue de cette dernière, ce champ doit être supprimé.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET 

@@ -9,6 +9,7 @@ CREATE TABLE G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(
     nom VARCHAR2(200) NOT NULL,
     date_action DATE NOT NULL,
     fid_infos_point_interet NUMBER(38,0) NOT NULL,
+    fid_point_interet NUMBER(38,0) NOT NULL,
     fid_libelle NUMBER(38,0) NOT NULL,
     fid_type_action NUMBER(38,0),
     fid_pnom NUMBER(38,0) NOT NULL
@@ -21,6 +22,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.complement_infos IS 'Co
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.nom IS 'Nom du point d''intérêt correspondant au champ CLIBLPU de l''ancienne table ILTALPU.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.date_action IS 'Date de création, modification ou suppression d''un POI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_infos_point_interet IS 'Identifiant de la table TA_INFOS_POINT_INTERET permettant de savoir sur quel POI les actions ont été entreprises.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_point_interet IS 'Identifiant de la table TA_POINT_INTERET permettant de relier la géométrie du point d''intérêt (TA_POINT_INTERET) à ses informations.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_libelle IS 'Identifiant de la table TA_LIBELLE permettant de connaître le type de chaque POI (point d''intérêt).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le POI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au POI qu''il a créé, modifié ou supprimé.';
@@ -43,7 +45,10 @@ FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 -- 5. Création des index sur les clés étrangères et autres champs
-CREATE INDEX TA_INFOS_POINT_INTERET_LOG_fid_point_interet_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet)
+CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_INFOS_POINT_INTERET_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_POINT_INTERET_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_point_interet)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_type_action)

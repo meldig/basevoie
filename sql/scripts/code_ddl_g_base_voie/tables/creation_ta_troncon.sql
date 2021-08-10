@@ -10,7 +10,7 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON(
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
     fid_pnom_modification NUMBER(38,0) NOT NULL,
-    fid_metadonnee NUMBER(38,0) NOT NULL
+    fid_metadonnee NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
