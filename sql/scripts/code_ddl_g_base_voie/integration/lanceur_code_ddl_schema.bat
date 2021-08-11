@@ -20,10 +20,7 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_within_distance.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_troncon.sql + ^
 %chemin_code_table%\creation_ta_agent.sql + ^
-%chemin_code_table%\creation_ta_famille.sql + ^
 %chemin_code_table%\creation_ta_rivoli.sql + ^
-%chemin_code_table%\creation_ta_libelle.sql + ^
-%chemin_code_table%\creation_ta_relation_famille_libelle.sql + ^
 %chemin_code_table%\creation_ta_troncon.sql + ^
 %chemin_code_table%\creation_ta_troncon_log.sql + ^
 %chemin_code_table%\creation_ta_type_voie.sql + ^

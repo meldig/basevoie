@@ -14,51 +14,6 @@ BEGIN
     INSERT INTO G_BASE_VOIE.TA_AGENT(numero_agent, pnom, validite)
     SELECT numero_agent, pnom, validite FROM TEMP_AGENT;
 
-    -- 2. Import des libellés dans TA_FAMILLE
-    INSERT INTO G_BASE_VOIE.TA_FAMILLE(valeur)
-    SELECT valeur FROM TEMP_FAMILLE;
-
-    -- 3. Import des libellés dans TA_LIBELLE
-    INSERT INTO G_BASE_VOIE.TA_LIBELLE(valeur)
-    SELECT valeur FROM TEMP_LIBELLE;
-
-    -- 4. Import des relations dans TA_RELATION_FAMILLE_LIBELLE
-    -- 4.1. Pour les types d'actions
-    INSERT INTO G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(fid_famille, fid_libelle)
-    SELECT
-        a.objectid,
-        b.objectid
-    FROM
-        G_BASE_VOIE.TA_FAMILLE a,
-        G_BASE_VOIE.TA_LIBELLE b
-    WHERE
-        a.valeur = 'action'
-        AND b.valeur IN('insertion', 'édition', 'suppression');
-
-    -- 4.2. Pour les genres de voie
-    INSERT INTO G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(fid_famille, fid_libelle)
-    SELECT
-        a.objectid,
-        b.objectid
-    FROM
-        G_BASE_VOIE.TA_FAMILLE a,
-        G_BASE_VOIE.TA_LIBELLE b
-    WHERE
-        a.valeur = 'genre du nom des voies'
-        AND b.valeur IN('masculin', 'féminin', 'neutre', 'couple', 'non-identifié', 'non-renseigné');
-
-    -- 4.3. Pour les familles des points d'intérêts
-    INSERT INTO G_BASE_VOIE.TA_RELATION_FAMILLE_LIBELLE(fid_famille, fid_libelle)
-    SELECT
-        a.objectid,
-        b.objectid
-    FROM
-        G_BASE_VOIE.TA_FAMILLE a,
-        G_BASE_VOIE.TA_LIBELLE b
-    WHERE
-        a.valeur = 'administration: mairies, lmcu, prefecture, cg, cr,cite a,justice, tresor public'
-        AND b.valeur IN('mairie', 'mairie annexe', 'mairie quartier');
-
     -- 5. Insertion du code fantoir dans TEMP_VOIEVOI
     --EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
     --COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
@@ -139,11 +94,11 @@ BEGIN
         G_BASE_VOIE.TA_TRONCON a
         INNER JOIN G_BASE_VOIE.TEMP_ILTATRC b ON b.cnumtrc = a.objectid,
         G_BASE_VOIE.TA_AGENT c,
-        G_BASE_VOIE.TA_LIBELLE d
+        G_GEO.TA_LIBELLE_LONG d
     WHERE
         b.cdvaltro = 'V'
         AND c.pnom = 'import_donnees'
-        AND d.valeur = 'insertion';
+        AND UPPER(d.valeur) = UPPER('insertion');
 
     -- 10. Insertion des dates de modification dans TA_TRONCON_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(geom, fid_troncon, date_action, fid_type_action, fid_pnom)
@@ -157,11 +112,11 @@ BEGIN
         G_BASE_VOIE.TA_TRONCON a
         INNER JOIN G_BASE_VOIE.TEMP_ILTATRC b ON b.cnumtrc = a.objectid,
         G_BASE_VOIE.TA_AGENT c,
-        G_BASE_VOIE.TA_LIBELLE d
+        G_GEO.TA_LIBELLE_LONG d
     WHERE
         b.cdvaltro = 'V'
         AND c.pnom = 'import_donnees'
-        AND d.valeur = 'édition';
+        AND UPPER(d.valeur) = UPPER('édition');
 
     -- 11. Import des tronçons invalides dans TA_TRONCON pour la création
     INSERT INTO G_BASE_VOIE.TA_TRONCON(objectid, geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification)
@@ -191,11 +146,11 @@ BEGIN
         G_BASE_VOIE.TA_TRONCON a
         INNER JOIN G_BASE_VOIE.TEMP_ILTATRC b ON b.cnumtrc = a.objectid,
         G_BASE_VOIE.TA_AGENT c,
-        G_BASE_VOIE.TA_LIBELLE d
+        G_GEO.TA_LIBELLE_LONG d
     WHERE
         b.cdvaltro = 'F'
         AND c.pnom = 'import_donnees'
-        AND d.valeur = 'insertion';
+        AND UPPER(d.valeur) = UPPER('insertion');
 
     -- 13. Insertion des dates de modification dans TA_TRONCON_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(geom, fid_troncon, date_action, fid_type_action, fid_pnom)
@@ -209,11 +164,11 @@ BEGIN
         G_BASE_VOIE.TA_TRONCON a
         INNER JOIN G_BASE_VOIE.TEMP_ILTATRC b ON b.cnumtrc = a.objectid,
         G_BASE_VOIE.TA_AGENT c,
-        G_BASE_VOIE.TA_LIBELLE d
+        G_GEO.TA_LIBELLE_LONG d
     WHERE
         b.cdvaltro = 'F'
         AND c.pnom = 'import_donnees'
-        AND d.valeur = 'suppression';
+        AND UPPER(d.valeur) = UPPER('suppression');
 
     -- 14. Suppression des tronçons invalides dans la table TA_TRONCON
     DELETE 
@@ -312,12 +267,12 @@ BEGIN
                     a.CINFOS AS COMPLEMENT_NOM_VOIE,
                     a.CNOMINUS AS LIBELLE,
                     CASE
-                        WHEN a.genre = 'M' AND d.valeur = 'masculin' THEN d.objectid
-                        WHEN a.genre = 'F' AND d.valeur = 'féminin' THEN d.objectid
-                        WHEN a.genre = 'N' AND d.valeur = 'neutre' THEN d.objectid
-                        WHEN a.genre = 'C' AND d.valeur = 'couple' THEN d.objectid
-                        WHEN a.genre = 'NI' AND d.valeur = 'non-identifié' THEN d.objectid
-                        WHEN a.genre IS NULL AND d.valeur = 'non-renseigné'THEN d.objectid
+                        WHEN a.genre = 'M' AND UPPER(d.valeur) = UPPER('masculin') THEN d.objectid
+                        WHEN a.genre = 'F' AND UPPER(d.valeur) = UPPER('féminin') THEN d.objectid
+                        WHEN a.genre = 'N' AND UPPER(d.valeur) = UPPER('neutre') THEN d.objectid
+                        WHEN a.genre = 'C' AND UPPER(d.valeur) = UPPER('couple') THEN d.objectid
+                        WHEN a.genre = 'NI' AND UPPER(d.valeur) = UPPER('non-identifié') THEN d.objectid
+                        WHEN a.genre IS NULL AND UPPER(d.valeur) = UPPER('non-renseigné') THEN d.objectid
                     END AS GENRE,
                     a.CDTSVOI AS DATE_SAISIE,
                     a.CDTMVOI AS DATE_MODIFICATION,
@@ -326,7 +281,7 @@ BEGIN
                 FROM
                     G_BASE_VOIE.TEMP_VOIEVOI a
                     INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE b ON b.code_type_voie = a.ccodtvo,
-                    G_BASE_VOIE.TA_LIBELLE d,
+                    G_GEO.TA_LIBELLE_LONG d,
                     G_BASE_VOIE.TA_AGENT e
                 WHERE
                     a.ccomvoi IS NOT NULL 
@@ -390,10 +345,10 @@ BEGIN
         FROM
             G_BASE_VOIE.TA_VOIE a
             INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI b ON b.ccomvoi = a.objectid,
-            G_BASE_VOIE.TA_LIBELLE c,
+            G_GEO.TA_LIBELLE_LONG c,
             G_BASE_VOIE.TA_AGENT d                  
         WHERE
-            c.valeur = 'insertion'
+            UPPER(c.valeur) = UPPER('insertion')
             AND d.pnom = 'import_donnees'
     )t
     ON (a.fid_voie = t.objectid)
@@ -417,14 +372,14 @@ BEGIN
         FROM
             G_BASE_VOIE.TA_VOIE a
             INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI b ON b.ccomvoi = a.objectid,
-            G_BASE_VOIE.TA_LIBELLE c,
+            G_GEO.TA_LIBELLE_LONG c,
             G_BASE_VOIE.TA_AGENT d                  
         WHERE
-            c.valeur = 'édition'
+            UPPER(c.valeur) = UPPER('édition')
             AND d.pnom = 'import_donnees'
             AND b.cdvalvoi = 'V'
     )t
-    ON (t.fid_type_action <> (SELECT objectid FROM G_BASE_VOIE.TA_LIBELLE WHERE valeur = 'édition'))
+    ON (t.fid_type_action <> (SELECT objectid FROM G_GEO.TA_LIBELLE_LONG WHERE UPPER(valeur) = UPPER('édition')))
     WHEN NOT MATCHED THEN
         INSERT(libelle_voie, complement_nom_voie, date_action, fid_typevoie, fid_genre_voie, fid_rivoli, fid_voie, fid_type_action, fid_pnom)
         VALUES(t.libelle_voie, t.complement_nom_voie, t.date_action, t.fid_typevoie, t.fid_genre_voie, t.fid_rivoli, t.objectid, t.fid_type_action, t.fid_pnom);
@@ -445,14 +400,14 @@ BEGIN
         FROM
             G_BASE_VOIE.TA_VOIE a
             INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI b ON b.ccomvoi = a.objectid,
-            G_BASE_VOIE.TA_LIBELLE c,
+            G_GEO.TA_LIBELLE_LONG c,
             G_BASE_VOIE.TA_AGENT d                  
         WHERE
-            c.valeur = 'suppression'
+            UPPER(c.valeur) = UPPER('suppression')
             AND d.pnom = 'import_donnees'
             AND b.cdvalvoi = 'I'
     )t
-    ON (t.fid_type_action <> (SELECT objectid FROM G_BASE_VOIE.TA_LIBELLE WHERE valeur = 'suppression'))
+    ON (t.fid_type_action <> (SELECT objectid FROM G_GEO.TA_LIBELLE_LONG WHERE UPPER(valeur) = UPPER('suppression')))
     WHEN NOT MATCHED THEN
         INSERT(libelle_voie, complement_nom_voie, date_action, fid_typevoie, fid_genre_voie, fid_rivoli, fid_voie, fid_type_action, fid_pnom)
         VALUES(t.libelle_voie, t.complement_nom_voie, t.date_action, t.fid_typevoie, t.fid_genre_voie, t.fid_rivoli, t.objectid, t.fid_type_action, t.fid_pnom);
@@ -521,13 +476,13 @@ BEGIN
             G_BASE_VOIE.TEMP_VOIECVT a
             INNER JOIN G_BASE_VOIE.TA_TRONCON_LOG b ON a.cnumtrc = b.fid_troncon
             INNER JOIN G_BASE_VOIE.TA_VOIE_LOG c ON c.fid_voie = a.ccomvoi
-            INNER JOIN G_BASE_VOIE.TA_LIBELLE d ON d.objectid = b.fid_type_action
-            INNER JOIN G_BASE_VOIE.TA_LIBELLE e ON d.objectid = c.fid_type_action,
+            INNER JOIN G_GEO.TA_LIBELLE_LONG d ON d.objectid = b.fid_type_action
+            INNER JOIN G_GEO.TA_LIBELLE_LONG e ON d.objectid = c.fid_type_action,
             G_BASE_VOIE.TA_AGENT f
         WHERE
             a.CVALIDE = 'I'
-            AND d.valeur = 'insertion'
-            AND e.valeur = 'insertion'
+            AND UPPER(d.valeur) = UPPER('insertion')
+            AND UPPER(e.valeur) = UPPER('insertion')
             AND f.pnom = 'import_donnees';
     
     -- 29. Import des relations tronçons/voies invalides dans TA_RELATION_TRONCON_VOIE_LOG pour la création
@@ -543,10 +498,10 @@ BEGIN
             e.numero_agent AS fid_pnom
         FROM
             G_BASE_VOIE.TA_RELATION_TRONCON_VOIE a,
-            G_BASE_VOIE.TA_LIBELLE d,
+            G_GEO.TA_LIBELLE_LONG d,
             G_BASE_VOIE.TA_AGENT e
         WHERE
-            d.valeur = 'insertion'
+            UPPER(d.valeur) = UPPER('insertion')
             AND e.pnom = 'import_donnees';
             
     -- 30. Import des relations tronçons/voies invalides dans TA_RELATION_TRONCON_VOIE_LOG pour la modification
@@ -562,10 +517,10 @@ BEGIN
             e.numero_agent AS fid_pnom
         FROM
             G_BASE_VOIE.TA_RELATION_TRONCON_VOIE a,
-            G_BASE_VOIE.TA_LIBELLE d,
+            G_GEO.TA_LIBELLE_LONG d,
             G_BASE_VOIE.TA_AGENT e
         WHERE
-            d.valeur = 'suppression'
+            UPPER(d.valeur) = UPPER('suppression')
             AND e.pnom = 'import_donnees';
             
     -- 31. Suppression des relations troncon/voie invalides de la table TA_RELATION_TRONCON_VOIE
@@ -606,11 +561,11 @@ BEGIN
         f.numero_agent AS fid_pnom
     FROM
         G_BASE_VOIE.TA_RELATION_TRONCON_VOIE a,
-        G_BASE_VOIE.TA_LIBELLE e,
+        G_GEO.TA_LIBELLE_LONG e,
         G_BASE_VOIE.TA_AGENT f
     WHERE
         f.pnom = 'import_donnees'
-        AND e.valeur = 'insertion';
+        AND UPPER(e.valeur) = UPPER('insertion');
 
     -- 34. Import des relations tronçons/voies valides dans la table TA_RELATION_TRONCON_VOIE_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(FID_RELATION_TRONCON_VOIE, FID_TRONCON, FID_VOIE, SENS, ORDRE_TRONCON, DATE_ACTION, FID_TYPE_ACTION, FID_PNOM)
@@ -625,11 +580,11 @@ BEGIN
         f.numero_agent AS fid_pnom
     FROM
         G_BASE_VOIE.TA_RELATION_TRONCON_VOIE a,
-        G_BASE_VOIE.TA_LIBELLE e,
+        G_GEO.TA_LIBELLE_LONG e,
         G_BASE_VOIE.TA_AGENT f
     WHERE
         f.pnom = 'import_donnees'
-        AND e.valeur = 'édition';
+        AND UPPER(e.valeur) = UPPER('édition');
 
     -- 35. Réactivation des contraintes et triggers gérant les relations tronçons/voies
     -- 35.1. Réactivation du trigger de log de la table TA_RELATION_TRONCON_VOIE
@@ -771,10 +726,10 @@ BEGIN
         a.cnumlpu
     FROM
         G_BASE_VOIE.TEMP_ILTALPU a
-        INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = UPPER(a.libelle_court),
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON UPPER(b.valeur) = UPPER(a.libelle_court),
         G_BASE_VOIE.TA_AGENT c
     WHERE
-        b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
+        UPPER(b.valeur) IN(UPPER('mairie'), UPPER('mairie annexe'), UPPER('mairie quartier'))
         AND c.numero_agent = 99999
         AND a.cdvallpu = 'I';
 
@@ -789,11 +744,11 @@ BEGIN
         c.numero_agent
     FROM
         G_BASE_VOIE.TA_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE b,
+        G_GEO.TA_LIBELLE_LONG b,
         G_BASE_VOIE.TA_AGENT c
     WHERE
         c.pnom = 'import_donnees'
-        AND b.valeur = 'insertion';
+        AND UPPER(b.valeur) = UPPER('insertion');
 
     -- 38.4. Import des POI invalides dans TA_POINT_INTERET_LOG pour la suppression
     INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, CODE_INSEE, DATE_ACTION, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
@@ -806,11 +761,11 @@ BEGIN
         c.numero_agent
     FROM
         G_BASE_VOIE.TA_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE b,
+        G_GEO.TA_LIBELLE_LONG b,
         G_BASE_VOIE.TA_AGENT c
     WHERE
         c.pnom = 'import_donnees'
-        AND b.valeur = 'suppression';
+        AND UPPER(b.valeur) = UPPER('suppression');
 
      -- Insertion des informations des point d'intérêts invalides   
     INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET(objectid, nom, complement_infos, date_saisie, date_modification, fid_libelle, fid_point_interet, fid_pnom_saisie, fid_pnom_modification)
@@ -827,10 +782,10 @@ BEGIN
         FROM
             G_BASE_VOIE.TEMP_ILTALPU a
             INNER JOIN G_BASE_VOIE.TA_POINT_INTERET d ON d.temp_idpoi = a.cnumlpu
-            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = UPPER(a.libelle_court),
+            INNER JOIN G_GEO.TA_LIBELLE_LONG b ON UPPER(b.valeur) = UPPER(a.libelle_court),
             G_BASE_VOIE.TA_AGENT c
         WHERE
-            b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
+            UPPER(b.valeur) IN(UPPER('mairie'), UPPER('mairie annexe'), UPPER('mairie quartier'))
             AND c.numero_agent = 99999
             AND a.cdvallpu = 'I';
         
@@ -847,11 +802,11 @@ BEGIN
         c.numero_agent
     FROM
         G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE b,
+        G_GEO.TA_LIBELLE_LONG b,
         G_BASE_VOIE.TA_AGENT c
     WHERE
         c.pnom = 'import_donnees'
-        AND b.valeur = 'insertion';
+        AND UPPER(b.valeur) = UPPER('insertion');
 
     -- Import des POI invalides dans TA_INFOS_POINT_INTERET_LOG pour la suppression
     INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(NOM, COMPLEMENT_INFOS, DATE_ACTION, FID_INFOS_POINT_INTERET, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
@@ -866,11 +821,11 @@ BEGIN
         c.numero_agent
     FROM
         G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE b,
+        G_GEO.TA_LIBELLE_LONG b,
         G_BASE_VOIE.TA_AGENT c
     WHERE
         c.pnom = 'import_donnees'
-        AND b.valeur = 'suppression';
+        AND UPPER(b.valeur) = UPPER('suppression');
         
     -- Suppression des POI invalides de la table TA_INFOS_POINT_INTERET
     DELETE FROM G_BASE_VOIE.TA_INFOS_POINT_INTERET;
@@ -889,10 +844,10 @@ BEGIN
         a.cnumlpu
     FROM
         G_BASE_VOIE.TEMP_ILTALPU a
-        INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = UPPER(a.libelle_court),
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON UPPER(b.valeur) = UPPER(a.libelle_court),
         G_BASE_VOIE.TA_AGENT c
     WHERE
-        b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
+        UPPER(b.valeur) IN(UPPER('mairie'), UPPER('mairie annexe'), UPPER('mairie quartier'))
         AND c.numero_agent = 99999
         AND a.cdvallpu = 'V';
 
@@ -907,11 +862,11 @@ BEGIN
         c.numero_agent
     FROM
         G_BASE_VOIE.TA_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE b,
+        G_GEO.TA_LIBELLE_LONG b,
         G_BASE_VOIE.TA_AGENT c
     WHERE
         c.pnom = 'import_donnees'
-        AND b.valeur = 'insertion';
+        AND UPPER(b.valeur) = UPPER('insertion');
 
     -- 38.8. Import des POI valides dans TA_POINT_INTERET_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_POINT_INTERET_LOG(GEOM, CODE_INSEE, DATE_ACTION, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)    
@@ -924,11 +879,11 @@ BEGIN
         c.numero_agent
     FROM
         G_BASE_VOIE.TA_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE b,
+        G_GEO.TA_LIBELLE_LONG b,
         G_BASE_VOIE.TA_AGENT c
     WHERE
         c.pnom = 'import_donnees'
-        AND b.valeur = 'édition';
+        AND UPPER(b.valeur) = UPPER('édition');
               
     -- Insertion des informations des point d'intérêts valides   
     INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET(objectid, nom, complement_infos, date_saisie, date_modification, fid_libelle, fid_point_interet, fid_pnom_saisie, fid_pnom_modification)
@@ -945,10 +900,10 @@ BEGIN
         FROM
             G_BASE_VOIE.TEMP_ILTALPU a
             INNER JOIN G_BASE_VOIE.TA_POINT_INTERET d ON d.temp_idpoi = a.cnumlpu
-            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON UPPER(b.valeur) = a.libelle_court,
+            INNER JOIN G_GEO.TA_LIBELLE_LONG b ON UPPER(b.valeur) = UPPER(a.libelle_court),
             G_BASE_VOIE.TA_AGENT c
         WHERE
-            b.valeur IN('mairie', 'mairie annexe', 'mairie quartier')
+            UPPER(b.valeur) IN(UPPER('mairie'), UPPER('mairie annexe'), UPPER('mairie quartier'))
             AND c.numero_agent = 99999
             AND a.cdvallpu = 'V';
             
@@ -965,11 +920,11 @@ BEGIN
         d.numero_agent
     FROM
         G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE c,
+        G_GEO.TA_LIBELLE_LONG c,
         G_BASE_VOIE.TA_AGENT d
     WHERE
         d.pnom = 'import_donnees'
-        AND c.valeur = 'insertion';
+        AND UPPER(c.valeur) = UPPER('insertion');
 
     -- Import des POI invalides dans TA_INFOS_POINT_INTERET_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(NOM, COMPLEMENT_INFOS, DATE_ACTION, FID_INFOS_POINT_INTERET, FID_LIBELLE, FID_POINT_INTERET, FID_TYPE_ACTION, FID_PNOM)       
@@ -984,11 +939,11 @@ BEGIN
         d.numero_agent
     FROM
         G_BASE_VOIE.TA_INFOS_POINT_INTERET a,
-        G_BASE_VOIE.TA_LIBELLE c,
+        G_GEO.TA_LIBELLE_LONG c,
         G_BASE_VOIE.TA_AGENT d
     WHERE
         d.pnom = 'import_donnees'
-        AND c.valeur = 'édition';
+        AND UPPER(c.valeur) = UPPER('édition');
 
     -- 39. Réactivation de tous les triggers désactivés au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG ENABLE';
