@@ -20,9 +20,29 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_insertion FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
-    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
-    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
+    SELECT 
+        a.objectid INTO v_id_insertion 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'insertion';
+
+    SELECT 
+        a.objectid INTO v_id_modification 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'modification';
+            
+    SELECT 
+        a.objectid INTO v_id_suppression 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_POINT_INTERET_LOG, le numéro d'agent correspondant à l'utilisateur, la date de création et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG(fid_infos_point_interet, complement_infos, nom, date_action, fid_type_action, fid_pnom)
