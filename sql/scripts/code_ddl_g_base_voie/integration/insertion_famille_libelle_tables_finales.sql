@@ -234,6 +234,21 @@ BEGIN
         INSERT(a.fid_metadonnee)
         VALUES(t.fid_metadonnee);
 
+    -- 10. Insertion dans TA_LIBELLE
+    MERGE INTO G_GEO.TA_LIBELLE a
+        USING(
+            SELECT
+                a.objectid
+            FROM
+                G_GEO.TA_LIBELLE_LONG a
+            WHERE
+                UPPER(a.valeur) IN(UPPER('insertion'), UPPER('édition'), UPPER('suppression'), UPPER('masculin'), UPPER( 'féminin'), UPPER( 'neutre'), UPPER( 'couple'), UPPER( 'non-identifié'), UPPER( 'non-renseigné'), UPPER('mairie'), UPPER( 'mairie annexe'), UPPER( 'mairie quartier'))
+        )t
+    ON (a.fid_libelle_long = t.objectid)
+    WHEN NOT MATCHED THEN
+        INSERT(a.fid_libelle_long)
+        VALUES(t.objectid);
+
     -- En cas d'erreur une exception est levée et un rollback effectué, empêchant ainsi toute insertion de se faire et de retourner à l'état des tables précédent l'insertion.
     EXCEPTION
         WHEN OTHERS THEN
