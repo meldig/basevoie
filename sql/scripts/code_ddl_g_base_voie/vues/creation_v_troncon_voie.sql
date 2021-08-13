@@ -7,6 +7,7 @@ le code INSEE, le nom de la commune, la longueur, les coordonnées des start/end
 CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_TRONCON_VOIE(
     ID_TRONCON, 
     CODE_INSEE, 
+    NOM_COMMUNE,
     ID_VOIE, 
     CODE_FANTOIR, 
     NOM_VOIE, 
@@ -21,11 +22,12 @@ CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_TRONCON_VOIE(
     CONSTRAINT "V_TRONCON_VOIE_PK" PRIMARY KEY ("ID_TRONCON") DISABLE
 ) 
 AS(
-    SELECT
+        SELECT
         a.objectid AS ID_TRONCON,
-        GET_CODE_INSEE_TRONCON('TA_TRONCON', a.geom) AS CODE_INSEE,
+        TRIM(a.SYS_NC00015$) AS CODE_INSEE,
+        f.nom AS nom_commune,
         d.objectid AS ID_VOIE,
-        '591' || SUBSTR(GET_CODE_INSEE_TRONCON('TA_TRONCON', a.geom), 3) || e.code_rivoli AS CODE_FANTOIR,
+        '591' || SUBSTR(TRIM(a.SYS_NC00015$), 3) || e.code_rivoli AS CODE_FANTOIR,
         d.libelle_voie AS NOM_VOIE,
         c.sens AS SENS,
         c.ordre_troncon AS ORDRE_TRONCON,
@@ -71,15 +73,18 @@ AS(
         INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE c ON c.fid_troncon = a.objectid
         INNER JOIN G_BASE_VOIE.TA_VOIE d ON d.objectid = c.fid_voie
         INNER JOIN G_BASE_VOIE.TA_RIVOLI e ON e.objectid = d.fid_rivoli,
+        G_REFERENTIEL.MEL_COMMUNE f,
         USER_SDO_GEOM_METADATA m
     WHERE
-        m.table_name = 'TA_TRONCON';
+        m.table_name = 'TA_TRONCON'
+        AND f.code_insee = TRIM(a.SYS_NC00015$)
 );
 
 -- 2. Création des commentaires de la vue
 COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_VOIE IS 'Vue regroupant tous les tronçons valides par voie avec leur longueur, coordonnés, sens de saisie, ordre des tronçon dans la voie, code fantoir, nom de la voie, commune, date de création et de modification.' ;
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.id_troncon IS 'Identifiant des tronçons valides en base.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_insee IS 'Code INSEE de la commune dans laquelle se situe le tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.NOM_COMMUNE IS 'Nom de la commune d''apartenance du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.id_voie IS 'Identifiant interne des voies.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_fantoir IS 'Code fantoir sur 10 caractères des voies (3 pour le code département + direction ; 3 pour le code commune ; 4 pour le rivoli(identifiant de la voie au sein de la commune).)';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.nom_voie IS 'Nom de la voie en minuscule.';

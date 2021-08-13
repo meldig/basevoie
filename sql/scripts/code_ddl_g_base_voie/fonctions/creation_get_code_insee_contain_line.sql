@@ -9,7 +9,8 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     v_code_insee CHAR(8);
     BEGIN
         SELECT 
-            b.code_insee INTO v_code_insee 
+            TRIM(b.code_insee)
+            INTO v_code_insee 
         FROM 
             G_REFERENTIEL.MEL_COMMUNE b, 
             USER_SDO_GEOM_METADATA m

@@ -10,7 +10,8 @@ ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
     v_code_insee CHAR(8);
     BEGIN
         SELECT 
-            b.code_insee INTO v_code_insee 
+            TRIM(b.code_insee)
+            INTO v_code_insee 
         FROM 
             G_REFERENTIEL.MEL_COMMUNE b, 
             USER_SDO_GEOM_METADATA m
