@@ -34,7 +34,7 @@ BEGIN
         G_GEO.TA_LIBELLE a
         INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
     WHERE 
-        b.valeur = 'modification';
+        b.valeur = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
