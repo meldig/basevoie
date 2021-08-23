@@ -6,10 +6,29 @@ SET SERVEROUTPUT ON
 DECLARE
     v_nbr_objectid NUMBER(38,0);
     v_contrainte VARCHAR2(100);
+    v_mtd NUMBER(38,0);
 BEGIN
 
     SAVEPOINT POINT_SAUVEGARDE_REMPLISSAGE;
     
+    -- 0. Sélection des métadonnées de la abse voie de la MEL afin de créer une valeur par défaut pour le champ fid_metadonnee de TA_TRONCON et TA_VOIE
+    -- 0.1. Sélection de l'identifiant de la MTD
+    SELECT
+        a.objectid
+        INTO v_mtd
+    FROM
+        G_GEO.TA_METADONNEE a
+        INNER JOIN G_GEO.TA_SOURCE b ON b.objectid = a.fid_source
+        INNER JOIN G_GEO.TA_METADONNEE_RELATION_ORGANISME c ON c.fid_metadonnee = a.objectid
+        INNER JOIN G_GEO.TA_ORGANISME d ON d.objectid = c.fid_organisme
+    WHERE
+        UPPER(d.acronyme) = UPPER('mel')
+        AND UPPER(b.nom_source) = UPPER('base voie');
+
+    -- 0.2. Modification des codes DDL de TA_TRONCON et TA_VOIE
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TRONCON MODIFY FID_METADONNEE NUMBER(38,0) DEFAULT ' || v_mtd;
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_VOIE MODIFY FID_METADONNEE NUMBER(38,0) DEFAULT ' || v_mtd;
+
     -- 1. Import des données des agents de la base voie + gestionnaires de données
     INSERT INTO G_BASE_VOIE.TA_AGENT(numero_agent, pnom, validite)
     SELECT numero_agent, pnom, validite FROM TEMP_AGENT;
