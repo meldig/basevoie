@@ -9,7 +9,8 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     v_code_insee CHAR(8);
     BEGIN
         SELECT 
-            b.code_insee INTO v_code_insee 
+            TRIM(b.code_insee)
+            INTO v_code_insee 
         FROM 
             G_REFERENTIEL.MEL_COMMUNE b, 
             USER_SDO_GEOM_METADATA m
@@ -42,7 +43,8 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     v_code_insee CHAR(8);
     BEGIN
         SELECT
-            b.code_insee INTO v_code_insee
+            TRIM(b.code_insee)
+            INTO v_code_insee
         FROM
             G_REFERENTIEL.MEL_COMMUNE b,
             USER_SDO_GEOM_METADATA m
@@ -71,7 +73,8 @@ ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
     v_code_insee CHAR(8);
     BEGIN
         SELECT 
-            b.code_insee INTO v_code_insee 
+            TRIM(b.code_insee)
+            INTO v_code_insee 
         FROM 
             G_REFERENTIEL.MEL_COMMUNE b, 
             USER_SDO_GEOM_METADATA m
@@ -97,7 +100,8 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     v_code_insee CHAR(8);
     BEGIN
         SELECT 
-            b.code_insee INTO v_code_insee 
+            TRIM(b.code_insee)
+            INTO v_code_insee 
         FROM 
             G_REFERENTIEL.MEL_COMMUNE b, 
             USER_SDO_GEOM_METADATA m
@@ -1287,16 +1291,9 @@ CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_INFOS_POI
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG TO G_ADMIN_SIG;
 
 /
-/*
-Création de la vue associant chaque tronçon à sa voie avec les identifiants des tronçons/voie, le nom et le code fantoir de la voie, 
-le code INSEE, le nom de la commune, la longueur, les coordonnées des start/end points et les dates de saisie/modifications des tronçons en base.
-*/
-
--- 1. Création de la vue
 CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_TRONCON_VOIE(
     ID_TRONCON, 
     CODE_INSEE, 
-    NOM_COMMUNE, 
     ID_VOIE, 
     CODE_FANTOIR, 
     NOM_VOIE, 
@@ -1307,19 +1304,19 @@ CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_TRONCON_VOIE(
     LONGUEUR_TRONCON,
     DATE_SAISIE,
     DATE_MODIFICATION,
+    GEOM,
     CONSTRAINT "V_TRONCON_VOIE_PK" PRIMARY KEY ("ID_TRONCON") DISABLE
 ) 
 AS(
-    SELECT
+        SELECT
         a.objectid AS ID_TRONCON,
-        b.code_insee AS CODE_INSEE,
-        b.nom AS NOM_COMMUNE,
+        TRIM(a.SYS_NC00015$) AS CODE_INSEE,
         d.objectid AS ID_VOIE,
-        '591' || SUBSTR(b.code_insee, 3) || e.code_rivoli AS CODE_FANTOIR,
+        '591' || SUBSTR(TRIM(a.SYS_NC00015$), 3) || e.code_rivoli AS CODE_FANTOIR,
         d.libelle_voie AS NOM_VOIE,
         c.sens AS SENS,
         c.ordre_troncon AS ORDRE_TRONCON,
-        REPLACE(
+        CAST(REPLACE(
                 TRIM(
                     BOTH')' FROM
                         TRIM(
@@ -1334,9 +1331,9 @@ AS(
                 ),
                 ' ',
                 ', '
-            )AS start_point,
+            ) AS VARCHAR2(100))AS start_point,
             
-            REPLACE(
+            CAST(REPLACE(
                 TRIM(
                     BOTH')' FROM
                         TRIM(
@@ -1351,36 +1348,21 @@ AS(
                 ),
                 ' ',
                 ', '
-            )AS end_point,
-        ROUND(SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom, m.diminfo)), 2) AS longueur,
+            )AS VARCHAR2(100))AS end_point,
+        ROUND(SDO_LRS.MEASURE_RANGE(SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom)), 2) AS longueur,
         a.date_saisie AS DATE_SAISIE,
-        a.date_modification AS DATE_MODIFICATION
+        a.date_modification AS DATE_MODIFICATION,
+        a.geom
     FROM
         G_BASE_VOIE.TA_TRONCON a
         INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE c ON c.fid_troncon = a.objectid
         INNER JOIN G_BASE_VOIE.TA_VOIE d ON d.objectid = c.fid_voie
-        INNER JOIN G_BASE_VOIE.TA_RIVOLI e ON e.objectid = d.fid_rivoli,
-        G_REFERENTIEL.A_COMMUNE b,
-        USER_SDO_GEOM_METADATA m
-    WHERE
-        m.table_name = 'TA_TRONCON'
-        AND SDO_ANYINTERACT(a.geom, b.geom) = 'TRUE'
-        AND SDO_CONTAINS(
-                            b.geom,
-                            SDO_LRS.CONVERT_TO_STD_GEOM(
-                                SDO_LRS.LOCATE_PT(
-                                    SDO_LRS.CONVERT_TO_LRS_GEOM(a.GEOM,m.diminfo),
-                                    SDO_GEOM.SDO_LENGTH(a.GEOM,m.diminfo)/2
-                                )
-                            )
-            )='TRUE'
+        INNER JOIN G_BASE_VOIE.TA_RIVOLI e ON e.objectid = d.fid_rivoli
 );
 
--- 2. Création des commentaires de la vue
 COMMENT ON TABLE G_BASE_VOIE.V_TRONCON_VOIE IS 'Vue regroupant tous les tronçons valides par voie avec leur longueur, coordonnés, sens de saisie, ordre des tronçon dans la voie, code fantoir, nom de la voie, commune, date de création et de modification.' ;
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.id_troncon IS 'Identifiant des tronçons valides en base.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_insee IS 'Code INSEE de la commune dans laquelle se situe le tronçon. ATTENTION : pour les tronçons en bordure de commune, le code INSEE peut être en fait le code INS d''un arrondissement belge si plus de 50% du tronçon se situe en belgique.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.nom_commune IS 'Nom de la commune dans laquelle se situe le tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_insee IS 'Code INSEE de la commune dans laquelle se situe le tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.id_voie IS 'Identifiant interne des voies.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.code_fantoir IS 'Code fantoir sur 10 caractères des voies (3 pour le code département + direction ; 3 pour le code commune ; 4 pour le rivoli(identifiant de la voie au sein de la commune).)';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.nom_voie IS 'Nom de la voie en minuscule.';
@@ -1391,6 +1373,7 @@ COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.endpoint_troncon IS 'Coordonnées d
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.longueur_troncon IS 'Longueur du tronçon calculée automatiquement.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.date_saisie IS 'Date de saisie du tronçon en base.';
 COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.date_modification IS 'Date de la dernière modification du tronçon en base.';
+COMMENT ON COLUMN G_BASE_VOIE.V_TRONCON_VOIE.geom IS 'Géométrie de chaque tronçon.';  
 
 /
 /*
@@ -1429,7 +1412,7 @@ BEGIN
         G_GEO.TA_LIBELLE a
         INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
     WHERE 
-        b.valeur = 'modification';
+        b.valeur = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
@@ -1518,7 +1501,7 @@ BEGIN
         G_GEO.TA_LIBELLE a
         INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
     WHERE 
-        b.valeur = 'modification';
+        b.valeur = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
@@ -1601,7 +1584,7 @@ BEGIN
         G_GEO.TA_LIBELLE a
         INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
     WHERE 
-        b.valeur = 'modification';
+        b.valeur = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
@@ -1673,57 +1656,60 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
+    SELECT
+        a.objectid INTO v_id_insertion
+    FROM
         G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+    WHERE
         b.valeur = 'insertion';
 
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
+    SELECT
+        a.objectid INTO v_id_modification
+    FROM
         G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'modification';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+    WHERE
+        b.valeur = 'édition';
+
+    SELECT
+        a.objectid INTO v_id_suppression
+    FROM
         G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+    WHERE
         b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
             VALUES(
                     :new.objectid,
                     :new.geom,
                     sysdate,
                     v_id_insertion,
-                    v_id_agent);
+                    v_id_agent,
+                    :new.fid_metadonnee);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
             VALUES(
-                    :old.objectid, 
+                    :old.objectid,
                     :old.geom,
                     sysdate,
                     v_id_modification,
-                    v_id_agent);
+                    v_id_agent,
+                    :old.fid_metadonnee);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
         VALUES(
-                :old.objectid, 
+                :old.objectid,
                 :old.geom,
                 sysdate,
                 v_id_suppression,
-                v_id_agent);
+                v_id_agent,
+                :old.fid_metadonnee);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -1753,69 +1739,72 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT 
-        a.objectid INTO v_id_insertion 
-    FROM 
+    SELECT
+        a.objectid INTO v_id_insertion
+    FROM
         G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+    WHERE
         b.valeur = 'insertion';
 
-    SELECT 
-        a.objectid INTO v_id_modification 
-    FROM 
+    SELECT
+        a.objectid INTO v_id_modification
+    FROM
         G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
-        b.valeur = 'modification';
-            
-    SELECT 
-        a.objectid INTO v_id_suppression 
-    FROM 
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+    WHERE
+        b.valeur = 'édition';
+
+    SELECT
+        a.objectid INTO v_id_suppression
+    FROM
         G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
-    WHERE 
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+    WHERE
         b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom, fid_metadonnee)
             VALUES(
-                    :new.objectid, 
-                    :new.fid_typevoie, 
+                    :new.objectid,
+                    :new.fid_typevoie,
                     :new.fid_rivoli,
                     :new.complement_nom_voie,
                     :new.libelle_voie,
                     :new.fid_genre_voie,
                     sysdate,
                     v_id_insertion,
-                    v_id_agent);
+                    v_id_agent,
+                    :new.fid_metadonnee);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom, fid_metadonnee)
             VALUES(
-                    :old.objectid, 
-                    :old.fid_typevoie, 
+                    :old.objectid,
+                    :old.fid_typevoie,
                     :old.fid_rivoli,
                     :old.complement_nom_voie,
                     :old.libelle_voie,
                     :old.fid_genre_voie,
                     sysdate,
                     v_id_modification,
-                    v_id_agent);
+                    v_id_agent,
+                    :old.fid_metadonnee);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-    INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom)
+    INSERT INTO G_BASE_VOIE.TA_VOIE_LOG(fid_voie, fid_typevoie, fid_rivoli, complement_nom_voie, libelle_voie, fid_genre_voie, date_action, fid_type_action, fid_pnom, fid_metadonnee)
         VALUES(
-                :old.objectid, 
-                :old.fid_typevoie, 
+                :old.objectid,
+                :old.fid_typevoie,
                 :old.fid_rivoli,
                 :old.complement_nom_voie,
                 :old.libelle_voie,
                 :old.fid_genre_voie,
                 sysdate,
                 v_id_suppression,
-                v_id_agent);
+                v_id_agent,
+                :old.fid_metadonnee);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -1859,7 +1848,7 @@ BEGIN
         G_GEO.TA_LIBELLE a
         INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
     WHERE 
-        b.valeur = 'modification';
+        b.valeur = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
@@ -1942,7 +1931,7 @@ BEGIN
         G_GEO.TA_LIBELLE a
         INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
     WHERE 
-        b.valeur = 'modification';
+        b.valeur = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
@@ -2066,6 +2055,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
+    fid_mtd NUMBER(38,0);
 
 BEGIN
     -- Sélection du pnom
@@ -2074,13 +2064,15 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
-    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TA_AGENT.
+    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TA_AGENT. 
+    IF INSERTING THEN 
        :new.fid_pnom_saisie := v_id_agent;
        :new.fid_pnom_modification := v_id_agent;
     ELSE
-        IF UPDATING THEN -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le tronçon, présent dans TA_AGENT.
+        -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le tronçon, présent dans TA_AGENT.
+        IF UPDATING THEN 
              :new.date_modification := sysdate;
-             :new.fid_pnom_modification := v_id_agent; 
+             :new.fid_pnom_modification := v_id_agent;
         END IF;
     END IF;
 
@@ -2100,7 +2092,8 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-         
+    fid_mtd NUMBER(38,0);
+    
 BEGIN
     -- Sélection du pnom
     SELECT sys_context('USERENV','OS_USER') into username from dual;
@@ -2108,7 +2101,8 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
-    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
+    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
+    IF INSERTING THEN
        :new.fid_pnom_saisie := v_id_agent;
        :new.fid_pnom_modification := v_id_agent;
     ELSE

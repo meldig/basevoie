@@ -34,7 +34,7 @@ BEGIN
     SELECT numero_agent, pnom, validite FROM TEMP_AGENT;
 
     -- 5. Insertion du code fantoir dans TEMP_VOIEVOI
-    --EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
+    EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
     --COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
 
     MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
