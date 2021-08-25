@@ -9,7 +9,8 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
-    fid_pnom_modification NUMBER(38,0) NOT NULL
+    fid_pnom_modification NUMBER(38,0) NOT NULL,
+    fid_metadonnee NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -20,6 +21,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_saisie IS 'date de saisie du tron�
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_modification IS 'Dernière date de modification du tronçon (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des tronçons (MEL ou IGN).';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TRONCON 
@@ -58,12 +60,26 @@ ADD CONSTRAINT TA_TRONCON_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
--- 7. Création des index sur les clés étrangères
+ALTER TABLE G_BASE_VOIE.TA_TRONCON
+ADD CONSTRAINT TA_TRONCON_FID_METADONNEE_FK
+FOREIGN KEY (fid_metadonnee)
+REFERENCES G_GEO.ta_metadonnee(objectid);
+
+-- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TRONCON_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TRONCON_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_metadonnee)
+    TABLESPACE G_ADT_INDX;
+
+-- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du tronçon. 
+-- Il créé également un champ virtuel dans lequel on peut aller chercher ce code INSEE.
+CREATE INDEX TA_TRONCON_CODE_INSEE_IDX
+ON G_BASE_VOIE.TA_TRONCON(GET_CODE_INSEE_TRONCON('TA_TRONCON', geom))
+TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TRONCON TO G_ADMIN_SIG;
