@@ -11,7 +11,296 @@ BEGIN
 
     SAVEPOINT POINT_SAUVEGARDE_REMPLISSAGE;
     
-    -- 0. Sélection des métadonnées de la abse voie de la MEL afin de créer une valeur par défaut pour le champ fid_metadonnee de TA_TRONCON et TA_VOIE
+    -- 00. Suppression des seuils disposant des mêmes numéros de seuils, de voie, de complément de numéro de seuil et de date (correspondant sans doute à un import).
+    -- 00.1. Pour les seuils ayant le même numéro et la même voie et un complément de numéro de seuil NULL
+    -- 00.1.1. Supppression des seuils
+    DELETE FROM G_BASE_VOIE.TEMP_ILTASEU a
+    WHERE
+        a.idseui IN(
+            WITH
+                C_1 AS(
+                    SELECT
+                        a.idseui AS code_point,
+                        a.nuseui AS numero_seuil,
+                        a.nsseui AS complement_numero_seuil,
+                        e.ccomvoi AS code_voie,
+                        MIN(SDO_GEOM.SDO_DISTANCE(a.ora_geometry, c.ora_geometry, 0.005)) AS distance
+                    FROM
+                        G_BASE_VOIE.TEMP_ILTASEU a
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+                        INNER JOIN (
+                            SELECT
+                                    a.code_voie,
+                                    a.numero,
+                                    a.repetition
+                                FROM
+                                    G_BASE_VOIE.vm_adresse_litteralis_g_sidu a
+                                    INNER JOIN G_BASE_VOIE.TEMP_ILTASEU b ON b.idseui = a.code_point
+                                WHERE
+                                    a.repetition IS NULL
+                                GROUP BY
+                                    a.code_voie,
+                                    a.repetition,
+                                    a.numero
+                                HAVING
+                                    COUNT(a.code_voie) > 1
+                                    AND COUNT(a.numero) > 1
+                        ) f ON f.numero = a.nuseui AND f.code_voie = e.ccomvoi
+                    WHERE
+                        a.nsseui IS NULL
+                        AND c.cdvaltro = 'V'
+                        AND d.cvalide = 'V'
+                        AND e.cdvalvoi = 'V'
+                    GROUP BY
+                        a.idseui,
+                        a.nuseui,
+                        a.nsseui,
+                        e.ccomvoi
+                ),
+                
+                -- Sélection des seuils à garder (étant le plus près de la voie qui leur est affectée au sein des doublons des numéros de seuil)
+                C_2 AS(
+                    SELECT
+                        a.numero_seuil,
+                        a.code_voie,
+                        MIN(a.distance) AS min_distance
+                    FROM
+                        C_1 a
+                    GROUP BY
+                        a.numero_seuil,
+                        a.code_voie
+                )
+                SELECT a.code_point
+                FROM
+                    C_1 a
+                WHERE
+                    a.code_point NOT IN (SELECT b.code_point FROM C_1 b INNER JOIN C_2 c ON c.numero_seuil = b.numero_seuil AND b.code_voie = c.code_voie AND b.distance = c.min_distance)
+        )
+    ;
+
+    -- 00.1.2. Suppression des relations entre les seuil et les tronçons
+    DELETE FROM G_BASE_VOIE.TEMP_ILTASIT a
+    WHERE
+        a.idseui IN(
+            WITH
+                C_1 AS(
+                    SELECT
+                        a.idseui AS code_point,
+                        a.nuseui AS numero_seuil,
+                        a.nsseui AS complement_numero_seuil,
+                        e.ccomvoi AS code_voie,
+                        MIN(SDO_GEOM.SDO_DISTANCE(a.ora_geometry, c.ora_geometry, 0.005)) AS distance
+                    FROM
+                        G_BASE_VOIE.TEMP_ILTASEU a
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+                        INNER JOIN (
+                            SELECT
+                                    a.code_voie,
+                                    a.numero,
+                                    a.repetition
+                                FROM
+                                    G_BASE_VOIE.vm_adresse_litteralis_g_sidu a
+                                    INNER JOIN G_BASE_VOIE.TEMP_ILTASEU b ON b.idseui = a.code_point
+                                WHERE
+                                    a.repetition IS NULL
+                                GROUP BY
+                                    a.code_voie,
+                                    a.repetition,
+                                    a.numero
+                                HAVING
+                                    COUNT(a.code_voie) > 1
+                                    AND COUNT(a.numero) > 1
+                        ) f ON f.numero = a.nuseui AND f.code_voie = e.ccomvoi
+                    WHERE
+                        a.nsseui IS NULL
+                        AND c.cdvaltro = 'V'
+                        AND d.cvalide = 'V'
+                        AND e.cdvalvoi = 'V'
+                    GROUP BY
+                        a.idseui,
+                        a.nuseui,
+                        a.nsseui,
+                        e.ccomvoi
+                ),
+                
+                -- Sélection des seuils à garder (étant le plus près de la voie qui leur est affectée au sein des doublons des numéros de seuil)
+                C_2 AS(
+                    SELECT
+                        a.numero_seuil,
+                        a.code_voie,
+                        MIN(a.distance) AS min_distance
+                    FROM
+                        C_1 a
+                    GROUP BY
+                        a.numero_seuil,
+                        a.code_voie
+                )
+                SELECT a.code_point
+                FROM
+                    C_1 a
+                WHERE
+                    a.code_point NOT IN (SELECT b.code_point FROM C_1 b INNER JOIN C_2 c ON c.numero_seuil = b.numero_seuil AND b.code_voie = c.code_voie AND b.distance = c.min_distance)
+        )
+    ;
+
+    -- 00.2. Pour les seuils ayant le même numéro et la même voie et le même complément de numéro de seuil
+    -- 00.2.1. Supppression des seuils
+    DELETE FROM G_BASE_VOIE.TEMP_ILTASEU a
+    WHERE
+        a.idseui IN(
+            WITH
+                C_1 AS(
+                    SELECT
+                        a.idseui AS code_point,
+                        a.nuseui AS numero_seuil,
+                        a.nsseui AS complement_numero_seuil,
+                        e.ccomvoi AS code_voie,
+                        MIN(SDO_GEOM.SDO_DISTANCE(a.ora_geometry, c.ora_geometry, 0.005)) AS distance
+                    FROM
+                        G_BASE_VOIE.TEMP_ILTASEU a
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+                        INNER JOIN (
+                            SELECT
+                                    a.code_voie,
+                                    a.numero,
+                                    a.repetition
+                                FROM
+                                    G_BASE_VOIE.vm_adresse_litteralis_g_sidu a
+                                    INNER JOIN G_BASE_VOIE.TEMP_ILTASEU b ON b.idseui = a.code_point
+                                WHERE
+                                    a.repetition IS NOT NULL
+                                GROUP BY
+                                    a.code_voie,
+                                    a.repetition,
+                                    a.numero
+                                HAVING
+                                    COUNT(a.code_voie) > 1
+                                    AND COUNT(a.numero) > 1
+                        ) f ON f.numero = a.nuseui AND f.code_voie = e.ccomvoi AND f.repetition = a.nsseui
+                    WHERE
+                        a.nsseui IS NOT NULL
+                        AND c.cdvaltro = 'V'
+                        AND d.cvalide = 'V'
+                        AND e.cdvalvoi = 'V'
+                    GROUP BY
+                        a.idseui,
+                        a.nuseui,
+                        a.nsseui,
+                        e.ccomvoi
+                    ORDER BY
+                        e.ccomvoi,
+                        a.nuseui,
+                        a.nsseui
+                ),
+                
+                -- Sélection des seuils à garder (étant le plus près de la voie qui leur est affectée au sein des doublons des numéros de seuil)
+                C_2 AS(
+                    SELECT
+                        a.numero_seuil,
+                        a.code_voie,
+                        a.complement_numero_seuil,
+                        MIN(a.distance) AS min_distance
+                    FROM
+                        C_1 a
+                    GROUP BY
+                        a.numero_seuil,
+                        a.complement_numero_seuil,
+                        a.code_voie
+                )
+                SELECT a.code_point
+                FROM
+                    C_1 a
+                WHERE
+                    a.code_point NOT IN (SELECT b.code_point FROM C_1 b INNER JOIN C_2 c ON c.numero_seuil = b.numero_seuil AND b.code_voie = c.code_voie AND b.distance = c.min_distance AND b.complement_numero_seuil = c.complement_numero_seuil)
+        )
+    ;
+
+    -- 00.2.2. Suppression des relations entre les seuil et les tronçons
+    DELETE FROM G_BASE_VOIE.TEMP_ILTASIT a
+    WHERE
+        a.idseui IN(
+            WITH
+                C_1 AS(
+                    SELECT
+                        a.idseui AS code_point,
+                        a.nuseui AS numero_seuil,
+                        a.nsseui AS complement_numero_seuil,
+                        e.ccomvoi AS code_voie,
+                        MIN(SDO_GEOM.SDO_DISTANCE(a.ora_geometry, c.ora_geometry, 0.005)) AS distance
+                    FROM
+                        G_BASE_VOIE.TEMP_ILTASEU a
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+                        INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                        INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+                        INNER JOIN (
+                            SELECT
+                                    a.code_voie,
+                                    a.numero,
+                                    a.repetition
+                                FROM
+                                    G_BASE_VOIE.vm_adresse_litteralis_g_sidu a
+                                    INNER JOIN G_BASE_VOIE.TEMP_ILTASEU b ON b.idseui = a.code_point
+                                WHERE
+                                    a.repetition IS NOT NULL
+                                GROUP BY
+                                    a.code_voie,
+                                    a.repetition,
+                                    a.numero
+                                HAVING
+                                    COUNT(a.code_voie) > 1
+                                    AND COUNT(a.numero) > 1
+                        ) f ON f.numero = a.nuseui AND f.code_voie = e.ccomvoi AND f.repetition = a.nsseui
+                    WHERE
+                        a.nsseui IS NOT NULL
+                        AND c.cdvaltro = 'V'
+                        AND d.cvalide = 'V'
+                        AND e.cdvalvoi = 'V'
+                    GROUP BY
+                        a.idseui,
+                        a.nuseui,
+                        a.nsseui,
+                        e.ccomvoi
+                    ORDER BY
+                        e.ccomvoi,
+                        a.nuseui,
+                        a.nsseui
+                ),
+                
+                -- Sélection des seuils à garder (étant le plus près de la voie qui leur est affectée au sein des doublons des numéros de seuil)
+                C_2 AS(
+                    SELECT
+                        a.numero_seuil,
+                        a.code_voie,
+                        a.complement_numero_seuil,
+                        MIN(a.distance) AS min_distance
+                    FROM
+                        C_1 a
+                    GROUP BY
+                        a.numero_seuil,
+                        a.complement_numero_seuil,
+                        a.code_voie
+                )
+                SELECT a.code_point
+                FROM
+                    C_1 a
+                WHERE
+                    a.code_point NOT IN (SELECT b.code_point FROM C_1 b INNER JOIN C_2 c ON c.numero_seuil = b.numero_seuil AND b.code_voie = c.code_voie AND b.distance = c.min_distance AND b.complement_numero_seuil = c.complement_numero_seuil)
+        )
+    ;
+
+    COMMIT;
+
+    -- 0. Sélection des métadonnées de la base voie de la MEL afin de créer une valeur par défaut pour le champ fid_metadonnee de TA_TRONCON et TA_VOIE
     -- 0.1. Sélection de l'identifiant de la MTD
     SELECT
         a.objectid
