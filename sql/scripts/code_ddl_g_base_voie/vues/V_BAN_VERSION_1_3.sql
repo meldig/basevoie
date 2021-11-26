@@ -62,17 +62,9 @@ SELECT
             END
     END AS "CLE_INTEROP",
 -- COMMUNE_INSEE
-    CASE i.nature
-      WHEN 'Commune associée'
-        THEN j.code_insee
-      ELSE j.code_insee
-    END AS "COMMUNE_INSEE",
+    j.code_insee AS "COMMUNE_INSEE",
     -- COMMUNE_NOM
-    CASE i.nature
-      WHEN 'Commune associée'
-        THEN j.nom
-      ELSE j.NOM
-    END AS "COMMUNE_NOM",
+    j.NOM AS "COMMUNE_NOM",
     -- COMMUNE_DELEGUEE_INSEE
     CASE i.nature
       WHEN 'Commune associée'
