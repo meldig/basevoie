@@ -37,7 +37,7 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
 %chemin_code_table%\creation_ta_point_interet_log.sql + ^
 %chemin_code_table%\creation_ta_infos_point_interet.sql + ^
 %chemin_code_table%\creation_ta_infos_point_interet_log.sql + ^
-%chemin_code_vue%\creation_v_troncon_voie.sql + ^
+%chemin_code_temp%\ajout_temp_code_fantoir_a_temp_voievoi.sql + ^
 %chemin_code_trigger%\creation_a_iud_ta_infos_seuil_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql + ^

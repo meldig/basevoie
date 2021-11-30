@@ -14,17 +14,17 @@ SET /p INSTANCE_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir l'instance O
 ::SET /p USER_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'utilisateur Oracle de destination : "
 ::SET /p MDP_FAM_LIB_D="Famille - Libelle : Veuillez saisir le mot de passe de l'utilisateur Oracle de destination : "
 ::SET /p INSTANCE_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'instance Oracle de destination : "
-SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
+::SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
 SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier integration : "
 
 :: 2. se mettre dans l'environnement QGIS
-cd C:\Program Files\QGIS 3.16.9\bin
+cd C:\Program Files\QGIS 3.20.3\bin
 
 :: 3. Configurer le système d'encodage des caractères en UTF-8
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
 :: 4. Rediriger la variable PROJ_LIB vers le bon fichier proj.db afin qu'ogr2ogr trouve le bon scr
-setx PROJ_LIB "C:\Program Files\QGIS 3.16\share\proj"
+setx PROJ_LIB "C:\Program Files\QGIS 3.20.3\share\proj"
 
 :: 5. commande ogr2ogr pour exporter les couches du schéma X@X vers le schéma X@X
 :: 5.1. table ILTATRC
@@ -61,7 +61,7 @@ ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_FUSION_SEUIL_P%/%
 ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_P%/%MDP_P%@%INSTANCE_P%:ILTALPU -sql "SELECT * FROM G_SIDU.ILTALPU a WHERE a.geom.sdo_srid IS NOT NULL" -nln TEMP_ILTALPU -nlt POINT -lco SRID=2154 -dim 2
 
 :: 5.12. table TEMP_AGENT
-ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_AGENT%/TEMP_AGENT.csv
+::ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_AGENT%/TEMP_AGENT.csv
 
 :: 5.13. table TEMP_FAMILLE
 ::ogr2ogr.exe -f OCI OCI:%USER_FAM_LIB_D%/%MDP_FAM_LIB_D%@%INSTANCE_FAM_LIB_D% %CHEMIN_INTEGRATION%/TEMP_FAMILLE.csv
