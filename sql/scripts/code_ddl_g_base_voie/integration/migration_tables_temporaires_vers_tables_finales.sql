@@ -11,10 +11,8 @@ BEGIN
 
     SAVEPOINT POINT_SAUVEGARDE_REMPLISSAGE;
     
-    -- 00. Suppression des seuils disposant des mêmes numéros de seuils, de voie, de complément de numéro de seuil et de date (correspondant sans doute à un import).
-    -- 00.1. Pour les seuils ayant le même numéro et la même voie et un complément de numéro de seuil NULL
-    -- 00.1.1. Supppression des seuils
--- Suppression des seuils intersectant les tronçons
+-- 1. Correction des seuils
+-- 1.1. Suppression des seuils intersectant les tronçons
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     idseui IN(
@@ -35,7 +33,7 @@ WHERE
     );
 COMMIT;
 
--- Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
+-- 1.2. Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     idseui IN(
@@ -84,35 +82,35 @@ WHERE
                     e.ccomvoi
             )
             
-                -- Sélection des identifiants des seuils à supprimer
-                SELECT
-                    a.idseui
-                FROM
-                    G_BASE_VOIE.TEMP_ILTASEU a
-                    INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
-                    INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
-                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
-                    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
-                    INNER JOIN C_1 f ON f.nuseui = a.nuseui AND f.cdcote = a.cdcote AND f.ccomvoi = e.ccomvoi,
-                    USER_SDO_GEOM_METADATA m
-                WHERE
-                    c.cdvaltro = 'V'
-                    AND d.cvalide = 'V'
-                    AND e.cdvalvoi = 'V'
-                    AND a.nsseui IS NULL
-                    AND m.TABLE_NAME = 'TEMP_ILTATRC'
-                    AND ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
-                                    SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
-                                        SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
-                                        SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
-                                        0
-                                    ),
-                                    a.ora_geometry
-                                ), 2) > f.distance
+            -- Sélection des identifiants des seuils à supprimer
+            SELECT
+                a.idseui
+            FROM
+                G_BASE_VOIE.TEMP_ILTASEU a
+                INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+                INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+                INNER JOIN C_1 f ON f.nuseui = a.nuseui AND f.cdcote = a.cdcote AND f.ccomvoi = e.ccomvoi,
+                USER_SDO_GEOM_METADATA m
+            WHERE
+                c.cdvaltro = 'V'
+                AND d.cvalide = 'V'
+                AND e.cdvalvoi = 'V'
+                AND a.nsseui IS NULL
+                AND m.TABLE_NAME = 'TEMP_ILTATRC'
+                AND ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
+                                SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
+                                    SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
+                                    SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
+                                    0
+                                ),
+                                a.ora_geometry
+                            ), 2) > f.distance
     );
 COMMIT;
 
--- Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
+-- 1.3. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     idseui IN(
@@ -140,7 +138,7 @@ WHERE
                         ), 2) >= 1000
     );
     
--- Suppression des relations seuils/tronçons invalides dues à la suppression des seuils ci-dessus
+-- 1.4. Suppression des relations seuils/tronçons invalides dues à la suppression des seuils ci-dessus
 DELETE FROM G_BASE_VOIE.TEMP_ILTASIT
 WHERE
     IDSEUI IN(
@@ -153,8 +151,8 @@ WHERE
     );
 COMMIT;
 
-    -- 0. Sélection des métadonnées de la base voie de la MEL afin de créer une valeur par défaut pour le champ fid_metadonnee de TA_TRONCON et TA_VOIE
-    -- 0.1. Sélection de l'identifiant de la MTD
+-- 2. Sélection des métadonnées de la base voie de la MEL afin de créer une valeur par défaut pour le champ fid_metadonnee de TA_TRONCON et TA_VOIE
+-- 2.1. Sélection de l'identifiant de la MTD
     SELECT
         a.objectid
         INTO v_mtd
@@ -167,19 +165,21 @@ COMMIT;
         UPPER(d.acronyme) = UPPER('mel')
         AND UPPER(b.nom_source) = UPPER('base voie');
 
-    -- 0.2. Modification des codes DDL de TA_TRONCON et TA_VOIE
+-- 2.2. Modification des codes DDL de TA_TRONCON et TA_VOIE
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TRONCON MODIFY FID_METADONNEE NUMBER(38,0) DEFAULT ' || v_mtd;
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_VOIE MODIFY FID_METADONNEE NUMBER(38,0) DEFAULT ' || v_mtd;
 
-    -- 1. Import des données des agents de la base voie + gestionnaires de données
+-- 3. Import des données des agents de la base voie + gestionnaires de données
     INSERT INTO G_BASE_VOIE.TA_AGENT(numero_agent, pnom, validite)
     SELECT numero_agent, pnom, validite FROM TEMP_AGENT;
 
-    -- 5. Insertion du code fantoir dans TEMP_VOIEVOI
+-- 4. Insertion du code fantoir dans TEMP_VOIEVOI
+-- 4.1 Création du champ temporaire temp_code_fantoir et de son commentaire
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
 
     COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
 
+-- 4.2. Insertion du code fantoir dans le champ temporaire temp_code_fantoir
     MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
     USING(
         SELECT
@@ -204,8 +204,8 @@ COMMIT;
     WHEN MATCHED THEN
         UPDATE SET a.temp_code_fantoir = t.code_fantoir_et_cle_ctrl;
 
-    -- 6. Insertion des codes rivoli dans TA_RIVOLI
-    -- 6.1. Insertion des codes rivoli complet (avec clé)
+    -- 5. Insertion des rivolis dans TA_RIVOLI
+    -- 5.1. Insertion des codes rivoli complet (avec clé)
     INSERT INTO G_BASE_VOIE.TA_RIVOLI(code_rivoli, cle_controle)
     SELECT DISTINCT
         SUBSTR(temp_code_fantoir, 4, 4) AS rivoli,
@@ -215,7 +215,7 @@ COMMIT;
     WHERE
         temp_code_fantoir IS NOT NULL;
         
-    -- 6.2. Insertion de tous les autres codes rivoli (sans clé)
+    -- 5.2. Insertion de tous les autres codes rivoli (sans clé)
     INSERT INTO G_BASE_VOIE.TA_RIVOLI(code_rivoli)
     SELECT DISTINCT
         ccodrvo
@@ -224,11 +224,11 @@ COMMIT;
     WHERE
         temp_code_fantoir IS NULL;
 
-    -- 7. Désactivation des triggers pour les tronçons
+    -- 6. Désactivation des triggers pour les tronçons
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG DISABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_TRONCON_DATE_PNOM DISABLE';
 
-    -- 8. Import des tronçons valides dans TA_TRONCON
+    -- 7. Import des tronçons valides dans TA_TRONCON
     INSERT INTO G_BASE_VOIE.TA_TRONCON(objectid, geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_metadonnee)
     SELECT
         a.cnumtrc,
@@ -251,7 +251,7 @@ COMMIT;
         AND UPPER(f.acronyme) = UPPER('MEL')
         AND UPPER(d.nom_source) = UPPER('base voie');
         
-    -- 9. Import des tronçons valides dans TA_TRONCON_LOG pour la création
+    -- 8. Import des tronçons valides dans TA_TRONCON_LOG pour la création
     INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(geom, fid_troncon, date_action, fid_type_action, fid_pnom, fid_metadonnee)
     SELECT
         a.geom,
@@ -271,7 +271,7 @@ COMMIT;
         AND c.pnom = 'import_donnees'
         AND UPPER(d.valeur) = UPPER('insertion');
 
-    -- 10. Insertion des dates de modification dans TA_TRONCON_LOG pour la modification
+    -- 9. Insertion des dates de modification dans TA_TRONCON_LOG pour la modification
     INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(geom, fid_troncon, date_action, fid_type_action, fid_pnom, fid_metadonnee)
     SELECT
         a.geom,
@@ -291,7 +291,7 @@ COMMIT;
         AND c.pnom = 'import_donnees'
         AND UPPER(d.valeur) = UPPER('édition');
 
-    -- 11. Import des tronçons invalides dans TA_TRONCON pour la création
+    -- 10. Import des tronçons invalides dans TA_TRONCON pour la création
     INSERT INTO G_BASE_VOIE.TA_TRONCON(objectid, geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_metadonnee)
     SELECT
         a.cnumtrc,
@@ -314,7 +314,7 @@ COMMIT;
         AND UPPER(f.acronyme) = UPPER('MEL')
         AND UPPER(d.nom_source) = UPPER('base voie');
 
-    -- 12. Import des tronçons invalides dans TA_TRONCON_LOG pour la création
+    -- 11. Import des tronçons invalides dans TA_TRONCON_LOG pour la création
     INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(geom, fid_troncon, date_action, fid_type_action, fid_pnom, fid_metadonnee)
     SELECT
         a.geom,
@@ -334,7 +334,7 @@ COMMIT;
         AND c.pnom = 'import_donnees'
         AND UPPER(d.valeur) = UPPER('insertion');
 
-    -- 13. Insertion des dates de modification dans TA_TRONCON_LOG pour la suppression des tronçons invalides
+    -- 12. Insertion des dates de modification dans TA_TRONCON_LOG pour la suppression des tronçons invalides
     INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(geom, fid_troncon, date_action, fid_type_action, fid_pnom, fid_metadonnee)
     SELECT
         a.geom,
@@ -354,7 +354,7 @@ COMMIT;
         AND c.pnom = 'import_donnees'
         AND UPPER(d.valeur) = UPPER('suppression');
 
-    -- 14. Suppression des tronçons invalides dans la table TA_TRONCON
+    -- 13. Suppression des tronçons invalides dans la table TA_TRONCON
     DELETE 
     FROM G_BASE_VOIE.TA_TRONCON a 
     WHERE
@@ -367,7 +367,7 @@ COMMIT;
                 cdvaltro = 'F'
         );
 
-    -- 15. Modification du numéro de départ de l'incrémentation du champ TA_TRONCON.objectid
+    -- 14. Modification du numéro de départ de l'incrémentation du champ TA_TRONCON.objectid
     SELECT
         MAX(objectid)+1
         INTO v_nbr_objectid
@@ -376,11 +376,11 @@ COMMIT;
     
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TRONCON MODIFY objectid GENERATED BY DEFAULT AS IDENTITY (START WITH ' || v_nbr_objectid  || ' INCREMENT BY 1)';
 
-    -- 16. Réactivation des triggers pour les tronçons
+    -- 15. Réactivation des triggers pour les tronçons
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_TRONCON_DATE_PNOM ENABLE';
 
-    -- 17. Désactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
+    -- 16. Désactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
         INTO v_contrainte
@@ -393,8 +393,8 @@ COMMIT;
 
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_TYPE_VOIE DISABLE CONSTRAINT ' || v_contrainte;
 
-    -- 18. Import des données dans TA_TYPE_VOIE
-    -- 18.1. Import des type présents dans TYPEVOIE
+    -- 17. Import des données dans TA_TYPE_VOIE
+    -- 17.1. Import des type présents dans TYPEVOIE
     INSERT INTO G_BASE_VOIE.TA_TYPE_VOIE(code_type_voie, libelle)
     SELECT
         CCODTVO,
@@ -413,7 +413,7 @@ COMMIT;
     WHERE
         LITYVOIE IS NULL;
     
-    -- 18.2. Import des types de voies présents dans VOIEVOI mais absents de TYPEVOIE
+    -- 17.2. Import des types de voies présents dans VOIEVOI mais absents de TYPEVOIE
     INSERT INTO G_BASE_VOIE.TA_TYPE_VOIE(code_type_voie, libelle)
     SELECT DISTINCT
         a.ccodtvo,
@@ -573,7 +573,7 @@ COMMIT;
             UPPER(c.valeur) = UPPER('édition')
             AND e.pnom = 'import_donnees'
             AND b.cdvalvoi = 'V'
-            AND b.ccodtvo NOT IN('LIG', 'CAN', 'RUS')
+            AND TRIM(b.ccodtvo) NOT IN('LIG', 'CAN', 'RUS')
     )t
     ON (t.fid_type_action <> (SELECT a.objectid FROM G_GEO.TA_LIBELLE a INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long WHERE UPPER(b.valeur) = UPPER('édition')))
     WHEN NOT MATCHED THEN
@@ -633,7 +633,7 @@ COMMIT;
         WHERE
             UPPER(c.valeur) = UPPER('suppression')
             AND e.pnom = 'import_donnees'
-            AND b.ccodtvo IN('LIG', 'CAN', 'RUS')
+            AND TRIM(b.ccodtvo) IN('LIG', 'CAN', 'RUS')
     )t
     ON (t.fid_type_action <> (SELECT a.objectid FROM G_GEO.TA_LIBELLE a INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long WHERE UPPER(b.valeur) = UPPER('suppression')))
     WHEN NOT MATCHED THEN
@@ -653,7 +653,7 @@ COMMIT;
                 INNER JOIN G_BASE_VOIE.TA_VOIE b ON b.objectid = a.ccomvoi
             WHERE
                 a.cdvalvoi = 'I'
-                OR a.ccodtvo IN('LIG', 'CAN', 'RUS')
+                OR TRIM(a.ccodtvo) IN('LIG', 'CAN', 'RUS')
         );
 
     -- 25. Réactivation des triggers pour les voies
