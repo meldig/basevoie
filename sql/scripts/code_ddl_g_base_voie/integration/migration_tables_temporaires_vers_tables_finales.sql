@@ -33,84 +33,227 @@ WHERE
     );
 COMMIT;
 
--- 1.2. Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
-DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
-WHERE
-    idseui IN(
-        WITH
-            C_1 AS(-- Sélection des doublons de numéros et compléments de seuil, côté de la voie et numéro de voie
-                SELECT
-                    a.nuseui,
-                    COUNT(a.idseui),
-                    a.cdcote,
-                    a.nsseui,
-                    e.ccomvoi,
-                    MIN(ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
+-- 1.2. Création du vue matérialisée permettant d'identifier tous les seuils dont le nuseui, nsseui et ccomvoi sont identiques
+
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TEMP_DOUBLON_SEUIL_G_SIDU';
+COMMIT;
+*/
+-- 1.2.1. Création de la VM
+EXECUTE IMMEDIATE 'CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU(OBJECTID, ID_SEUIL, NUMERO_SEUIL, COMPLEMENT_SEUIL, ID_VOIE, DISTANCE)
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE AS
+WITH
+    C_1 AS(
+        SELECT
+            a.nuseui AS numero_seuil,
+            CASE
+                WHEN a.nsseui IS NOT NULL
+                THEN a.nsseui
+            ELSE
+                ''pas de complément''
+            END AS complement_seuil,
+            e.ccomvoi AS id_voie
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU a
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+        WHERE
+            c.cdvaltro = ''V''
+            AND d.cvalide = ''V''
+            AND e.cdvalvoi = ''V''
+            AND a.idseui NOT IN(393545, 393540) -- Ces seuils sont affectés à plusieurs voies
+        GROUP BY
+            a.nuseui,
+                CASE
+                    WHEN a.nsseui IS NOT NULL
+                    THEN a.nsseui
+                ELSE
+                    ''pas de complément''
+                END,
+                e.ccomvoi
+        HAVING
+            COUNT(a.nuseui) > 1
+            AND COUNT(CASE
+                WHEN a.nsseui IS NOT NULL
+                THEN a.nsseui
+            ELSE
+                ''pas de complément''
+            END) > 1
+            AND COUNT(e.ccomvoi) > 1
+    )
+    
+        SELECT DISTINCT
+            ROWNUM AS objectid,
+            a.idseui,
+            f.*,
+            ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
                                     SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
                                         SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
                                         SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
                                         0
                                     ),
                                     a.ora_geometry
-                                    ), 2)
-                    ) AS distance
+                                    ), 2)AS distance
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU a
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+            INNER JOIN C_1 f ON f.numero_seuil = a.nuseui AND f.complement_seuil = CASE WHEN a.nsseui IS NULL THEN ''pas de complément'' ELSE a.nsseui END AND f.id_voie = e.ccomvoi,
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = ''TEMP_ILTATRC''
+            AND c.cdvaltro = ''V''
+            AND d.cvalide = ''V''
+            AND e.cdvalvoi = ''V''
+        ORDER BY
+            f.numero_seuil,
+            f.complement_seuil,
+            f.id_voie';
+
+/
+
+-- 1.2.2. Création des commentaires de VM
+EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU IS ''VM temporaire servant à supprimer les seuils en doublons. Ces seuils disposent des mêmes numéros, compléments de seuil et voie, mais d''un identifiant et parfois d''un numéro de parcelle différent. Cependant, cela causant problème pour le "projet" LITTERALIS il fut décidé de ne garder que les seuils les plus proches de leur tronçon au sein des doublons.''';
+
+/
+
+-- 1.2.3. Création de la clé primaire
+EXECUTE IMMEDIATE 'ALTER MATERIALIZED VIEW VM_TEMP_DOUBLON_SEUIL_G_SIDU 
+ADD CONSTRAINT VM_TEMP_DOUBLON_SEUIL_G_SIDU_PK 
+PRIMARY KEY (OBJECTID)';
+
+/
+
+-- 1.2.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
+DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
+WHERE
+    IDSEUI IN(
+        WITH
+            C_1 AS(
+                SELECT
+                    numero_seuil,
+                    complement_seuil,
+                    id_voie,
+                    MIN(distance) AS min_distance
+                FROM
+                    G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU
+                GROUP BY
+                    numero_seuil,
+                    complement_seuil,
+                    id_voie
+            )
+            SELECT
+                a.id_seuil
+            FROM
+                G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU a
+                INNER JOIN C_1 b ON b.numero_seuil = a.numero_seuil AND b.complement_seuil = a.complement_seuil AND b.id_voie = a.id_voie
+            WHERE
+                a.distance > b.min_distance
+    );
+COMMIT;
+
+-- 1.3. Suppression des seuils en doublons de numéro et complément de seuil, voie et distance par raport au tronçon, dont l'idseui est le plus petit.
+DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
+WHERE
+    idseui IN(
+        WITH
+            C_1 AS(
+                SELECT
+                    a.nuseui AS numero_seuil,
+                    CASE
+                        WHEN a.nsseui IS NOT NULL
+                        THEN a.nsseui
+                    ELSE
+                        'pas de complément'
+                    END AS complement_seuil,
+                    e.ccomvoi AS id_voie
                 FROM
                     G_BASE_VOIE.TEMP_ILTASEU a
                     INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
                     INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
                     INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
-                    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi,
-                    USER_SDO_GEOM_METADATA m
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
                 WHERE
                     c.cdvaltro = 'V'
                     AND d.cvalide = 'V'
                     AND e.cdvalvoi = 'V'
-                    AND a.nsseui IS NULL
-                    AND m.TABLE_NAME = 'TEMP_ILTATRC'
+                    AND a.idseui NOT IN(393545, 393540) 
                 GROUP BY
                     a.nuseui,
-                    a.cdcote,
-                    a.nsseui,
-                    e.ccomvoi
+                        CASE
+                            WHEN a.nsseui IS NOT NULL
+                            THEN a.nsseui
+                        ELSE
+                            'pas de complément'
+                        END,
+                        e.ccomvoi
                 HAVING
                     COUNT(a.nuseui) > 1
+                    AND COUNT(CASE
+                        WHEN a.nsseui IS NOT NULL
+                        THEN a.nsseui
+                    ELSE
+                        'pas de complément'
+                    END) > 1
                     AND COUNT(e.ccomvoi) > 1
-                ORDER BY
-                    a.nuseui,
-                    a.cdcote,
-                    a.nsseui,
-                    e.ccomvoi
+            ),
+            
+            C_2 AS(
+                SELECT DISTINCT
+                    MIN(a.idseui) AS idseui,
+                    f.*,
+                    ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
+                                            SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
+                                                SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
+                                                SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
+                                                0
+                                            ),
+                                            a.ora_geometry
+                                            ), 2)AS distance
+                FROM
+                    G_BASE_VOIE.TEMP_ILTASEU a
+                    INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+                    INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+                    INNER JOIN C_1 f ON f.numero_seuil = a.nuseui AND f.complement_seuil = CASE WHEN a.nsseui IS NULL THEN 'pas de complément' ELSE a.nsseui END AND f.id_voie = e.ccomvoi,
+                    USER_SDO_GEOM_METADATA m
+                WHERE
+                    m.table_name = 'TEMP_ILTATRC'
+                    AND c.cdvaltro = 'V'
+                    AND d.cvalide = 'V'
+                    AND e.cdvalvoi = 'V'
+                GROUP BY
+                    f.numero_seuil,
+                    f.complement_seuil,
+                    f.id_voie,
+                    ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
+                                            SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
+                                                SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
+                                                SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
+                                                0
+                                            ),
+                                            a.ora_geometry
+                                            ), 2)
             )
             
-            -- Sélection des identifiants des seuils à supprimer
             SELECT
-                a.idseui
+                idseui
             FROM
-                G_BASE_VOIE.TEMP_ILTASEU a
-                INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
-                INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
-                INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
-                INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
-                INNER JOIN C_1 f ON f.nuseui = a.nuseui AND f.cdcote = a.cdcote AND f.ccomvoi = e.ccomvoi,
-                USER_SDO_GEOM_METADATA m
-            WHERE
-                c.cdvaltro = 'V'
-                AND d.cvalide = 'V'
-                AND e.cdvalvoi = 'V'
-                AND a.nsseui IS NULL
-                AND m.TABLE_NAME = 'TEMP_ILTATRC'
-                AND ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
-                                SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
-                                    SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
-                                    SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
-                                    0
-                                ),
-                                a.ora_geometry
-                            ), 2) > f.distance
+                C_2
     );
 COMMIT;
 
--- 1.3. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
+/
+
+-- 1.4. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     idseui IN(
@@ -138,7 +281,7 @@ WHERE
                         ), 2) >= 1000
     );
     
--- 1.4. Suppression des relations seuils/tronçons invalides dues à la suppression des seuils ci-dessus
+-- 1.5. Suppression des relations seuils/tronçons invalides dues à la suppression des seuils ci-dessus
 DELETE FROM G_BASE_VOIE.TEMP_ILTASIT
 WHERE
     IDSEUI IN(
