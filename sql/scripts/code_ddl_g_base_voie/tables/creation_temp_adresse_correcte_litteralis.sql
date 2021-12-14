@@ -54,3 +54,6 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tabl
 
 -- 6. Affection des droits
 GRANT SELECT ON G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS TO G_ADMIN_SIG;
+
+/
+
