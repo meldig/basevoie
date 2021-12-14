@@ -1,7 +1,7 @@
 # Fiche méthodologique de création du jeu de données LITTERALIS
 
 ## Contexte :
-Afin de créer des arrêtés automatiquement lors de travaux d'aménagement de la voirie, le service voirie travaille avec le prestataire Sogelink sur l'application LITTERALIS.
+Afin de créer des arrêtés automatiquement lors de travaux d'aménagement, le service voirie travaille avec le prestataire Sogelink sur l'application LITTERALIS.
 Cette application doit notamment permettre d'affecter les bonnes adresses aux bons arrêtés et d'affecter ces arrêtés aux bonnes équipes sur le terrain.
 
 ## Objectif : 
@@ -41,7 +41,7 @@ Livrer un jeu de données respectant le cahier des charges de Sogelink. Pour plu
 4. Création de trois tables de travail pour les **tronçons** et quatre pour les **adresses** ;
 5. Remplissage des tables de travail ;
 6. Création des deux vues matérialisées d'export des **tronçons** et des **adresses** ;
-7. Correction des secteurs ;
+7. Correction des secteurs de voirie ;
 8. Création des vues matérialisées regroupant les zones administratives des **regroupements** ;
 9. Création de la vue matérialisée d'export des **regroupements** ;
 
@@ -81,8 +81,8 @@ COMMIT;
 
 La présence de ces doublons est due à un problème lors de la migration de la base dans oracle 11g. Leur date de création est *13/02/2013*, c'est-à-dire la date de migration de la base. L'objectif est de conserver les seuils, mais de supprimer les doublons. Or étant donné que toutes les données attributaires sont en doublons, nous avons choisi la distance par rapport à leur tronçon d'affectation comme élément discriminant. Ainsi le seuil étant le plus éloigné du tronçon lui étant affecté au sein des doublons est supprimé.  
 
-#### Cette manipulation se fait en quatre temps :
-##### 1. Création de la vue matérialisée identifiant ces doublons**
+####Cette manipulation se fait en quatre temps :
+#####1. Création de la vue matérialisée identifiant ces doublons**
 ```SQL
 -- 1.2. Création du vue matérialisée permettant d'identifier tous les seuils dont le nuseui, nsseui et ccomvoi sont identiques
 
@@ -181,7 +181,7 @@ ADD CONSTRAINT VM_TEMP_DOUBLON_SEUIL_G_SIDU_PK
 PRIMARY KEY (OBJECTID)';
 ```
 
-##### 2. Suppression des doublons les plus éloignés de leur tronçon
+#####2. Suppression des doublons les plus éloignés de leur tronçon
 
 ```SQL
 -- 1.2.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
@@ -213,7 +213,7 @@ WHERE
 COMMIT;
 ```
 
-##### 3. Suppression des doublons lorsque les distances sont les mêmes
+#####3. Suppression des doublons lorsque les distances sont les mêmes
 
 Nous avons des cas où les distances seuils/tronçons sont les mêmes au sein des doublons, ce qui enlève tout élément permettant de discriminer les seuils, **c'est donc arbitrairement** que j'ai décidé de supprimer les seuils dont l'identifiant est le plus petit au sein de ces doublons. Je précise que cette méthode n'est possible **que** parce qu'il n'y a **que** des valeurs en double pour chaque cas et non en triple, quadruple ou plus. Par ailleurs cette suppression ne concerne que très peu de seuils (moins de 10).
 
@@ -311,7 +311,7 @@ WHERE
 COMMIT;
 ```
 
-##### 4. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
+#####4. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
 
 Durant l'état des lieux de la base voie, nous avons trouvé des seuils affectés à un tronçon situé à l'autre bout de la commune, ce qui est indubitablement une erreur. Pour corriger cela, nous supprimons tous les seuils distants de 1km ou plus de leur tronçon d'affectation. Ce plafond du kilomètre est dû au fait que dans de très grandes parcelles les bâtiments sont situés relativement loin de la rue, c'est donc pour prendre en compte ce facteur que nous utilisons le kilomètre comme plafond de distanciation entre un seuil et son tronçon.
 
@@ -345,7 +345,7 @@ WHERE
     );
 ```
 
-##### 5. Suppression des relations tronçons/seuils pointant sur un seuil supprimé
+#####5. Suppression des relations tronçons/seuils pointant sur un seuil supprimé
 
 Une fois les seuils corrigés, il faut supprimer les relations avec les tronçons pointant vers des seuils qui ont été supprimés.
 
@@ -1021,44 +1021,12 @@ Leur code DDL se situe ici :
     - ![creation_vm_troncon_litteralis.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_troncon_litteralis.sql) ;
     - ![creation_vm_adresse_litteralis.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_adresse_litteralis.sql) ;
 
-## 7. Correction des secteurs
+## 7. Correction des secteurs de voirie
 
 Les secteurs de voirie est l'échelle de gestion de territoire de base du service voirie. C'est à partir de ce découpage que le service répartis ses équipes sur le territoire de la MEL. Ainsi, une équipe est affecté à un secteur.
 
 ### Problème :
-Les secteurs de voirie créés par le service voirie dans *G_VOIRIE.SECTEUR_UT_VOIRIE* utilisaient l'ancien référentiel des communes. Etant donné que nous avons adoptés le découpage des communes de l'IGN début 2020, les secteurs ne sont plus topologiques avec notre référentiel actuel (de même que les territoires et les Unités Territoriales sont faits à partir des secteurs), il faut donc mettre à jour leur emprise.
+Les secteurs de voirie créés par le service voirie dans G_VOIRIE.SECTEUR_UT_VOIRIE utilisaient l'ancien référentiel des communes. Etant donné que nous en avons changé début 2020, les secteurs ne sont plus topologiques avec notre référentiel actuel. Il faut donc mettre à jour l'emprise des secteurs.
 
 ### Solution :
-1. Import des données de la table *G_VOIRIE.SECTEUR_UT_VOIRIE* dans une table temporaire de G_BASE_VOIE ;
-2. Correction des secteurs en prenant les communes de la table *G_REFERENTIEL.MEL_COMMUNE* comme référence dans *G_BASE_VOIE.TA_CORRECTION_SECTEUR_VOIRIE*, c'est-à-dire :  
-- Quand un secteur contient la totalité d'une ou plusieurs communes, il suffit de faire la fusion des communes ;  
-- Quand une commune est découpée en plusieurs secteurs comme Lille, on garde les limites originelles des secteurs de *G_VOIRIE.SECTEUR_UT_VOIRIE* quand elles sont internes à la commune et on adopte les limites des communes du nouveau référentiel quand elles se superposent (plus ou moins) aux limites extérieurs des secteurs ;  
-3. Création de la table *G_BASE_VOIE.TA_SECTEUR_VOIRIE* dans laquelle on enregistre les secteurs corrigés (cf. ![creation_ta_secteur_voirie.sql](../../sql/scripts/code_ddl/tables/creation_ta_secteur_voirie.sql)).
-
-### Précision :
-Il existe en tout 31 secteurs et 4 unités territoriales.  
-Par ailleurs, la mise à jour des secteurs, et par conséquent celle des zones créées à partir d'eux, n'est à faire **QUE** si le référentiel des communes change ou si le découpage des zones (de tous types) est modifié. **En aucun autre cas** il ne faut modifier, mettre à jour ou supprimer ces zones.
-
-## 8. Création des vues matérialisées regroupant les zones administratives des **regroupements** ;
-
-### Objectif :
-Recréer les territoires et les unités territoriales à partir des secteurs corrigés.
-
-### 8.1. Les territoires
-
-Pour créer les territoires de voirie, on utilise la vue matérialisée *VM_TERRITOIRE_VOIRIE* du fichier ![creation_vm_territoire_voirie.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_territoire_voirie.sql), qui fait la fusion des secteurs de la table *G_BASE_VOIE.TA_SECTEUR_VOIRIE*.
-
-### 8.2. Les Unités Territoriales
-
-Pour créer les unités territoriales de voirie, on utilise la vue matérialisée *VM_UNITE_TERRITORIALE_VOIRIE* du fichier ![creation_vm_unite_territoriale_voirie.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_unite_territoriale_voirie.sql), qui fait la fusion des territories de la vue matérialisée *G_BASE_VOIE.VM_TERRITOIRE_VOIRIE*.
-
-## 9. Création de la vue matérialisée d'export des regroupements
-
-### Table concernée : VM_REGROUPEMENT_LITTERALIS
-
-### Objectif : 
-rassembler dans un seul objet tous les découpages territoriaux utilisés par le projet LITTERALIS, tout en mettant les données au format demandé.  
-
-### Précision :
-A la demande du prestataire, la valeur du champ *TYPE* censée différencier les types de découpages est "Zone", afin que les données s'intègrent dans leur application... Il est donc **fortement recommandé** de ne pas utiliser cette VM en interne autrement que pour en faire l'export à SOGELINK.
-Le code de la vue matérialisée se trouve dans le fichier ![VM_REGROUPEMENT_LITTERALIS](../../sql/scripts/code_ddl/vues_materialisees/vm_regroupement_litteralis.sql).
+1. Import 
