@@ -1,7 +1,7 @@
 # Fiche méthodologique de création du jeu de données LITTERALIS
 
 ## Contexte :
-Afin de créer des arrêtés automatiquement lors de travaux d'aménagement, le service voirie travaille avec le prestataire Sogelink sur l'application LITTERALIS.
+Afin de créer des arrêtés automatiquement lors de travaux d'aménagement de la voirie, le service voirie travaille avec le prestataire Sogelink sur l'application LITTERALIS.
 Cette application doit notamment permettre d'affecter les bonnes adresses aux bons arrêtés et d'affecter ces arrêtés aux bonnes équipes sur le terrain.
 
 ## Objectif : 
@@ -41,7 +41,7 @@ Livrer un jeu de données respectant le cahier des charges de Sogelink. Pour plu
 4. Création de trois tables de travail pour les **tronçons** et quatre pour les **adresses** ;
 5. Remplissage des tables de travail ;
 6. Création des deux vues matérialisées d'export des **tronçons** et des **adresses** ;
-7. Correction des secteurs de voirie ;
+7. Correction des secteurs ;
 8. Création des vues matérialisées regroupant les zones administratives des **regroupements** ;
 9. Création de la vue matérialisée d'export des **regroupements** ;
 
@@ -1021,12 +1021,44 @@ Leur code DDL se situe ici :
     - ![creation_vm_troncon_litteralis.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_troncon_litteralis.sql) ;
     - ![creation_vm_adresse_litteralis.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_adresse_litteralis.sql) ;
 
-## 7. Correction des secteurs de voirie
+## 7. Correction des secteurs
 
 Les secteurs de voirie est l'échelle de gestion de territoire de base du service voirie. C'est à partir de ce découpage que le service répartis ses équipes sur le territoire de la MEL. Ainsi, une équipe est affecté à un secteur.
 
 ### Problème :
-Les secteurs de voirie créés par le service voirie dans G_VOIRIE.SECTEUR_UT_VOIRIE utilisaient l'ancien référentiel des communes. Etant donné que nous en avons changé début 2020, les secteurs ne sont plus topologiques avec notre référentiel actuel. Il faut donc mettre à jour l'emprise des secteurs.
+Les secteurs de voirie créés par le service voirie dans *G_VOIRIE.SECTEUR_UT_VOIRIE* utilisaient l'ancien référentiel des communes. Etant donné que nous avons adoptés le découpage des communes de l'IGN début 2020, les secteurs ne sont plus topologiques avec notre référentiel actuel (de même que les territoires et les Unités Territoriales sont faits à partir des secteurs), il faut donc mettre à jour leur emprise.
 
 ### Solution :
-1. Import 
+1. Import des données de la table *G_VOIRIE.SECTEUR_UT_VOIRIE* dans une table temporaire de G_BASE_VOIE ;
+2. Correction des secteurs en prenant les communes de la table *G_REFERENTIEL.MEL_COMMUNE* comme référence dans *G_BASE_VOIE.TA_CORRECTION_SECTEUR_VOIRIE*, c'est-à-dire :  
+- Quand un secteur contient la totalité d'une ou plusieurs communes, il suffit de faire la fusion des communes ;  
+- Quand une commune est découpée en plusieurs secteurs comme Lille, on garde les limites originelles des secteurs de *G_VOIRIE.SECTEUR_UT_VOIRIE* quand elles sont internes à la commune et on adopte les limites des communes du nouveau référentiel quand elles se superposent (plus ou moins) aux limites extérieurs des secteurs ;  
+3. Création de la table *G_BASE_VOIE.TA_SECTEUR_VOIRIE* dans laquelle on enregistre les secteurs corrigés (cf. ![creation_ta_secteur_voirie.sql](../../sql/scripts/code_ddl/tables/creation_ta_secteur_voirie.sql)).
+
+### Précision :
+Il existe en tout 31 secteurs et 4 unités territoriales.  
+Par ailleurs, la mise à jour des secteurs, et par conséquent celle des zones créées à partir d'eux, n'est à faire **QUE** si le référentiel des communes change ou si le découpage des zones (de tous types) est modifié. **En aucun autre cas** il ne faut modifier, mettre à jour ou supprimer ces zones.
+
+## 8. Création des vues matérialisées regroupant les zones administratives des **regroupements** ;
+
+### Objectif :
+Recréer les territoires et les unités territoriales à partir des secteurs corrigés.
+
+### 8.1. Les territoires
+
+Pour créer les territoires de voirie, on utilise la vue matérialisée *VM_TERRITOIRE_VOIRIE* du fichier ![creation_vm_territoire_voirie.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_territoire_voirie.sql), qui fait la fusion des secteurs de la table *G_BASE_VOIE.TA_SECTEUR_VOIRIE*.
+
+### 8.2. Les Unités Territoriales
+
+Pour créer les unités territoriales de voirie, on utilise la vue matérialisée *VM_UNITE_TERRITORIALE_VOIRIE* du fichier ![creation_vm_unite_territoriale_voirie.sql](../../sql/scripts/code_ddl/vues_materialisees/creation_vm_unite_territoriale_voirie.sql), qui fait la fusion des territories de la vue matérialisée *G_BASE_VOIE.VM_TERRITOIRE_VOIRIE*.
+
+## 9. Création de la vue matérialisée d'export des regroupements
+
+### Table concernée : VM_REGROUPEMENT_LITTERALIS
+
+### Objectif : 
+rassembler dans un seul objet tous les découpages territoriaux utilisés par le projet LITTERALIS, tout en mettant les données au format demandé.  
+
+### Précision :
+A la demande du prestataire, la valeur du champ *TYPE* censée différencier les types de découpages est "Zone", afin que les données s'intègrent dans leur application... Il est donc **fortement recommandé** de ne pas utiliser cette VM en interne autrement que pour en faire l'export à SOGELINK.
+Le code de la vue matérialisée se trouve dans le fichier ![VM_REGROUPEMENT_LITTERALIS](../../sql/scripts/code_ddl/vues_materialisees/vm_regroupement_litteralis.sql).
