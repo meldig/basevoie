@@ -1,4 +1,4 @@
-# Explication fichier "migration_tables_temporaires_vers_tables_finales.sql"
+# Explication du fichier "migration_tables_temporaires_vers_tables_finales.sql"
 
 ## Objectif du fichier :
 Migrer les données des tables temporaires d'import vers les tables finales de la Base Voie dans Oracle 12c.

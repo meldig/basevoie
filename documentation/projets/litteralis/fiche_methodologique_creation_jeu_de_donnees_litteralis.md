@@ -81,8 +81,8 @@ COMMIT;
 
 La présence de ces doublons est due à un problème lors de la migration de la base dans oracle 11g. Leur date de création est *13/02/2013*, c'est-à-dire la date de migration de la base. L'objectif est de conserver les seuils, mais de supprimer les doublons. Or étant donné que toutes les données attributaires sont en doublons, nous avons choisi la distance par rapport à leur tronçon d'affectation comme élément discriminant. Ainsi le seuil étant le plus éloigné du tronçon lui étant affecté au sein des doublons est supprimé.  
 
-####Cette manipulation se fait en quatre temps :
-#####1. Création de la vue matérialisée identifiant ces doublons**
+#### Cette manipulation se fait en quatre temps :
+##### 1. Création de la vue matérialisée identifiant ces doublons**
 ```SQL
 -- 1.2. Création du vue matérialisée permettant d'identifier tous les seuils dont le nuseui, nsseui et ccomvoi sont identiques
 
@@ -181,7 +181,7 @@ ADD CONSTRAINT VM_TEMP_DOUBLON_SEUIL_G_SIDU_PK
 PRIMARY KEY (OBJECTID)';
 ```
 
-#####2. Suppression des doublons les plus éloignés de leur tronçon
+##### 2. Suppression des doublons les plus éloignés de leur tronçon
 
 ```SQL
 -- 1.2.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
@@ -213,7 +213,7 @@ WHERE
 COMMIT;
 ```
 
-#####3. Suppression des doublons lorsque les distances sont les mêmes
+##### 3. Suppression des doublons lorsque les distances sont les mêmes
 
 Nous avons des cas où les distances seuils/tronçons sont les mêmes au sein des doublons, ce qui enlève tout élément permettant de discriminer les seuils, **c'est donc arbitrairement** que j'ai décidé de supprimer les seuils dont l'identifiant est le plus petit au sein de ces doublons. Je précise que cette méthode n'est possible **que** parce qu'il n'y a **que** des valeurs en double pour chaque cas et non en triple, quadruple ou plus. Par ailleurs cette suppression ne concerne que très peu de seuils (moins de 10).
 
@@ -311,7 +311,7 @@ WHERE
 COMMIT;
 ```
 
-#####4. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
+##### 4. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
 
 Durant l'état des lieux de la base voie, nous avons trouvé des seuils affectés à un tronçon situé à l'autre bout de la commune, ce qui est indubitablement une erreur. Pour corriger cela, nous supprimons tous les seuils distants de 1km ou plus de leur tronçon d'affectation. Ce plafond du kilomètre est dû au fait que dans de très grandes parcelles les bâtiments sont situés relativement loin de la rue, c'est donc pour prendre en compte ce facteur que nous utilisons le kilomètre comme plafond de distanciation entre un seuil et son tronçon.
 
@@ -345,7 +345,7 @@ WHERE
     );
 ```
 
-#####5. Suppression des relations tronçons/seuils pointant sur un seuil supprimé
+##### 5. Suppression des relations tronçons/seuils pointant sur un seuil supprimé
 
 Une fois les seuils corrigés, il faut supprimer les relations avec les tronçons pointant vers des seuils qui ont été supprimés.
 
