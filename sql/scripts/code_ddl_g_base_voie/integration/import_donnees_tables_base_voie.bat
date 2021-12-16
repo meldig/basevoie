@@ -1,5 +1,5 @@
 @echo off
-:: utilisation de ogr2ogr pour exporter des tables de CUDL vers MULTIT
+:: utilisation de ogr2ogr pour exporter des tables de oracle 11g vers oracle 12c
 echo Bienvenu dans l'import des donnees de la base voie du schema actuel vers le nouveau ! 
 :: 1. gestion des identifiants Oracle
 SET /p USER_D="Veuillez saisir l'utilisateur Oracle de destination : "
