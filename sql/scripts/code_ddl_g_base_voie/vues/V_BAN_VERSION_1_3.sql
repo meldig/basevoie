@@ -33,34 +33,34 @@ SELECT
         THEN
           CASE LENGTH(CAST (a.numero_seuil AS VARCHAR(5)))
             WHEN 0
-              THEN i.code_insee||'_'|| h.code_rivoli ||'_'|| '00000'
+              THEN i.code_insee||'_'|| LOWER(h.code_rivoli) ||'_'|| '00000'
             WHEN 1
-              THEN i.code_insee||'_'|| h.code_rivoli ||'_'|| '0000' || a.numero_seuil
+              THEN i.code_insee||'_'|| LOWER(h.code_rivoli) ||'_'|| '0000' || a.numero_seuil
             WHEN 2
-              THEN i.code_insee||'_'|| h.code_rivoli ||'_'|| '000' || a.numero_seuil
+              THEN i.code_insee||'_'|| LOWER(h.code_rivoli) ||'_'|| '000' || a.numero_seuil
             WHEN 3
-              THEN i.code_insee||'_'|| h.code_rivoli ||'_'|| '00' || a.numero_seuil
+              THEN i.code_insee||'_'|| LOWER(h.code_rivoli) ||'_'|| '00' || a.numero_seuil
             WHEN 4
-              THEN i.code_insee||'_'|| h.code_rivoli ||'_'|| '0' || a.numero_seuil
+              THEN i.code_insee||'_'|| LOWER(h.code_rivoli) ||'_'|| '0' || a.numero_seuil
             WHEN 5
-              THEN i.code_insee||'_'|| h.code_rivoli ||'_'|| a.numero_seuil
+              THEN i.code_insee||'_'|| LOWER(h.code_rivoli) ||'_'|| a.numero_seuil
           END
     -- gestion des communes deleguee sans complément
       WHEN a.complement_numero_seuil IS NULL AND i.code_insee IN (59298,59355)
         THEN
           CASE LENGTH(CAST (a.numero_seuil AS VARCHAR(5)))
             WHEN 0
-              THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '00000'
+              THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '00000'
             WHEN 1
-              THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '0000' || a.numero_seuil
+              THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '0000' || a.numero_seuil
             WHEN 2
-              THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '000' || a.numero_seuil
+              THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '000' || a.numero_seuil
             WHEN 3
-              THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '00' || a.numero_seuil
+              THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '00' || a.numero_seuil
             WHEN 4
-              THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '0' || a.numero_seuil
+              THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '0' || a.numero_seuil
             WHEN 5
-              THEN '59350' ||'_'|| h.code_rivoli ||'_'|| a.numero_seuil
+              THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| a.numero_seuil
           END
 -- GESTION DU CHAMP CLE INTEROP SI IL N'Y A UN COMPLEMENT DE SEUIL
     -- gestion des communes non deleguee avec complement
@@ -68,40 +68,50 @@ SELECT
         THEN
           CASE LENGTH(CAST (a.numero_seuil AS VARCHAR(5)))
               WHEN 0
-                THEN i.code_insee ||'_'|| h.code_rivoli ||'_'|| '00000' ||'_'|| LOWER(a.complement_numero_seuil)
+                THEN i.code_insee ||'_'|| LOWER(h.code_rivoli) ||'_'|| '00000' ||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 1
-                THEN i.code_insee ||'_'|| h.code_rivoli ||'_'|| '0000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN i.code_insee ||'_'|| LOWER(h.code_rivoli) ||'_'|| '0000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 2
-                THEN i.code_insee ||'_'|| h.code_rivoli ||'_'|| '000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN i.code_insee ||'_'|| LOWER(h.code_rivoli) ||'_'|| '000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 3
-                THEN i.code_insee ||'_'|| h.code_rivoli ||'_'|| '00' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN i.code_insee ||'_'|| LOWER(h.code_rivoli) ||'_'|| '00' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 4
-                THEN i.code_insee ||'_'|| h.code_rivoli ||'_'|| '0' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN i.code_insee ||'_'|| LOWER(h.code_rivoli) ||'_'|| '0' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               ELSE
-                    i.code_insee ||'_'|| h.code_rivoli ||'_'|| a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                    i.code_insee ||'_'|| LOWER(h.code_rivoli) ||'_'|| a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
           END
     -- gestion des communes deleguee avec complement
       WHEN a.complement_numero_seuil IS NOT NULL AND i.code_insee IN (59298,59355)
         THEN
           CASE LENGTH(CAST (a.numero_seuil AS VARCHAR(5)))
               WHEN 0
-                THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '00000' ||'_'|| LOWER(a.complement_numero_seuil)
+                THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '00000' ||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 1
-                THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '0000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '0000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 2
-                THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '000' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 3
-                THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '00' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '00' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               WHEN 4
-                THEN '59350' ||'_'|| h.code_rivoli ||'_'|| '0' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                THEN '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| '0' || a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
               ELSE
-                     '59350' ||'_'|| h.code_rivoli ||'_'|| a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
+                     '59350' ||'_'|| LOWER(h.code_rivoli) ||'_'|| a.numero_seuil||'_'|| LOWER(a.complement_numero_seuil)
           END
     END AS "CLE_INTEROP",
 -- COMMUNE_INSEE
-    i.code_insee AS "COMMUNE_INSEE",
+    CASE i.nature
+      WHEN 'Commune associée'
+        THEN '59350'
+      ELSE
+        i.code_insee
+    END AS "COMMUNE_INSEE",
     -- COMMUNE_NOM
-    i.NOM AS "COMMUNE_NOM",
+    CASE i.nature
+      WHEN 'Commune associée'
+        THEN 'Lille'
+      ELSE
+        i.nom
+    END AS "COMMUNE_NOM",
     -- COMMUNE_DELEGUEE_INSEE
     CASE i.nature
       WHEN 'Commune associée'
@@ -117,7 +127,7 @@ SELECT
         NULL
     END AS "COMMUNE_DELEGUEE_NOM",
     -- VOIE_NOM
-    UPPER(g.libelle) || ' ' || UPPER(f.libelle_voie) AS "VOIE_NOM",
+    LOWER(g.libelle) || ' ' || f.libelle_voie AS "VOIE_NOM",
     CAST('' AS VARCHAR2(1)) "LIEUDIT_COMPLEMENT_NOM",
     a.numero_seuil AS "NUMERO",
     a.complement_numero_seuil AS "SUFFIXE",
@@ -128,14 +138,19 @@ SELECT
   SDO_CS.TRANSFORM(b.geom,4326).sdo_point.x AS "LONG",
   SDO_CS.TRANSFORM(b.geom,4326).sdo_point.y AS "LAT",
   -- NUMERO PARCELLE
-  CASE i.nature
-      WHEN 'Commune associée'
-          THEN 59 || 1 || '350' || SUBSTR(i.code_insee,3,5) || SUBSTR(a.numero_parcelle,4,LENGTH(a.numero_parcelle)-3)
-      ELSE
-          59 || 1 || SUBSTR(i.code_insee,3,5) || '000' || SUBSTR(a.numero_parcelle,4,LENGTH(a.numero_parcelle)-3)
+  CASE a.numero_parcelle
+    WHEN 'NR'
+      THEN NULL
+    ELSE
+      CASE i.nature
+          WHEN 'Commune associée'
+              THEN 591 || '350' || SUBSTR(i.code_insee,3,5) || SUBSTR(a.numero_parcelle,4,LENGTH(a.numero_parcelle)-3)
+          ELSE
+              591 || SUBSTR(i.code_insee,3,5) || '000' || SUBSTR(a.numero_parcelle,4,LENGTH(a.numero_parcelle)-3)
+      END
   END AS "CAD_PARCELLE",
   'MEL' AS "SOURCE",
-  a.date_modification AS "DATE_DER_MAJ",
+  TO_CHAR(a.date_modification, 'YYYY-MM-DD') AS "DATE_DER_MAJ",
   0 AS "CERTIFICATION_COMMUNE"
 FROM
   g_base_voie.ta_infos_seuil a
