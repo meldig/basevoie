@@ -4,8 +4,8 @@ La table TA_HIERARCHISATION_VOIE permet de hiérarchiser les voies en associant 
 
 -- 1. Création de la table TA_HIERARCHISATION_VOIE
 CREATE TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE(
-    fid_voie_principale NUMBER(38,0) NOT NULL,
-    fid_voie_secondaire NUMBER(38,0) NOT NULL
+    fid_voie_principale NOT NULL,
+    fid_voie_secondaire NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -16,7 +16,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_HIERARCHISATION_VOIE.fid_voie_secondaire IS 'Cl
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE 
 ADD CONSTRAINT TA_HIERARCHISATION_VOIE_PK 
-PRIMARY KEY("FID_VOIE_PRINCIPALE", "FID_VOIE_SECONDAIRE") 
+PRIMARY KEY("fid_voie_principale", "fid_voie_secondaire") 
 USING INDEX TABLESPACE "G_ADT_INDX";
 
 -- 4. Création des clés étrangères
