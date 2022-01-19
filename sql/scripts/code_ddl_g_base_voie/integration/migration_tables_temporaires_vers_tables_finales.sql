@@ -1331,7 +1331,76 @@ COMMIT;
         d.pnom = 'import_donnees'
         AND UPPER(b.valeur) = UPPER('édition');
 
-    -- 39. Réactivation de tous les triggers désactivés au cours de la procédure
+    -- 39. Import des relations voies principales / secondaires
+    MERGE INTO G_BASE_VOIE.TA_HIERARCHISATION_VOIE a
+    USING(
+        WITH
+            C_1 AS(-- Sélection des noms de voies principales
+                SELECT
+                    UPPER(TRIM(a.libelle_voie)) AS libelle_voie_principale,
+                    GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom) AS code_insee_voie_principale,
+                    MAX(SDO_GEOM.SDO_LENGTH(b.geom)) AS longueur_voie_principale
+                 FROM
+                    G_BASE_VOIE.TA_VOIE a
+                    INNER JOIN G_BASE_VOIE.vm_etude_voie_principale_secondaire b ON b.objectid = a.objectid
+                GROUP BY
+                    UPPER(TRIM(a.libelle_voie)),
+                    GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom)
+                HAVING
+                    COUNT(UPPER(TRIM(a.libelle_voie))) > 1
+                    AND COUNT(GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom))>1
+                ORDER BY
+                    UPPER(TRIM(a.libelle_voie))
+            ),
+            
+            C_2 AS(
+                SELECT -- Sélection des voies principales
+                    a.objectid AS id_voie_principale,
+                    c.libelle_voie_principale,
+                    c.code_insee_voie_principale,
+                    c.longueur_voie_principale,
+                    b.geom
+                FROM
+                    G_BASE_VOIE.TA_VOIE a
+                    INNER JOIN G_BASE_VOIE.vm_etude_voie_principale_secondaire b ON b.objectid = a.objectid
+                    INNER JOIN C_1 c ON c.libelle_voie_principale = UPPER(TRIM(a.libelle_voie)) 
+                                                AND c.code_insee_voie_principale = GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom) 
+                                                AND c.longueur_voie_principale = SDO_GEOM.SDO_LENGTH(b.geom)
+            ),
+            
+            C_3 AS(
+                SELECT
+                    a.objectid AS id_voie_secondaire,
+                    c.libelle_voie_principale AS libelle_voie_secondaire,
+                    c.code_insee_voie_principale AS code_insee_voie_secondaire,
+                    SDO_GEOM.SDO_LENGTH(b.geom) AS longueur_voie_secondaire
+                FROM
+                    G_BASE_VOIE.TA_VOIE a
+                    INNER JOIN G_BASE_VOIE.vm_etude_voie_principale_secondaire b ON b.objectid = a.objectid
+                    INNER JOIN C_2 c ON c.libelle_voie_principale = UPPER(TRIM(a.libelle_voie)) 
+                                        AND c.code_insee_voie_principale = GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom) 
+                WHERE
+                    SDO_GEOM.SDO_LENGTH(b.geom) < c.longueur_voie_principale
+                    AND SDO_WITHIN_DISTANCE(b.geom, c.geom, 'distance=1') = 'TRUE'
+            )
+            
+            SELECT
+                a.id_voie_principale,
+                a.libelle_voie_principale,
+                a.code_insee_voie_principale,
+                a.longueur_voie_principale,
+                b.*
+            FROM
+                C_2 a
+                INNER JOIN C_3 b ON b.libelle_voie_secondaire = a.libelle_voie_principale 
+                                            AND b.code_insee_voie_secondaire = a.code_insee_voie_principale
+    )t
+    ON(a.fid_voie_principale = t.id_voie_principale AND a.fid_voie_secondaire = t.id_voie_secondaire)
+WHEN NOT MATCHED THEN
+    INSERT(a.fid_voie_principale, a.fid_voie_secondaire)
+    VALUES(t.id_voie_principale, t.id_voie_secondaire);
+
+    -- 40. Réactivation de tous les triggers désactivés au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG ENABLE';
@@ -1343,7 +1412,7 @@ COMMIT;
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_POINT_INTERET_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET DROP COLUMN TEMP_IDPOI';
     
-    -- 40. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
+    -- 41. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
         INTO v_contrainte
