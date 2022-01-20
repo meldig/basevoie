@@ -12,36 +12,29 @@ BEGIN
     SAVEPOINT POINT_SAUVEGARDE_REMPLISSAGE;
     
 -- 1. Correction des seuils
--- 1.1. Suppression des seuils intersectant les tronçons
-DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
-WHERE
-    idseui IN(
-        SELECT
-            a.idseui
-        FROM
-            G_BASE_VOIE.TEMP_ILTASEU a
-            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
-            INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
-            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
-            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
-        WHERE
-            c.cdvaltro = 'V'
-            AND d.cvalide = 'V'
-            AND e.cdvalvoi = 'V'
-            AND a.nsseui IS NULL
-            AND SDO_OVERLAPBDYINTERSECT(a.ora_geometry, c.ora_geometry) = 'TRUE'
-    );
-COMMIT;
-
--- 1.2. Création du vue matérialisée permettant d'identifier tous les seuils dont le nuseui, nsseui et ccomvoi sont identiques
+-- 1.1. Création du vue matérialisée permettant d'identifier tous les seuils dont le nuseui, nsseui et ccomvoi sont identiques
 
 /*
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TEMP_DOUBLON_SEUIL_G_SIDU';
 COMMIT;
 */
--- 1.2.1. Création de la VM
-EXECUTE IMMEDIATE 'CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU(OBJECTID, ID_SEUIL, NUMERO_SEUIL, COMPLEMENT_SEUIL, ID_VOIE, DISTANCE)
+EXECUTE IMMEDIATE '
+CREATE INDEX TEMP_ILTASEU_IDSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(idseui)
+    TABLESPACE G_ADT_INDX';
+
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_ILTASEU_NUSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(nuseui) TABLESPACE G_ADT_INDX';
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_ILTASEU_NSSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(nsseui) TABLESPACE G_ADT_INDX';
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_TEMP_ILTASIT_IDSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASIT(idseui) TABLESPACE G_ADT_INDX';
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_TEMP_ILTASIT_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_ILTASIT(cnumtrc) TABLESPACE G_ADT_INDX';
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_TEMP_ILTATRC_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_ILTATRC(cnumtrc) TABLESPACE G_ADT_INDX';  
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_TEMP_VOIECVT_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_VOIECVT(cnumtrc) TABLESPACE G_ADT_INDX'; 
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_TEMP_VOIECVT_CCOMVOI_IDX ON G_BASE_VOIE.TEMP_VOIECVT(ccomvoi) TABLESPACE G_ADT_INDX';
+EXECUTE IMMEDIATE 'CREATE INDEX TEMP_TEMP_VOIEVOI_CCOMVOI_IDX ON G_BASE_VOIE.TEMP_VOIEVOI(ccomvoi) TABLESPACE G_ADT_INDX';
+
+-- 1.1.1. Création de la VM
+EXECUTE IMMEDIATE '
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU(OBJECTID, ID_SEUIL, NUMERO_SEUIL, COMPLEMENT_SEUIL, ID_VOIE, DISTANCE)
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
@@ -105,7 +98,7 @@ WITH
             INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
             INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
             INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
-            INNER JOIN C_1 f ON f.numero_seuil = a.nuseui AND f.complement_seuil = CASE WHEN a.nsseui IS NULL THEN ''pas de complément'' ELSE a.nsseui END AND f.id_voie = e.ccomvoi,
+            INNER JOIN C_1 f ON f.numero_seuil = a.nuseui AND f.complement_seuil = CASE WHEN a.nsseui IS NULL THEN 'pas de complément' ELSE a.nsseui END AND f.id_voie = e.ccomvoi,
             USER_SDO_GEOM_METADATA m
         WHERE
             m.table_name = ''TEMP_ILTATRC''
@@ -119,19 +112,19 @@ WITH
 
 /
 
--- 1.2.2. Création des commentaires de VM
+-- 1.1.2. Création des commentaires de VM
 EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU IS ''VM temporaire servant à supprimer les seuils en doublons. Ces seuils disposent des mêmes numéros, compléments de seuil et voie, mais d''un identifiant et parfois d''un numéro de parcelle différent. Cependant, cela causant problème pour le "projet" LITTERALIS il fut décidé de ne garder que les seuils les plus proches de leur tronçon au sein des doublons.''';
 
 /
 
--- 1.2.3. Création de la clé primaire
+-- 1.1.3. Création de la clé primaire
 EXECUTE IMMEDIATE 'ALTER MATERIALIZED VIEW VM_TEMP_DOUBLON_SEUIL_G_SIDU 
 ADD CONSTRAINT VM_TEMP_DOUBLON_SEUIL_G_SIDU_PK 
 PRIMARY KEY (OBJECTID)';
 
 /
 
--- 1.2.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
+-- 1.1.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     IDSEUI IN(
@@ -159,7 +152,9 @@ WHERE
     );
 COMMIT;
 
--- 1.3. Suppression des seuils en doublons de numéro et complément de seuil, voie et distance par raport au tronçon, dont l'idseui est le plus petit.
+/
+
+-- 1.2. Suppression des seuils en doublons de numéro et complément de seuil, voie et distance par raport au tronçon, dont l'idseui est le plus petit.
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     idseui IN(
@@ -253,7 +248,7 @@ COMMIT;
 
 /
 
--- 1.4. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
+-- 1.3. Suppression des seuils situés à 1km ou plus de leur tronçon d'affectation
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     idseui IN(
@@ -281,7 +276,9 @@ WHERE
                         ), 2) >= 1000
     );
     
--- 1.5. Suppression des relations seuils/tronçons invalides dues à la suppression des seuils ci-dessus
+/
+
+-- 1.4. Suppression des relations seuils/tronçons invalides dues à la suppression des seuils ci-dessus
 DELETE FROM G_BASE_VOIE.TEMP_ILTASIT
 WHERE
     IDSEUI IN(
@@ -293,6 +290,8 @@ WHERE
             idseui NOT IN(SELECT idseui FROM G_BASE_VOIE.TEMP_ILTASEU)
     );
 COMMIT;
+
+/
 
 -- 2. Sélection des métadonnées de la base voie de la MEL afin de créer une valeur par défaut pour le champ fid_metadonnee de TA_TRONCON et TA_VOIE
 -- 2.1. Sélection de l'identifiant de la MTD
@@ -316,11 +315,17 @@ COMMIT;
     INSERT INTO G_BASE_VOIE.TA_AGENT(numero_agent, pnom, validite)
     SELECT numero_agent, pnom, validite FROM TEMP_AGENT;
 
+/
+
 -- 4. Insertion du code fantoir dans TEMP_VOIEVOI
 -- 4.1 Création du champ temporaire temp_code_fantoir et de son commentaire
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TEMP_VOIEVOI ADD temp_code_fantoir CHAR(11)';
 
-    COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS 'Champ temporaire contenant le VRAI code fantoir des voies.';
+/
+
+    EXECUTE IMMEDIATE 'COMMENT ON COLUMN G_BASE_VOIE.TEMP_VOIEVOI.temp_code_fantoir IS ''Champ temporaire contenant le VRAI code fantoir des voies.''';
+
+/
 
 -- 4.2. Insertion du code fantoir dans le champ temporaire temp_code_fantoir
     MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
@@ -347,6 +352,8 @@ COMMIT;
     WHEN MATCHED THEN
         UPDATE SET a.temp_code_fantoir = t.code_fantoir_et_cle_ctrl;
 
+/
+
     -- 5. Insertion des rivolis dans TA_RIVOLI
     -- 5.1. Insertion des codes rivoli complet (avec clé)
     INSERT INTO G_BASE_VOIE.TA_RIVOLI(code_rivoli, cle_controle)
@@ -357,7 +364,9 @@ COMMIT;
         G_BASE_VOIE.TEMP_VOIEVOI
     WHERE
         temp_code_fantoir IS NOT NULL;
-        
+
+/
+
     -- 5.2. Insertion de tous les autres codes rivoli (sans clé)
     INSERT INTO G_BASE_VOIE.TA_RIVOLI(code_rivoli)
     SELECT DISTINCT
@@ -367,9 +376,13 @@ COMMIT;
     WHERE
         temp_code_fantoir IS NULL;
 
+/
+
     -- 6. Désactivation des triggers pour les tronçons
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG DISABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_TRONCON_DATE_PNOM DISABLE';
+
+/
 
     -- 7. Import des tronçons valides dans TA_TRONCON
     INSERT INTO G_BASE_VOIE.TA_TRONCON(objectid, geom, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification, fid_metadonnee)
@@ -1331,76 +1344,343 @@ COMMIT;
         d.pnom = 'import_donnees'
         AND UPPER(b.valeur) = UPPER('édition');
 
-    -- 39. Import des relations voies principales / secondaires
+    -- 39. Création des vues matérialisées permettant de hiérarchiser les voies principales et voies secondaires
+    -- 39.1. Création de la VM VM_VOIE_AGGREGEE
+    -- Création de la VM
+    EXECUTE IMMEDIATE '
+    CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE (ID_VOIE,TYPE_DE_VOIE,LIBELLE_VOIE,COMPLEMENT_NOM_VOIE)        
+    REFRESH ON DEMAND
+    FORCE
+    DISABLE QUERY REWRITE AS
+    SELECT
+        a.objectid AS id_voie,
+        UPPER(TRIM(d.libelle)) AS type_de_voie,
+        UPPER(TRIM(a.libelle_voie)) AS libelle_voie,
+        UPPER(TRIM(a.complement_nom_voie)) AS complement_nom_voie,
+        SDO_AGGR_UNION(
+            SDOAGGRTYPE(c.geom, 0.005)
+        ) AS geom
+    FROM
+        G_BASE_VOIE.TA_VOIE a
+        INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_voie = a.objectid
+        INNER JOIN G_BASE_VOIE.TA_TRONCON c ON c.objectid = b.fid_troncon
+        INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = a.fid_typevoie';
+    
+    -- Commentaires de la VM
+    EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE IS ''Vue matérialisée matérialisant la géométrie des voies.''';
+
+    -- Création des métadonnées spatiales
+    INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+    )
+    VALUES(
+        'VM_VOIE_AGGREGEE',
+        'GEOM',
+        SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 594000, 964000, 0.005),SDO_DIM_ELEMENT('Y', 6987000, 7165000, 0.005)), 
+        2154
+    );
+
+    -- Création de la clé primaire
+    EXECUTE IMMEDIATE 'ALTER MATERIALIZED VIEW VM_VOIE_AGGREGEE ADD CONSTRAINT VM_VOIE_AGGREGEE_PK PRIMARY KEY (ID_VOIE)';
+
+    -- Création des index
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_VOIE_AGGREGEE_SIDX
+ON G_BASE_VOIE.VM_VOIE_AGGREGEE(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX
+PARAMETERS(
+  ''sdo_indx_dims=2, 
+  layer_gtype=MULTILINE, 
+  tablespace=G_ADT_INDX, 
+  work_tablespace=DATA_TEMP''
+)';
+
+    -- Création des index
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_VOIE_AGGREGEE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_VOIE_AGGREGEE_LIBELLE_VOIE(LIBELLE_VOIE) TABLESPACE G_ADT_INDX';
+
+    -- Création des droits d'accès aux admins
+    EXECUTE IMMEDIATE 'GRANT SELECT ON G_BASE_VOIE.VM_VOIE_AGGREGEE TO G_ADMIN_SIG';
+    
+    -- 39.2. Création de la VM VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR
+    -- Création de la VM 
+    EXECUTE IMMEDIATE '
+    CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR (ID_VOIE,TYPE_DE_VOIE,LIBELLE_VOIE,COMPLEMENT_NOM_VOIE,CODE_INSEE,LONGUEUR_VOIE,GEOM)        
+    REFRESH ON DEMAND
+    FORCE
+    DISABLE QUERY REWRITE AS
+    SELECT
+        b.id_voie,
+        b.type_de_voie,
+        b.libelle_voie,
+        b.complement_nom_voie,
+        CAST(GET_CODE_INSEE_97_COMMUNES_TRONCON(''VM_VOIE_AGGREGEE'', b.geom) AS VARCHAR2(5))AS code_insee,
+        SDO_GEOM.SDO_LENGTH(b.geom) AS longueur_voie,
+        b.geom
+    FROM
+        G_BASE_VOIE.TA_VOIE a
+        INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE b ON b.id_voie = a.objectid
+    ';
+    
+    -- Création des commentaires
+    EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR IS ''Vue matérialisée récupérant le code INSEE, la longueur, le type , le nom, la géométrie et le complément de chaque voie.''';
+    
+    -- Création des métadonnées spatiales
+    INSERT INTO USER_SDO_GEOM_METADATA(
+        TABLE_NAME, 
+        COLUMN_NAME, 
+        DIMINFO, 
+        SRID
+    )
+    VALUES(
+        'VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR',
+        'GEOM',
+        SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 594000, 964000, 0.005),SDO_DIM_ELEMENT('Y', 6987000, 7165000, 0.005)), 
+        2154
+    );
+    
+    -- Création de la clé primaire
+    EXECUTE IMMEDIATE 'ALTER MATERIALIZED VIEW VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR  ADD CONSTRAINT VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR_PK PRIMARY KEY (ID_VOIE)';
+    
+    -- Création des index
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR_SIDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR(GEOM) INDEXTYPE IS MDSYS.SPATIAL_INDEX PARAMETERS(''sdo_indx_dims=2, layer_gtype=MULTILINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP'')';
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR_CODE_INSEE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR(CODE_INSEE) TABLESPACE G_ADT_INDX';
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR_LONGUEUR_VOIE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR(LONGUEUR_VOIE) TABLESPACE G_ADT_INDX';
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR(LIBELLE_VOIE) TABLESPACE G_ADT_INDX';
+    
+    -- Création d'un droit d'accès aux admins
+    EXECUTE IMMEDIATE 'GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR TO G_ADMIN_SIG';
+    
+    -- 39.3. Création de la VM VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR
+    -- Création de la VM
+    EXECUTE IMMEDIATE'
+    CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR (OBJECTID, ID_VOIE, LIBELLE_VOIE, CODE_INSEE, LONGUEUR, GEOM)        
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE AS
+WITH
+    C_1 AS(-- Sélection des noms, code insee et longueur des voies principales
+        SELECT
+            libelle_voie AS libelle_voie_principale,
+            code_insee AS code_insee_voie_principale,
+            MAX(longueur_voie) AS longueur_voie_principale
+        FROM
+            G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR
+        GROUP BY
+            libelle_voie,
+            code_insee
+        HAVING
+            COUNT(libelle_voie)>1
+            AND COUNT(code_insee)>1
+    )
+    
+    SELECT
+        rownum AS objectid,
+        a.id_voie AS id_voie_principale,
+        b.libelle_voie_principale,
+        b.code_insee_voie_principale,
+        b.longueur_voie_principale,
+        a.geom
+    FROM
+        G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
+        INNER JOIN C_1 b ON b.libelle_voie_principale = a.libelle_voie
+                        AND b.code_insee_voie_principale = a.code_insee
+                        AND b.longueur_voie_principale = a.longueur_voie
+    ';
+
+    -- Commentaires de la VM
+    EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR IS ''Vue matérialisée regroupant toutes les voies dites principales de la base, c-a-d les voies ayant la plus grande longueur au sein d''un ensemble de voie ayant le même libellé et code insee.''';
+    
+    -- Création des métadonnées spatiales
+    INSERT INTO USER_SDO_GEOM_METADATA(
+        TABLE_NAME, 
+        COLUMN_NAME, 
+        DIMINFO, 
+        SRID
+    )
+    VALUES(
+        'VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR',
+        'GEOM',
+        SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+        2154
+    );
+    
+    -- Création de la clé primaire
+     EXECUTE IMMEDIATE 'ALTER MATERIALIZED VIEW VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR ADD CONSTRAINT VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_PK PRIMARY KEY (OBJECTID)';
+
+    -- Création des index
+     EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_SIDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR(GEOM) INDEXTYPE IS MDSYS.SPATIAL_INDEX PARAMETERS(''sdo_indx_dims=2, layer_gtype=MULTILINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP'')';
+     EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_COMPOSE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR(CODE_INSEE, LIBELLE_VOIE) TABLESPACE G_ADT_INDX';
+     EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_LONGUEUR_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR(LONGUEUR) TABLESPACE G_ADT_INDX';
+     EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_ID_VOIE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR(ID_VOIE) TABLESPACE G_ADT_INDX';
+     
+     -- Création d'un droit d'accès aux admins
+     EXECUTE IMMEDIATE 'GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR TO G_ADMIN_SIG';
+     
+     -- 39.4. Création de la VM 
+     -- Création de la VM
+      EXECUTE IMMEDIATE '
+      CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR (OBJECTID, ID_VOIE, LIBELLE_VOIE, CODE_INSEE, LONGUEUR, GEOM)        
+    REFRESH ON DEMAND
+    FORCE
+    DISABLE QUERY REWRITE AS
+    WITH
+        C_1 AS(-- Sélection des voies secondaires situées à 1m maximum de la voie principale
+            SELECT
+                a.id_voie AS id_voie_secondaire,
+                a.libelle_voie AS libelle_voie_secondaire,
+                a.code_insee AS code_insee_voie_secondaire,
+                a.longueur_voie AS longueur_voie_secondaire,
+                a.geom
+            FROM
+                G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
+                INNER JOIN VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR b ON b.libelle_voie = a.libelle_voie
+                                                                    AND b.code_insee = a.code_insee
+            WHERE
+                a.longueur_voie < b.longueur
+                AND SDO_WITHIN_DISTANCE(a.geom, b.geom, ''distance=1'') = ''TRUE''
+        ),
+        
+        C_2 AS(-- Sélection des voies secondaires qui intersectent une voie secondaire elle-même intersectant une voie principale
+            SELECT
+                c.id_voie_secondaire AS id__intersect,
+                c.libelle_voie_secondaire AS libelle_intersect,
+                c.code_insee_voie_secondaire AS code_insee_intersect,
+                c.longueur_voie_secondaire AS longueur_intersect,
+                a.id_voie AS id_voie_secondaire,
+                a.libelle_voie AS libelle_voie_secondaire,
+                a.code_insee AS code_insee_voie_secondaire,
+                a.longueur_voie AS longueur_voie_secondaire,
+                a.geom
+            FROM
+                G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
+                INNER JOIN VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR b ON b.libelle_voie = a.libelle_voie
+                                                                    AND b.code_insee = a.code_insee
+                INNER JOIN C_1 c ON c.libelle_voie_secondaire = b.libelle_voie
+                                    AND c.code_insee_voie_secondaire = b.code_insee
+            WHERE
+                a.longueur_voie < b.longueur
+                AND a.id_voie <> c.id_voie_secondaire
+                AND SDO_ANYINTERACT(a.geom, c.geom) = ''TRUE''
+        ),
+        
+        C_3 AS(-- Regroupement de toutes les voies secondaires
+            SELECT
+                id_voie_secondaire,
+                libelle_voie_secondaire,
+                code_insee_voie_secondaire,
+                longueur_voie_secondaire,
+                geom
+            FROM
+                C_1
+            UNION ALL
+            SELECT
+                id_voie_secondaire,
+                libelle_voie_secondaire,
+                code_insee_voie_secondaire,
+                longueur_voie_secondaire,
+                geom
+            FROM
+                C_2
+        )
+        
+        SELECT
+            rownum AS objectid,
+            id_voie_secondaire,
+            libelle_voie_secondaire,
+            code_insee_voie_secondaire AS code_insee,
+            longueur_voie_secondaire,
+            geom
+        FROM
+            C_3
+      ';
+      
+      -- Création des commentaires
+      EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR IS ''Vue matérialisée regroupant les voies dites secondaires, c-a-d les voies dont la longueur n''est PAS la plus grande au sein d''un ensensemble de voies ayant le même nom et code INSEE. De plus, ces voies doivent intersecter directement ou indirectement une voie principale du même nom et code insee.''';
+      
+      -- Création des métadonnées spatiales
+      EXECUTE IMMEDIATE '
+      INSERT INTO USER_SDO_GEOM_METADATA(
+        TABLE_NAME, 
+        COLUMN_NAME, 
+        DIMINFO, 
+        SRID
+    )
+    VALUES(
+        ''VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR'',
+        ''GEOM'',
+        SDO_DIM_ARRAY(SDO_DIM_ELEMENT(''X'', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT(''Y'', 7044212, 7078072, 0.005)), 
+        2154
+    )
+      ';
+      
+      -- Création des index
+      EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR_SIDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR(GEOM) INDEXTYPE IS MDSYS.SPATIAL_INDEX PARAMETERS(''sdo_indx_dims=2, layer_gtype=MULTILINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP'')';
+      EXECUTE IMMEDIATE 'CREATE INDEX VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR_COMPOSE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR(CODE_INSEE, LIBELLE_VOIE, LONGUEUR) TABLESPACE G_ADT_INDX';
+      
+      -- Création d'une droit d'accès aux admins
+      EXECUTE IMMEDIATE 'GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR TO G_ADMIN_SIG';
+      
+    -- 39.5. Création de la VM VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR
+    -- Création de la VM
+    EXECUTE IMMEDIATE '
+    CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR" ("ID_VOIE_PRINCIPALE","TYPE_VOIE_PRINCIPALE","LIBELLE_VOIE_PRINCIPALE","CODE_INSEE_VOIE_PRINCIPALE","LONGUEUR_VOIE_PRINCIPALE","ID_VOIE_SECONDAIRE","TYPE_VOIE_SECONDAIRE","LIBELLE_VOIE_SECONDAIRE","CODE_INSEE_VOIE_SECONDAIRE","LONGUEUR_VOIE_SECONDAIRE")
+    REFRESH ON DEMAND
+    FORCE
+    DISABLE QUERY REWRITE AS
+    SELECT DISTINCT
+        a.id_voie AS id_voie_principale,
+        d.libelle AS type_voie_principale,
+        a.libelle_voie AS libelle_voie_principale,
+        a.code_insee AS code_insee_voie_principale,
+        a.longueur AS longueur_voie_principale,
+        b.id_voie AS id_voie_secondaire,
+        f.libelle AS type_voie_secondaire,
+        b.libelle_voie AS libelle_voie_secondaire,
+        b.code_insee AS code_insee_voie_secondaire,
+        b.longueur AS longueur_voie_secondaire
+    FROM
+        G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR a
+        INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR b ON b.libelle_voie = a.libelle_voie AND b.code_insee = a.code_insee
+        INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = a.id_voie
+        INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = c.fid_typevoie
+        INNER JOIN G_BASE_VOIE.TA_VOIE e ON e.objectid = b.id_voie
+        INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE f ON f.objectid = e.fid_typevoie
+    WHERE
+        a.longueur > b.longueur
+    ';
+    
+    -- Création des commentaires
+    EXECUTE IMMEDIATE 'COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR  IS ''Vue matérialisée regroupant chaque voie secondaire avec sa voie principale. Une voie principale la voie la plus grande au sein d''un ensemble de voies ayant le même nom et le même code INSEE, les autres sont les voies secondaires. De plus, ces dernières doivent obligatoirement intersecter directement ou non leur voie principale.''';
+
+    -- Création de la clé primaire
+    EXECUTE IMMEDIATE 'ALTER MATERIALIZED VIEW VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR ADD CONSTRAINT VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR_PK PRIMARY KEY ("ID_VOIE_PRINCIPALE", "ID_VOIE_SECONDAIRE")';
+    
+    -- Création des index
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR_VOIE_PRINCIPALE_IDX ON G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR(CODE_INSEE_VOIE_PRINCIPALE, TYPE_VOIE_PRINCIPALE, LIBELLE_VOIE_PRINCIPALE, LONGUEUR_VOIE_PRINCIPALE) TABLESPACE G_ADT_INDX';
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR_VOIE_SECONDAIRE_IDX ON G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR(CODE_INSEE_VOIE_SECONDAIRE, TYPE_VOIE_SECONDAIRE, LIBELLE_VOIE_SECONDAIRE, LONGUEUR_VOIE_SECONDAIRE) TABLESPACE G_ADT_INDX';    
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR_ID_VOIE_PRINCIPALE_IDX ON G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR(ID_VOIE_PRINCIPALE) TABLESPACE G_ADT_INDX';
+    EXECUTE IMMEDIATE 'CREATE INDEX VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR_ID_VOIE_SECONDAIRE_IDX ON G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR(ID_VOIE_SECONDAIRE) TABLESPACE G_ADT_INDX';
+    
+    -- Création d'un droit d'accès aux admins
+    EXECUTE IMMEDIATE 'GRANT SELECT ON G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR TO G_ADMIN_SIG';
+    
+    -- 40. Import des relations voies principales / secondaires
     MERGE INTO G_BASE_VOIE.TA_HIERARCHISATION_VOIE a
     USING(
-        WITH
-            C_1 AS(-- Sélection des noms de voies principales
-                SELECT
-                    UPPER(TRIM(a.libelle_voie)) AS libelle_voie_principale,
-                    GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom) AS code_insee_voie_principale,
-                    MAX(SDO_GEOM.SDO_LENGTH(b.geom)) AS longueur_voie_principale
-                 FROM
-                    G_BASE_VOIE.TA_VOIE a
-                    INNER JOIN G_BASE_VOIE.vm_etude_voie_principale_secondaire b ON b.objectid = a.objectid
-                GROUP BY
-                    UPPER(TRIM(a.libelle_voie)),
-                    GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom)
-                HAVING
-                    COUNT(UPPER(TRIM(a.libelle_voie))) > 1
-                    AND COUNT(GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom))>1
-                ORDER BY
-                    UPPER(TRIM(a.libelle_voie))
-            ),
-            
-            C_2 AS(
-                SELECT -- Sélection des voies principales
-                    a.objectid AS id_voie_principale,
-                    c.libelle_voie_principale,
-                    c.code_insee_voie_principale,
-                    c.longueur_voie_principale,
-                    b.geom
-                FROM
-                    G_BASE_VOIE.TA_VOIE a
-                    INNER JOIN G_BASE_VOIE.vm_etude_voie_principale_secondaire b ON b.objectid = a.objectid
-                    INNER JOIN C_1 c ON c.libelle_voie_principale = UPPER(TRIM(a.libelle_voie)) 
-                                                AND c.code_insee_voie_principale = GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom) 
-                                                AND c.longueur_voie_principale = SDO_GEOM.SDO_LENGTH(b.geom)
-            ),
-            
-            C_3 AS(
-                SELECT
-                    a.objectid AS id_voie_secondaire,
-                    c.libelle_voie_principale AS libelle_voie_secondaire,
-                    c.code_insee_voie_principale AS code_insee_voie_secondaire,
-                    SDO_GEOM.SDO_LENGTH(b.geom) AS longueur_voie_secondaire
-                FROM
-                    G_BASE_VOIE.TA_VOIE a
-                    INNER JOIN G_BASE_VOIE.vm_etude_voie_principale_secondaire b ON b.objectid = a.objectid
-                    INNER JOIN C_2 c ON c.libelle_voie_principale = UPPER(TRIM(a.libelle_voie)) 
-                                        AND c.code_insee_voie_principale = GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE', b.geom) 
-                WHERE
-                    SDO_GEOM.SDO_LENGTH(b.geom) < c.longueur_voie_principale
-                    AND SDO_WITHIN_DISTANCE(b.geom, c.geom, 'distance=1') = 'TRUE'
-            )
-            
-            SELECT
-                a.id_voie_principale,
-                a.libelle_voie_principale,
-                a.code_insee_voie_principale,
-                a.longueur_voie_principale,
-                b.*
-            FROM
-                C_2 a
-                INNER JOIN C_3 b ON b.libelle_voie_secondaire = a.libelle_voie_principale 
-                                            AND b.code_insee_voie_secondaire = a.code_insee_voie_principale
+        SELECT
+            id_voie_principale,
+            id_voie_secondaire
+        FROM
+            G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR
     )t
     ON(a.fid_voie_principale = t.id_voie_principale AND a.fid_voie_secondaire = t.id_voie_secondaire)
 WHEN NOT MATCHED THEN
     INSERT(a.fid_voie_principale, a.fid_voie_secondaire)
     VALUES(t.id_voie_principale, t.id_voie_secondaire);
 
-    -- 40. Réactivation de tous les triggers désactivés au cours de la procédure
+    -- 41. Réactivation de tous les triggers désactivés au cours de la procédure
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_POINT_INTERET_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_TRONCON_LOG ENABLE';
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUD_TA_SEUIL_LOG ENABLE';
@@ -1412,7 +1692,7 @@ WHEN NOT MATCHED THEN
     EXECUTE IMMEDIATE 'ALTER TRIGGER B_IUX_TA_INFOS_POINT_INTERET_DATE_PNOM ENABLE';
     EXECUTE IMMEDIATE 'ALTER TABLE G_BASE_VOIE.TA_POINT_INTERET DROP COLUMN TEMP_IDPOI';
     
-    -- 41. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
+    -- 42. Réactivation de la contrainte de non-nullité du champ TA_TYPE_VOIE.LIBELLE
     SELECT
         CONSTRAINT_NAME
         INTO v_contrainte

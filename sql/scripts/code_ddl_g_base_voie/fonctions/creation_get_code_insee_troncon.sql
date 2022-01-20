@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE FUNCTION GET_CODE_INSEE_TRONCON(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de chaque tronçon.

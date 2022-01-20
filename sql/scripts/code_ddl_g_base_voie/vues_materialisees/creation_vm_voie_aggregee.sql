@@ -29,7 +29,7 @@ FROM
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE IS 'Vue matérialisée matérialisant la géométrie des voies.';
 
--- 2. Création des métadonnées spatiales
+-- 4. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
     TABLE_NAME, 
     COLUMN_NAME, 
@@ -44,12 +44,12 @@ VALUES(
 );
 COMMIT;
 
--- 3. Création de la clé primaire
+-- 5. Création de la clé primaire
 ALTER MATERIALIZED VIEW VM_VOIE_AGGREGEE 
 ADD CONSTRAINT VM_VOIE_AGGREGEE_PK 
 PRIMARY KEY (ID_VOIE);
 
--- 4. Création des index
+-- 6. Création des index
 CREATE INDEX VM_VOIE_AGGREGEE_SIDX
 ON G_BASE_VOIE.VM_VOIE_AGGREGEE(GEOM)
 INDEXTYPE IS MDSYS.SPATIAL_INDEX
@@ -63,7 +63,7 @@ PARAMETERS(
 CREATE INDEX VM_VOIE_AGGREGEE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_VOIE_AGGREGEE_LIBELLE_VOIE(LIBELLE_VOIE)
     TABLESPACE G_ADT_INDX;
 
--- 5. Affectations des droits
+-- 7. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_VOIE_AGGREGEE TO G_ADMIN_SIG;
 
 /

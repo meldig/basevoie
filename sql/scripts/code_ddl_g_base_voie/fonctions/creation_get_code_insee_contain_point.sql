@@ -1,3 +1,4 @@
+
 create or replace FUNCTION GET_CODE_INSEE_CONTAIN_POINT(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet ponctuel (de type point).
