@@ -1,3 +1,4 @@
+
 /*
 La table TA_INFOS_POINT_INTERET_LOG  permet d''avoir l''historique de toutes les évolutions des seuils de la base voie.
 */

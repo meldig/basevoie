@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE FUNCTION GET_CODE_INSEE_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
@@ -32,6 +33,7 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     END GET_CODE_INSEE_CONTAIN_LINE;
 
 /
+
 create or replace FUNCTION GET_CODE_INSEE_CONTAIN_POINT(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet ponctuel (de type point).
@@ -61,6 +63,42 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     END GET_CODE_INSEE_CONTAIN_POINT;
 
 /
+
+CREATE OR REPLACE FUNCTION GET_CODE_INSEE_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
+/*
+Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
+*/
+    DETERMINISTIC
+    As
+    v_code_insee CHAR(8);
+    BEGIN
+        SELECT 
+            TRIM(b.code_insee)
+            INTO v_code_insee 
+        FROM 
+            G_REFERENTIEL.MEL_COMMUNE b, 
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = v_table_name
+            AND SDO_CONTAINS(
+                    b.geom,
+                    SDO_LRS.CONVERT_TO_STD_GEOM(
+                        SDO_LRS.LOCATE_PT(
+                                        SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
+                                        SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
+                        )
+                    )
+                )='TRUE';
+        RETURN v_code_insee;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'error';
+    END GET_CODE_INSEE_CONTAIN_LINE;
+
+/
+
 CREATE OR REPLACE FUNCTION GET_CODE_INSEE_POURCENTAGE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe plus de 50% d'un objet linéaire.
@@ -88,6 +126,7 @@ ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
     END GET_CODE_INSEE_POURCENTAGE;
 
 /
+
 CREATE OR REPLACE FUNCTION GET_CODE_INSEE_WITHIN_DISTANCE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de la commune située à deux mètres maximum de l'objet interrogé, sachant que ce dernier n'est pas dans les communes de la MEL.
@@ -121,6 +160,7 @@ La variable v_geometry doit contenir le nom du champ géométrique de la table i
     END GET_CODE_INSEE_WITHIN_DISTANCE;
     
 /
+
 CREATE OR REPLACE FUNCTION GET_CODE_INSEE_TRONCON(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
 /*
 Cette fonction a pour objectif de récupérer le code INSEE de chaque tronçon.
@@ -150,6 +190,140 @@ Pour cela elle traite différents cas via les fonctions ci-dessous :
     END GET_CODE_INSEE_TRONCON;
     
 /
+
+create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
+/*
+Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe le point médian d'un objet linéaire.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
+Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
+*/
+    DETERMINISTIC
+    As
+    v_code_insee CHAR(8);
+    BEGIN
+        SELECT
+            TRIM(b.code_insee)
+            INTO v_code_insee
+        FROM
+            G_REFERENTIEL.MEL_COMMUNE_LLH b,
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = v_table_name
+            AND SDO_CONTAINS(
+                    b.geom,
+                    SDO_LRS.CONVERT_TO_STD_GEOM(
+                        SDO_LRS.LOCATE_PT(
+                                        SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
+                                        SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
+                        )
+                    )
+                )='TRUE';
+        RETURN v_code_insee;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'error';
+    END GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE;
+
+/
+
+
+create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_POURCENTAGE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
+/*
+Cette fonction a pour objectif de récupérer le code INSEE de la commune dans laquelle se situe plus de 50% d'un objet linéaire.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
+Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
+ATTENTION : Cette fonction N'EST PAS A UTILISER pour des objets de types points.
+*/
+    DETERMINISTIC
+    As
+    v_code_insee CHAR(8);
+    BEGIN
+        SELECT
+            TRIM(b.code_insee)
+            INTO v_code_insee
+        FROM
+            G_REFERENTIEL.MEL_COMMUNE_LLH b,
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = v_table_name
+            AND (SDO_GEOM.SDO_LENGTH(SDO_GEOM.SDO_INTERSECTION(v_geometry, b.geom, 0.005))/ SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo))*100 > 50;
+        RETURN v_code_insee;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'error';
+    END GET_CODE_INSEE_97_COMMUNES_POURCENTAGE;
+
+/
+
+
+create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
+/*
+Cette fonction a pour objectif de récupérer le code INSEE de la commune située à deux mètres maximum de l'objet interrogé, sachant que ce dernier n'est pas dans les communes de la MEL.
+La fonction localise le point médian de l'objet (situé en-dehors de la MEL) et, s'il se trouve à plus de deux mètres d'une commune, elle renvoie 'error', sinon, elle renvoie le code INSEE de la commune.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
+Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
+*/
+    DETERMINISTIC
+    As
+    v_code_insee CHAR(8);
+    BEGIN
+        SELECT
+            TRIM(b.code_insee)
+            INTO v_code_insee
+        FROM
+            G_REFERENTIEL.MEL_COMMUNE_LLH b,
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = v_table_name
+            AND SDO_FILTER(b.geom, v_geometry) <> 'TRUE'
+            AND SDO_GEOM.WITHIN_DISTANCE(SDO_LRS.CONVERT_TO_STD_GEOM(
+                SDO_LRS.LOCATE_PT(
+                                SDO_LRS.CONVERT_TO_LRS_GEOM(v_geometry,m.diminfo),
+                                SDO_GEOM.SDO_LENGTH(v_geometry,m.diminfo)/2
+                )
+            ), 2, b.geom, 0.005) = 'TRUE';
+        RETURN v_code_insee;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'error';
+    END GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE;
+
+/
+
+
+create or replace FUNCTION GET_CODE_INSEE_97_COMMUNES_TRONCON(v_table_name VARCHAR2, v_geometry SDO_GEOMETRY) RETURN CHAR
+/*
+Cette fonction a pour objectif de récupérer le code INSEE de chaque tronçon. Le référentiel utilisé pour récupérer le code INSEE est celui des 97 communes car avec les communes associées, nous pouvons avoir deux voies du même nom et complément à Lille par exemple, alors qu'une se situe à Lomme et l'autre à Lille.
+La variable v_table_name doit contenir le nom de la table dont on veut connaître le code INSEE des objets.
+La variable v_geometry doit contenir le nom du champ géométrique de la table interrogée.
+Pour cela elle traite différents cas via les fonctions ci-dessous :
+- GET_CODE_INSEE_CONTAIN ;
+- GET_CODE_INSEE_POURCENTAGE ;
+- GET_CODE_INSEE_WITHIN_DISTANCE ;
+*/
+    DETERMINISTIC
+    As
+    v_code_insee CHAR(8);
+    BEGIN
+        IF GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE(v_table_name, v_geometry) <> 'error' THEN
+            v_code_insee := GET_CODE_INSEE_97_COMMUNES_CONTAIN_LINE(v_table_name, v_geometry);
+        ELSIF GET_CODE_INSEE_97_COMMUNES_POURCENTAGE(v_table_name, v_geometry) <> 'error' THEN
+            v_code_insee := GET_CODE_INSEE_97_COMMUNES_POURCENTAGE(v_table_name, v_geometry);
+        ELSIF GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE(v_table_name, v_geometry) <> 'error' THEN
+            v_code_insee := GET_CODE_INSEE_97_COMMUNES_WITHIN_DISTANCE(v_table_name, v_geometry);
+        END IF;
+        RETURN v_code_insee;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'erreur';
+    END GET_CODE_INSEE_97_COMMUNES_TRONCON;
+
+/
+
 /*
 La table TA_AGENT regroupant les pnoms de tous les agents ayant travaillés et qui travaillent encore pour la base voie.
 */
@@ -516,7 +690,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_HIERARCHISATION_VOIE.fid_voie_secondaire IS 'Cl
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_HIERARCHISATION_VOIE 
 ADD CONSTRAINT TA_HIERARCHISATION_VOIE_PK 
-PRIMARY KEY("fid_voie_principale", "fid_voie_secondaire") 
+PRIMARY KEY("FID_VOIE_PRINCIPALE", "FID_VOIE_SECONDAIRE") 
 USING INDEX TABLESPACE "G_ADT_INDX";
 
 -- 4. Création des clés étrangères
@@ -1201,6 +1375,7 @@ CREATE INDEX TA_POINT_INTERET_LOG_CODE_INSEE_IDX ON G_BASE_VOIE.TA_POINT_INTERET
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_POINT_INTERET_LOG TO G_ADMIN_SIG;
+
 /*
 La table TA_INFOS_POINT_INTERET regroupe tous les point d''intérêts de la base voie.
 */
@@ -1272,6 +1447,10 @@ CREATE INDEX TA_INFOS_POINT_INTERET_FID_INFOS_POINT_INTERET_IDX ON G_BASE_VOIE.T
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET TO G_ADMIN_SIG;
+
+/
+
+
 /*
 La table TA_INFOS_POINT_INTERET_LOG  permet d''avoir l''historique de toutes les évolutions des seuils de la base voie.
 */
@@ -1335,6 +1514,106 @@ CREATE INDEX TA_INFOS_POINT_INTERET_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_INFOS_POI
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET_LOG TO G_ADMIN_SIG;
 
 /
+
+/*
+VM_TEMP_DOUBLON_SEUIL_G_SIDU : cette VM sert lors de la migration des données de la base voie des tables temporaires vers les tables de production.
+Elle permet d'identifier tous les seuils en doublons de numéros et de compléments de seuil ainsi que de voie, puis de les supprimer.
+*/
+
+-- 1. Création de la VM
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU(OBJECTID, ID_SEUIL, NUMERO_SEUIL, COMPLEMENT_SEUIL, ID_VOIE, DISTANCE)
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE AS
+WITH
+    C_1 AS(
+        SELECT
+            a.nuseui AS numero_seuil,
+            CASE
+                WHEN a.nsseui IS NOT NULL
+                THEN a.nsseui
+            ELSE
+                'pas de complément'
+            END AS complement_seuil,
+            e.ccomvoi AS id_voie
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU a
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+        WHERE
+            c.cdvaltro = 'V'
+            AND d.cvalide = 'V'
+            AND e.cdvalvoi = 'V'
+            AND a.idseui NOT IN(393545, 393540) -- Ces seuils sont affectés à plusieurs voies
+        GROUP BY
+            a.nuseui,
+                CASE
+                    WHEN a.nsseui IS NOT NULL
+                    THEN a.nsseui
+                ELSE
+                    'pas de complément'
+                END,
+                e.ccomvoi
+        HAVING
+            COUNT(a.nuseui) > 1
+            AND COUNT(CASE
+                WHEN a.nsseui IS NOT NULL
+                THEN a.nsseui
+            ELSE
+                'pas de complément'
+            END) > 1
+            AND COUNT(e.ccomvoi) > 1
+    )
+    
+        SELECT DISTINCT
+            ROWNUM AS objectid,
+            a.idseui,
+            f.*,
+            ROUND(SDO_GEOM.SDO_DISTANCE(-- Sélection de la distance entre le seuil et le point le plus proche du tronçon qui lui est affecté
+                                    SDO_LRS.LOCATE_PT(-- Création du point situé le plus près du seuil sur le tronçon
+                                        SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo),
+                                        SDO_LRS.FIND_MEASURE(SDO_LRS.CONVERT_TO_LRS_GEOM(c.ora_geometry, m.diminfo), a.ora_geometry),
+                                        0
+                                    ),
+                                    a.ora_geometry
+                                    ), 2)AS distance
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU a
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+            INNER JOIN C_1 f ON f.numero_seuil = a.nuseui AND f.complement_seuil = CASE WHEN a.nsseui IS NULL THEN 'pas de complément' ELSE a.nsseui END AND f.id_voie = e.ccomvoi,
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = 'TEMP_ILTATRC'
+            AND c.cdvaltro = 'V'
+            AND d.cvalide = 'V'
+            AND e.cdvalvoi = 'V'
+        ORDER BY
+            f.numero_seuil,
+            f.complement_seuil,
+            f.id_voie;
+
+-- 2. Création des commentaires de VM
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU IS 'VM temporaire servant à supprimer les seuils en doublons. Ces seuils disposent des mêmes numéros, compléments de seuil et voie, mais d''un identifiant et parfois d''un numéro de parcelle différent. Cependant, cela causant problème pour le "projet" LITTERALIS il fut décidé de ne garder que les seuils les plus proches de leur tronçon au sein des doublons.';
+
+-- 3. Création de la clé primaire
+ALTER MATERIALIZED VIEW VM_TEMP_DOUBLON_SEUIL_G_SIDU 
+ADD CONSTRAINT VM_TEMP_DOUBLON_SEUIL_G_SIDU_PK 
+PRIMARY KEY (OBJECTID);
+
+-- 4. Création des index
+CREATE INDEX VM_TEMP_DOUBLON_SEUIL_G_SIDU_COMPOSE_IDX ON G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU(ID_VOIE, NUMERO_SEUIL, COMPLEMENT_SEUIL)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_TEMP_DOUBLON_SEUIL_G_SIDU_DISTANCE_IDX ON G_BASE_VOIE.VM_TEMP_DOUBLON_SEUIL_G_SIDU(DISTANCE)
+    TABLESPACE G_ADT_INDX;
+
+/
+
 /*
 Création d'un champ temporaire nécessaire à l'import des données dans les tables finales de la Base Voie
 */

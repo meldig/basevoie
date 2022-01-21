@@ -2,11 +2,6 @@
 VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR : Vue matérialisée regroupant toutes les voies dites principales de la base, c-a-d les voies ayant la plus grande longueur au sein d''un ensemble de voie ayant le même libellé et code insee.
 */
 
--- 1. Suppression de la VM et de ses métadonnées
-DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR';
-COMMIT;
-
 -- 2. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR" ("OBJECTID", "ID_VOIE", "LIBELLE_VOIE", "CODE_INSEE", "LONGUEUR", "GEOM")        
 REFRESH ON DEMAND
@@ -81,5 +76,3 @@ CREATE INDEX VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_ID_VOIE_IDX ON G_BASE_VOIE.VM_T
 
 -- 7. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR TO G_ADMIN_SIG;
-
-/

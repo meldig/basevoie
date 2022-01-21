@@ -4,11 +4,6 @@ au sein d''un ensensemble de voies ayant le même nom et code INSEE.
 De plus, ces voies doivent intersecter directement ou indirectement une voie principale du même nom et code insee.
 */
 
--- 1. Suppression de la vue matérialisée
-DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR';
-COMMIT;
-
 -- 2. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR" ("OBJECTID", "ID_VOIE", "LIBELLE_VOIE", "CODE_INSEE", "LONGUEUR", "GEOM")        
 REFRESH ON DEMAND
@@ -112,6 +107,4 @@ CREATE INDEX VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR_COMPOSE_IDX ON G_BASE_VOIE.VM_T
 
 -- 6. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR TO G_ADMIN_SIG;
-
-/
 

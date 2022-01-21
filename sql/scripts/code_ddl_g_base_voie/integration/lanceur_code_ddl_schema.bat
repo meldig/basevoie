@@ -8,7 +8,6 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du schema : "
 SET /p chemin_code_trigger="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des DECLENCHEURS du schema : "
 SET /p chemin_code_fonction="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des FONCTIONS du schema : "
-SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du schema : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
 SET /p USER="Veuillez saisir l'utilisateur Oracle : "
 SET /p MDP="Veuillez saisir le MDP : "

@@ -2,9 +2,6 @@
 VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR : Vue matérialisée regroupant chaque voie secondaire avec sa voie principale. Une voie principale la voie la plus grande au sein d''un ensemble de voies ayant le même nom et le même code INSEE, les autres sont les voies secondaires. De plus, ces dernières doivent obligatoirement intersecter directement ou non leur voie principale.
 */
 
--- 1. Suppression de la VM et de ses métadonnées
-DROP MATERIALIZED VIEW G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR;
-
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR" ("ID_VOIE_PRINCIPALE","TYPE_VOIE_PRINCIPALE","LIBELLE_VOIE_PRINCIPALE","CODE_INSEE_VOIE_PRINCIPALE","LONGUEUR_VOIE_PRINCIPALE","ID_VOIE_SECONDAIRE","TYPE_VOIE_SECONDAIRE","LIBELLE_VOIE_SECONDAIRE","CODE_INSEE_VOIE_SECONDAIRE","LONGUEUR_VOIE_SECONDAIRE")
 REFRESH ON DEMAND

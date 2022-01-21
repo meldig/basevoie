@@ -1,3 +1,4 @@
+
 /*
 La table TA_INFOS_POINT_INTERET regroupe tous les point d''intérêts de la base voie.
 */
@@ -69,3 +70,6 @@ CREATE INDEX TA_INFOS_POINT_INTERET_FID_INFOS_POINT_INTERET_IDX ON G_BASE_VOIE.T
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_INFOS_POINT_INTERET TO G_ADMIN_SIG;
+
+/
+

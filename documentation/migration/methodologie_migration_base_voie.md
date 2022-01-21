@@ -13,8 +13,9 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 	1.2. Vérification du bon déroulé de l'import ;
 2. Création de la nouvelle structure de données dans Oracle 12C ;
 3. Migration et correction des données des tables temporaires vers les tables finales ;
-4. Vérification du bon déroulé de la migration ;
-5. Suppression des tables temporaires ;
+4. Création d'une hiérarchisation voies principales / voies secondaires ;
+5. Vérification du bon déroulé de la migration ;
+6. Suppression des tables temporaires ;
 
 ## Outils utilisés pour la migration
 
@@ -86,6 +87,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * **Méthode :** 
 1. Vérifier que le fichier *temp_code_ddl_schema.sql* ne se trouve pas dans le dossier integration, sinon supprimez-le ;
 2. Double-cliquez sur le fichier ![lanceur_code_ddl_schema.bat](../../sql/scripts/code_ddl_g_base_voie/integration/lanceur_code_ddl_schema.bat) et renseignez les informations demandées ;
+3. Dans Sql/Developper, lancez le code du fichier ![creation_vm_temp_doublon_seuil_g_sidu.sql](../../sql/scripts/code_ddl_g_base_voie/vues_materialisees/creation_vm_temp_doublon_seuil_g_sidu.sql). Ce fichier peut pas être lancé via SqlPlus en raison de la présence de CTE qui provoquent des erreurs ;
 
 * **Information complémentaire :**
 Le fichier *lanceur_code_ddl_schema.bat* fait la compilation de tous les codes DDL des tables, vues, déclencheurs et fonctions présents dans le dossier *code_ddl_g_base_voie* dans le fichier *temp_code_ddl_schema.sql* qu'il lance ensuite dans oracle pour créer la structure du schéma en base.  
@@ -105,14 +107,21 @@ Si le problème persiste, exécutez les codes de la proccédure un par un afin d
 Une fois le problème réglé, veuillez supprimer la structure via le fichier ![lanceur_code_ddl_schema.bat](../../sql/scripts/code_ddl_g_base_voie/integration/lanceur_code_ddl_schema.bat), puis la recréer via le fichier ![lanceur_code_ddl_schema.bat](../../sql/scripts/code_ddl_g_base_voie/integration/lanceur_code_ddl_schema.bat) et enfin, relancer la proccédure du fichier ![migration_tables_temporaires_vers_tables_finales.sql](../../sql/scripts/code_ddl_g_base_voie/integration/migration_tables_temporaires_vers_tables_finales.sql) directement dans SqlDevelopper.  
 Cette procédure permet d'avoir toujours un code correct après chaque recréation de la base dans oracle 12c.
 
-## 4. Vérification du bon déroulé de la migration
+## 4. Création d'une hiérarchisation voies principales / voies secondaires
+* **Objectif :** Remplir la table *TA_HIERARCHISATION_VOIE* permettant d'associer les voies secondaires à leur voie principale et de conserver cette notion de hiérarchie entre les voies.
+
+* **Méthode :**  
+1. Double-cliquez sur le fichier ![lanceur_hierarchisation_des_voies.bat](../../sql/scripts/code_ddl_g_base_voie/integration/lanceur_hierarchisation_des_voies.bat) permettant de compiler le code de toutes les VM nécessaires à la hiérarchisation des voies. Cela produira le fichier *temp_hierarchie_voie.sql*, dans le dossier *integration*, qui devra être lancé à l'étape suivante ;
+2. Lancez le code du fichier ![temp_hierarchie_voie.sql](../../sql/scripts/code_ddl_g_base_voie/integration/temp_hierarchie_voie.sql) dans Sql/Developper sur le schéma de la base voie ;
+
+## 5. Vérification du bon déroulé de la migration
 
 * **Objectif :** Vérifier que le nombre d'entités présentes dans les tables finales correspond au nombre d'entités importées dans les tables temporaires depuis Oracle 11g. Attention, les nombres doivent **correspondre**, mais pas être rigoureusement identiques, puisque la migration des tables temporaires vers les tables finales fait une correction de la données (Exemple : suppression des seuils situés à 1km ou plus de leur tronçon d'affectation).
 
 * **Méthode :** Dans SqlDevelopper, exécutez le code du fichier ![verification_nombre_de_donnees_base_finale.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_nombre_de_donnees_base_finale.sql) et insérez le résultat dans le tableur créé à l'étape 1.2. Si le nombre d'entités est similaire au nombre d'entités des données importées dans les tables temporaires, alors on considère que la migration s'est faite correctement.  
 Si vérification de cette partie,pour le moment encore sommaire, mais en cours de développement.
 
-## 5. Suppression des tables temporaires
+## 6. Suppression des tables temporaires
 
 * **Objectif :** Supprimer les tables temporaires ayant servie à importer les données dans oracle 12c.
 

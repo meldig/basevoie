@@ -42,7 +42,7 @@ SELECT
 	'TYPEVOIE' AS NOM_TABLE,
 	COUNT(*) AS NBR_LIGNES
 FROM
-	G_SIDU.TYPEVOIE;
+	G_SIDU.TYPEVOIE
 UNION ALL
 --Décompte du nombre de points d'intérêts
 SELECT
