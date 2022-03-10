@@ -10,7 +10,8 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON_LOG(
     fid_type_action NUMBER(38,0) NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL,
     fid_troncon NUMBER(38,0) NOT NULL,
-    fid_troncon_pere NUMBER(38,0)
+    fid_troncon_pere NUMBER(38,0),
+    fid_metadonnee NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -22,6 +23,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_type_action IS 'Clé étrangèr
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au tronçon qu''il a créé, modifié ou supprimé.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_troncon IS 'Clé étrangère vers la table TA_TRONCON permettant de savoir sur quel tronçon ont été effectué les actions.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_troncon_pere IS 'Clé étrangère vers la table TA_TRONCON permettant, en cas de coupure de tronçon, de savoir quel était le tronçon original.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître notamment la source et l''organisme créateur de la données.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG 
@@ -53,12 +55,17 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_table
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
 ADD CONSTRAINT TA_TRONCON_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
-REFERENCES G_BASE_VOIE.ta_libelle(objectid);
+REFERENCES G_GEO.TA_LIBELLE(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
 ADD CONSTRAINT TA_TRONCON_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
-REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
+REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
+
+ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
+ADD CONSTRAINT TA_TRONCON_LOG_FID_METADONNEE_FK
+FOREIGN KEY (fid_metadonnee)
+REFERENCES G_GEO.TA_METADONNEE(objectid);
 
 -- 7. Création des index sur les clés étrangères
 CREATE INDEX TA_TRONCON_LOG_FID_TRONCON_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon)
@@ -73,5 +80,8 @@ CREATE INDEX TA_TRONCON_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fi
 CREATE INDEX TA_TRONCON_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
+CREATE INDEX TA_TRONCON_LOG_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_metadonnee)
+    TABLESPACE G_ADT_INDX;
+    
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TRONCON_LOG TO G_ADMIN_SIG;

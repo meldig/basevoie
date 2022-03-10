@@ -9,7 +9,7 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-    v_id_creation NUMBER(38,0);
+    v_id_insertion NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
 BEGIN
@@ -20,20 +20,40 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
     -- Sélection des id des actions présentes dans la table TA_LIBELLE
-    SELECT a.objectid INTO v_id_creation FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'insertion';
-    SELECT a.objectid INTO v_id_modification FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'modification';
-    SELECT a.objectid INTO v_id_suppression FROM G_BASE_VOIE.TA_LIBELLE a WHERE a.valeur = 'suppression';
+    SELECT 
+        a.objectid INTO v_id_insertion 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'insertion';
+
+    SELECT 
+        a.objectid INTO v_id_modification 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'édition';
+            
+    SELECT 
+        a.objectid INTO v_id_suppression 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(fid_infos_seuil, numero_seuil, numero_parcelle, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
-                    :old.numero_seuil, 
-                    :old.numero_parcelle, 
-                    :old.complement_numero_seuil, 
+                    :new.numero_seuil, 
+                    :new.numero_parcelle, 
+                    :new.complement_numero_seuil, 
                     sysdate,
-                    :old.fid_seuil,
-                    v_id_creation,
+                    :new.fid_seuil,
+                    v_id_insertion,
                     v_id_agent);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.

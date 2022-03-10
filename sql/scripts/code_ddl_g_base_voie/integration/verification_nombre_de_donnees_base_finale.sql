@@ -1,0 +1,52 @@
+/*
+Décompte du nombre d'entités importées par table dans les tables finales de G_BASE_VOIE
+*/
+-- Données du schéma G_BASE_VOIE
+--Décompte du nombre de tronçons
+SELECT
+	'TA_TRONCON' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_TRONCON
+UNION ALL
+--Décompte du nombre de seuils
+SELECT
+	'TA_INFOS_SEUIL' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_INFOS_SEUIL
+UNION ALL
+--Décompte du nombre de relation tronçons/seuils
+SELECT
+	'TA_RELATION_TRONCON_SEUIL' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL
+UNION ALL
+--Décompte du nombre de voies
+SELECT
+	'TA_VOIE' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_VOIE
+UNION ALL
+--Décompte du nombre de relation tronçons/voies
+SELECT
+	'TA_RELATION_TRONCON_VOIE' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_RELATION_TRONCON_VOIE
+UNION ALL
+--Décompte du nombre de types de voie
+SELECT
+	'TA_TYPE_VOIE' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_TYPE_VOIE
+UNION ALL
+--Décompte du nombre de points d'intérêts
+SELECT
+	'TA_INFOS_POINT_INTERET' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TA_INFOS_POINT_INTERET;

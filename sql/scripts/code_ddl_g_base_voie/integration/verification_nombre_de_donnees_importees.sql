@@ -1,0 +1,52 @@
+/*
+Décompte du nombre d'entités importées par table dans G_BASE_VOIE
+*/
+-- Données du schéma G_BASE_VOIE
+--Décompte du nombre de tronçons
+SELECT
+	'TEMP_ILTATRC' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_ILTATRC
+UNION ALL
+--Décompte du nombre de seuils
+SELECT
+	'TEMP_ILTASEU' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_ILTASEU
+UNION ALL
+--Décompte du nombre de relation tronçons/seuils
+SELECT
+	'TEMP_ILTASIT' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_ILTASIT
+UNION ALL
+--Décompte du nombre de voies
+SELECT
+	'TEMP_VOIEVOI' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_VOIEVOI
+UNION ALL
+--Décompte du nombre de relation tronçons/voies
+SELECT
+	'TEMP_VOIECVT' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_VOIECVT
+UNION ALL
+--Décompte du nombre de types de voie
+SELECT
+	'TEMP_TYPEVOIE' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_TYPEVOIE
+UNION ALL
+--Décompte du nombre de points d'intérêts
+SELECT
+	'TEMP_ILTALPU' AS NOM_TABLE,
+	COUNT(*) AS NBR_LIGNES
+FROM
+	G_BASE_VOIE.TEMP_ILTALPU;

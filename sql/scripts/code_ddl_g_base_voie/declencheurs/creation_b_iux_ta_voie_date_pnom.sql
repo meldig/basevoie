@@ -8,7 +8,8 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-         
+    fid_mtd NUMBER(38,0);
+    
 BEGIN
     -- Sélection du pnom
     SELECT sys_context('USERENV','OS_USER') into username from dual;
@@ -16,7 +17,8 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
 
-    IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
+    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé la voie, présent dans TA_AGENT.
+    IF INSERTING THEN
        :new.fid_pnom_saisie := v_id_agent;
        :new.fid_pnom_modification := v_id_agent;
     ELSE

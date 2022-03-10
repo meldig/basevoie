@@ -13,7 +13,8 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE_LOG(
     fid_rivoli NUMBER(38,0) NOT NULL,
     fid_voie NUMBER(38,0) NOT NULL,
     fid_type_action NUMBER(38,0) NOT NULL,
-    fid_pnom NUMBER(38,0)
+    fid_pnom NUMBER(38,0),
+    fid_metadonnee NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -28,6 +29,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_rivoli IS 'Clé étrangère vers l
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_voie IS 'Identifiant de tronçon de la table TA_VOIE permettant d''identifier la voie qui a été créée, modifiée ou supprimée.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE, permettant d''associer un type d''action à une voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent à la voie qu''il a créé, modifié ou supprimé.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LOG.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître notamment la source et l''organisme créateur de la données.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG 
@@ -39,12 +41,17 @@ USING INDEX TABLESPACE "G_ADT_INDX";
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG
 ADD CONSTRAINT TA_VOIE_LOG_FID_TYPE_ACTION_FK
 FOREIGN KEY (fid_type_action)
-REFERENCES G_BASE_VOIE.ta_libelle(objectid);
+REFERENCES G_GEO.TA_LIBELLE(objectid);
 
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG
 ADD CONSTRAINT TA_VOIE_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
+
+ALTER TABLE G_BASE_VOIE.TA_VOIE_LOG
+ADD CONSTRAINT TA_VOIE_LOG_FID_METADONNEE_FK
+FOREIGN KEY (fid_metadonnee)
+REFERENCES G_GEO.ta_metadonnee(objectid);
 
 -- 5. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_VOIE_LOG_FID_TYPEVOIE_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_voie)
@@ -54,6 +61,9 @@ CREATE INDEX TA_VOIE_LOG_FID_FANTOIR_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_type_act
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_VOIE_LOG_FID_GENRE_VOIE_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_pnom)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_VOIE_LOG_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_VOIE_LOG(fid_metadonnee)
     TABLESPACE G_ADT_INDX;
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
