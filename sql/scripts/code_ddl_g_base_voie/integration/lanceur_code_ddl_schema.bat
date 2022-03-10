@@ -59,10 +59,10 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
 %chemin_code_temp%\temp_code_ddl_schema.sql
 
 :: 3. lancement de SQL plus.
-CD C:/ora12c/R1/BIN
+::CD C:/ora12c/R1/BIN
 
 :: 4. Execution de sqlplus. pour lancer les requetes SQL.
-sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_temp%\temp_code_ddl_schema.sql
+::sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_temp%\temp_code_ddl_schema.sql
 
 :: 5. MISE EN PAUSE
 PAUSE

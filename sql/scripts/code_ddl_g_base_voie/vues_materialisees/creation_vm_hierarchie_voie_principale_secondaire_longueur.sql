@@ -1,7 +1,10 @@
 /*
 VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR : Vue matérialisée regroupant chaque voie secondaire avec sa voie principale. Une voie principale la voie la plus grande au sein d''un ensemble de voies ayant le même nom et le même code INSEE, les autres sont les voies secondaires. De plus, ces dernières doivent obligatoirement intersecter directement ou non leur voie principale.
 */
-
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR';
+*/
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR" ("ID_VOIE_PRINCIPALE","TYPE_VOIE_PRINCIPALE","LIBELLE_VOIE_PRINCIPALE","CODE_INSEE_VOIE_PRINCIPALE","LONGUEUR_VOIE_PRINCIPALE","ID_VOIE_SECONDAIRE","TYPE_VOIE_SECONDAIRE","LIBELLE_VOIE_SECONDAIRE","CODE_INSEE_VOIE_SECONDAIRE","LONGUEUR_VOIE_SECONDAIRE")
 REFRESH ON DEMAND
@@ -20,7 +23,7 @@ SELECT DISTINCT
     b.longueur AS longueur_voie_secondaire
 FROM
     G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR a
-    INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR b ON b.libelle_voie = a.libelle_voie AND b.code_insee = a.code_insee
+    INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR b ON TRIM(UPPER(b.libelle_voie)) = TRIM(UPPER(a.libelle_voie)) AND b.code_insee = a.code_insee
     INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = a.id_voie
     INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = c.fid_typevoie
     INNER JOIN G_BASE_VOIE.TA_VOIE e ON e.objectid = b.id_voie

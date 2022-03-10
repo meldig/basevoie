@@ -141,6 +141,10 @@ GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR TO G_ADMIN_SIG;
 /*
 VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR : Vue matérialisée regroupant toutes les voies dites principales de la base, c-a-d les voies ayant la plus grande longueur au sein d''un ensemble de voie ayant le même libellé et code insee.
 */
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR';
+*/
 
 -- 2. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR" ("OBJECTID", "ID_VOIE", "LIBELLE_VOIE", "CODE_INSEE", "LONGUEUR", "GEOM")        
@@ -150,7 +154,7 @@ DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(-- Sélection des noms, code insee et longueur des voies principales
         SELECT
-            libelle_voie AS libelle_voie_principale,
+            TRIM(UPPER(libelle_voie)) AS libelle_voie_principale,
             code_insee AS code_insee_voie_principale,
             MAX(longueur_voie) AS longueur_voie_principale
         FROM
@@ -159,7 +163,7 @@ WITH
             libelle_voie,
             code_insee
         HAVING
-            COUNT(libelle_voie)>1
+            COUNT(TRIM(UPPER(libelle_voie)))>1
             AND COUNT(code_insee)>1
     )
     
@@ -172,7 +176,7 @@ WITH
         a.geom
     FROM
         G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
-        INNER JOIN C_1 b ON b.libelle_voie_principale = a.libelle_voie
+        INNER JOIN C_1 b ON TRIM(UPPER(b.libelle_voie_principale)) = TRIM(UPPER(a.libelle_voie))
                         AND b.code_insee_voie_principale = a.code_insee
                         AND b.longueur_voie_principale = a.longueur_voie
 ;
@@ -216,12 +220,18 @@ CREATE INDEX VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR_ID_VOIE_IDX ON G_BASE_VOIE.VM_T
 
 -- 7. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR TO G_ADMIN_SIG;
+
+/
+
 /*
 VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR : Vue matérialisée regroupant les voies dites secondaires, c-a-d les voies dont la longueur n''est PAS la plus grande 
 au sein d''un ensensemble de voies ayant le même nom et code INSEE.
 De plus, ces voies doivent intersecter directement ou indirectement une voie principale du même nom et code insee.
 */
-
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR';
+*/
 -- 2. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR" ("OBJECTID", "ID_VOIE", "LIBELLE_VOIE", "CODE_INSEE", "LONGUEUR", "GEOM")        
 REFRESH ON DEMAND
@@ -231,35 +241,34 @@ WITH
     C_1 AS(-- Sélection des voies secondaires situées à 1m maximum de la voie principale
         SELECT
             a.id_voie AS id_voie_secondaire,
-            a.libelle_voie AS libelle_voie_secondaire,
+            TRIM(UPPER(a.libelle_voie)) AS libelle_voie_secondaire,
             a.code_insee AS code_insee_voie_secondaire,
             a.longueur_voie AS longueur_voie_secondaire,
             a.geom
         FROM
             G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
-            INNER JOIN VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR b ON b.libelle_voie = a.libelle_voie
+            INNER JOIN VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR b ON TRIM(UPPER(b.libelle_voie)) = TRIM(UPPER(a.libelle_voie))
                                                                 AND b.code_insee = a.code_insee
         WHERE
             a.longueur_voie < b.longueur
             AND SDO_WITHIN_DISTANCE(a.geom, b.geom, 'distance=1') = 'TRUE'
-    ),
+    )/*,
     
     C_2 AS(-- Sélection des voies secondaires qui intersectent une voie secondaire elle-même intersectant une voie principale*/
         SELECT
             c.id_voie_secondaire AS id__intersect,
-            c.libelle_voie_secondaire AS libelle_intersect,
+            TRIM(UPPER(c.libelle_voie_secondaire)) AS libelle_intersect,
             c.code_insee_voie_secondaire AS code_insee_intersect,
             c.longueur_voie_secondaire AS longueur_intersect,
             a.id_voie AS id_voie_secondaire,
-            a.libelle_voie AS libelle_voie_secondaire,
+            TRIM(UPPER(a.libelle_voie)) AS libelle_voie_secondaire,
             a.code_insee AS code_insee_voie_secondaire,
-            a.longueur_voie AS longueur_voie_secondaire,
-            a.geom
+            a.longueur_voie AS longueur_voie_secondaire
         FROM
             G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
-            INNER JOIN VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR b ON b.libelle_voie = a.libelle_voie
+            INNER JOIN VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR b ON TRIM(UPPER(b.libelle_voie)) = TRIM(UPPER(a.libelle_voie))
                                                                 AND b.code_insee = a.code_insee
-            INNER JOIN C_1 c ON c.libelle_voie_secondaire = b.libelle_voie
+            INNER JOIN C_1 c ON TRIM(UPPER(c.libelle_voie_secondaire)) = TRIM(UPPER(b.libelle_voie))
                                 AND c.code_insee_voie_secondaire = b.code_insee
         WHERE
             a.longueur_voie < b.longueur
@@ -270,32 +279,42 @@ WITH
     C_3 AS(-- Regroupement de toutes les voies secondaires
         SELECT
             id_voie_secondaire,
-            libelle_voie_secondaire,
+            TRIM(UPPER(libelle_voie_secondaire)) AS libelle_voie_secondaire,
             code_insee_voie_secondaire,
-            longueur_voie_secondaire,
-            geom
+            longueur_voie_secondaire
         FROM
             C_1
         UNION ALL
         SELECT
             id_voie_secondaire,
-            libelle_voie_secondaire,
+            TRIM(UPPER(libelle_voie_secondaire)) AS libelle_voie_secondaire,
             code_insee_voie_secondaire,
-            longueur_voie_secondaire,
-            geom
+            longueur_voie_secondaire
         FROM
             C_2
+    ),
+    
+    C_4 AS(
+        SELECT DISTINCT
+            rownum AS objectid,
+            id_voie_secondaire,
+            libelle_voie_secondaire,
+            code_insee_voie_secondaire AS code_insee,
+            longueur_voie_secondaire
+        FROM
+            C_3
     )
     
     SELECT
-        rownum AS objectid,
-        id_voie_secondaire,
-        libelle_voie_secondaire,
-        code_insee_voie_secondaire AS code_insee,
-        longueur_voie_secondaire,
-        geom
+        a.objectid,
+        a.id_voie_secondaire,
+        a.libelle_voie_secondaire,
+        a.code_insee,
+        a.longueur_voie_secondaire,
+        b.geom
     FROM
-        C_3;
+        C_4 a
+        INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR b ON b.id_voie = a.id_voie_secondaire;
 
 -- 3. Création des commentaires
 COMMENT ON MATERIALIZED VIEW VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR IS 'Vue matérialisée regroupant les voies dites secondaires, c-a-d les voies dont la longueur n''est PAS la plus grande au sein d''un ensensemble de voies ayant le même nom et code INSEE. De plus, ces voies doivent intersecter directement ou indirectement une voie principale du même nom et code insee.';
@@ -326,10 +345,15 @@ CREATE INDEX VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR_COMPOSE_IDX ON G_BASE_VOIE.VM_T
 -- 6. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR TO G_ADMIN_SIG;
 
+/
+
 /*
 VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR : Vue matérialisée regroupant chaque voie secondaire avec sa voie principale. Une voie principale la voie la plus grande au sein d''un ensemble de voies ayant le même nom et le même code INSEE, les autres sont les voies secondaires. De plus, ces dernières doivent obligatoirement intersecter directement ou non leur voie principale.
 */
-
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR';
+*/
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_HIERARCHIE_VOIE_PRINCIPALE_SECONDAIRE_LONGUEUR" ("ID_VOIE_PRINCIPALE","TYPE_VOIE_PRINCIPALE","LIBELLE_VOIE_PRINCIPALE","CODE_INSEE_VOIE_PRINCIPALE","LONGUEUR_VOIE_PRINCIPALE","ID_VOIE_SECONDAIRE","TYPE_VOIE_SECONDAIRE","LIBELLE_VOIE_SECONDAIRE","CODE_INSEE_VOIE_SECONDAIRE","LONGUEUR_VOIE_SECONDAIRE")
 REFRESH ON DEMAND
@@ -348,7 +372,7 @@ SELECT DISTINCT
     b.longueur AS longueur_voie_secondaire
 FROM
     G_BASE_VOIE.VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR a
-    INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR b ON b.libelle_voie = a.libelle_voie AND b.code_insee = a.code_insee
+    INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR b ON TRIM(UPPER(b.libelle_voie)) = TRIM(UPPER(a.libelle_voie)) AND b.code_insee = a.code_insee
     INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = a.id_voie
     INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = c.fid_typevoie
     INNER JOIN G_BASE_VOIE.TA_VOIE e ON e.objectid = b.id_voie
