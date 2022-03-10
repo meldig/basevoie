@@ -118,7 +118,7 @@ ADD CONSTRAINT VM_TEMP_DOUBLON_SEUIL_G_SIDU_PK
 PRIMARY KEY (OBJECTID)';
 */
 
--- 1.1.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus grande au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
+-- 1.1.4 Suppression des seuils en doublons dont la distance par rapport à leur tronçon est la plus petite au sein des doublons (même numéro, complément de seuil NULL, même numéro de voie)
 DELETE FROM G_BASE_VOIE.TEMP_ILTASEU
 WHERE
     IDSEUI IN(
@@ -304,7 +304,7 @@ COMMIT;
 -- 4. Insertion du code fantoir dans TEMP_VOIEVOI
     MERGE INTO G_BASE_VOIE.TEMP_VOIEVOI a
     USING(
-        SELECT
+        SELECT DISTINCT
             b.ccomvoi,
             CASE
                 WHEN LENGTH(b.cnumcom) = 2 THEN '0' || b.cnumcom || b.ccodrvo || c.cle_controle
