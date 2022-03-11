@@ -26,7 +26,7 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
                 FROM
                     G_BASE_VOIE.TA_TRONCON a
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
-                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
+                    INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.fid_voie
                     INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
                 GROUP BY
                     a.objectid
@@ -50,30 +50,26 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
                     THEN 'VC' -- Voie Communale
                 END AS CLASSEMENT,
                 c.id_voie AS CODE_RUE_G,
-                c.libelle_voie AS NOM_RUE_G,
-                c.insee AS INSEE_G,
+                TRIM(UPPER(c.type_de_voie) || ' ' || UPPER(c.libelle_voie) || ' ' || UPPER(COMPLEMENT_NOM_VOIE)) AS NOM_RUE_G,
+                GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', c.GEOM) AS INSEE_G,
                 c.id_voie AS CODE_RUE_D,
-                c.libelle_voie AS NOM_RUE_D,
-                c.insee AS INSEE_D,
+                TRIM(UPPER(c.type_de_voie) || ' ' || UPPER(c.libelle_voie) || ' ' || UPPER(COMPLEMENT_NOM_VOIE)) AS NOM_RUE_D,
+                GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', c.GEOM) AS INSEE_D,
                 CAST('' AS NUMBER(8,0)) AS LARGEUR,
                 a.geom AS geometry
             FROM
                 G_BASE_VOIE.TA_TRONCON a
                 INNER JOIN C_1 d ON d.code_troncon = a.objectid
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
-                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
+                INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE c ON c.id_voie = b.fid_voie
                 INNER JOIN SIREO_LEC.OUT_DOMANIALITE e ON e.cnumtrc = a.objectid
-            WHERE
-                c.insee IS NOT NULL
-                --c.id_voie NOT IN(3670725,5980305,3780330,4109016,3789288,6461183,2509041,3039032,3289399,3560237,3039000,2509042,3209014,6589008,3681700,3782043,1739021,2529011,139011,6029002,2990086,3320060,4210050,5990510,1631305,6461195,3503180,3600840,5850585,6480320,3710057,4870090,4570236,4700153,3503375,3781455,171620,3170480,900510,4210640,5995430,6502690,3500495,5070070,2989086,90202,3469046,95712,880311,1430360,3320370,3670767,3681460,3782070,2860870,3601220,1430214,3170440,3329010,3679001,3509252,5279049,2529007,3179061)
-                -- la condition ci-dessus est due au fait que ces voies étaient sur les limites communales. C'est pour ça qu'elles ont été doublonnées. Problème : en changeant de référentiel communal ces voies ne sont plus sur les limites
-        )t
+    )t
     ON(a.code_tronc = t.code_tronc)
 WHEN NOT MATCHED THEN
     INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY)
     VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY);
 COMMIT;
--- Résultat : 47 427 tronçons affectés à une et une seule voie    
+-- Résultat : 47 354 tronçons affectés à une et une seule voie    
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- 1.2. Insertion des tronçons affectés à plusieurs voies et disposant d'une seule domanialité

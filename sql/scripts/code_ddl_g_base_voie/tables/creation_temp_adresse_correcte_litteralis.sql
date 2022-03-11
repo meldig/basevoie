@@ -18,7 +18,7 @@ CREATE TABLE G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS(
 COMMENT ON TABLE G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS IS 'Table contenant tous les seuils affectés à un tronçon disposant d''une seule domanialité et affecté à une seule voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.code_voie IS 'Identifiant de chaque voie au format LITTERALIS (VARCHAR).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.code_point IS 'Identifiant de chaque seuil au format LITTERALIS (VARCHAR) présent dans la table TA_INFOS_SEUIL(objectid).';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.nature IS 'Nature du point. Toutes les valeurs sont ''ADR'''.;
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.nature IS 'Nature du point. Toutes les valeurs sont ''ADR''.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.libelle IS 'Libelle de chaque seuil qui est la concaténation du numéro de seuil et du complément de numéro de seuil (quand il y en a un) présents dans TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.numero IS 'Numéro du seuil au format LITTERALIS NUMBER(8) présent dans TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS.repetition IS 'Complément du numéro de seuil au format LITTERALIS (VARCHAR(10)) présent dans TA_INFOS_SEUIL.';
