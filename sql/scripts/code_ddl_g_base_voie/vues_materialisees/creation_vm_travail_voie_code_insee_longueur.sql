@@ -12,12 +12,12 @@ SELECT
     b.type_de_voie,
     b.libelle_voie,
     b.complement_nom_voie,
-    CAST(GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_VOIE_AGGREGEE', b.geom) AS VARCHAR2(5))AS code_insee,
+    b.code_insee,
     SDO_GEOM.SDO_LENGTH(b.geom) AS longueur_voie,
     b.geom
 FROM
     G_BASE_VOIE.TA_VOIE a
-    INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE b ON b.id_voie = a.objectid;
+    INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE b ON b.id_voie = a.objectid;
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR IS 'Vue matérialisée récupérant le code INSEE, la longueur, le type , le nom, la géométrie et le complément de chaque voie.';
