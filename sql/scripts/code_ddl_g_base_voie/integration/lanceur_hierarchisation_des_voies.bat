@@ -9,11 +9,12 @@ SET /p chemin_code_vue_materialise="Veuillez saisir le chemin d'acces du dossier
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
 
 copy /b %chemin_code_vue_materialise%\creation_vm_voie_aggregee.sql + ^
+%chemin_code_vue_materialise%\creation_vm_travail_voie_aggregee_code_insee.sql + ^
 %chemin_code_vue_materialise%\creation_vm_travail_voie_code_insee_longueur.sql + ^
 %chemin_code_vue_materialise%\creation_vm_travail_voie_principale_longueur.sql + ^
 %chemin_code_vue_materialise%\creation_vm_travail_voie_secondaire_longueur.sql + ^
 %chemin_code_vue_materialise%\creation_vm_hierarchie_voie_principale_secondaire_longueur.sql + ^
-%chemin_code_temp%\remplissage_ta_hierarchisation_voie.sql ^
+%chemin_code_temp%\remplissage_ta_hierarchisation_voie.sql + ^
 %chemin_code_temp%\temp_hierarchie_voie.sql
 
 :: 5. MISE EN PAUSE
