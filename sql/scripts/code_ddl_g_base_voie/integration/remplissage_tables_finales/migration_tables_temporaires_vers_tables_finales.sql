@@ -599,6 +599,8 @@ COMMIT;
                     AND f.pnom = 'import_donnees'
                     AND UPPER(j.acronyme) = UPPER('MEL')
                     AND UPPER(h.nom_source) = UPPER('base voie')
+                    -- La condition ci-dessous se justifie par le fait que ces voies ne sont reliées à aucun tronçon
+                    AND a.ccomvoi NOT IN(3680210, 6469054,6029015,1469011,2029046,1739017,2799015,3889012,3179053,1439037,5239023,2029023,99506,6439006,179085,3179072,5249031,1439024,1529029,1529115,139500,4589005,2529021,2759040,6439016,2569454,1739067,6569026,989042,2799006)
                 )
             SELECT *
             FROM
