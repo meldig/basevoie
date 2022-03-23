@@ -3,7 +3,7 @@ La table TA_VOIE_LITTERALIS regroupe tous les informations de chaque voie de la 
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_VOIE_LITTERALIS CASCADE CONSTRAINTS;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'G_BASE_VOIE.TA_VOIE_LITTERALIS';
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TA_VOIE_LITTERALIS';
 */
 -- 1. Création de la table TA_VOIE_LITTERALIS
 CREATE TABLE G_BASE_VOIE.TA_VOIE_LITTERALIS(
@@ -17,7 +17,8 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE_LITTERALIS(
     fid_typevoie NUMBER(38,0) NOT NULL,
     fid_genre_voie NUMBER(38,0) NOT NULL,
     fid_rivoli NUMBER(38,0) NULL,
-    fid_metadonnee NUMBER(38,0) NULL
+    fid_metadonnee NUMBER(38,0) NULL,
+    geom SDO_GEOMETRY
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -33,6 +34,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LITTERALIS.fid_typevoie IS 'Clé étangèr
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LITTERALIS.fid_genre_voie IS 'Clé étrangère vers la table TA_LIBELLE permettant de connaître le genre du nom de la voie : masculin, féminin, neutre et non-identifié.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LITTERALIS.fid_rivoli IS 'Clé étrangère vers la table TA_RIVOLI permettant d''associer un code RIVOLI à chaque voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LITTERALIS.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des voies (MEL ou IGN).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_LITTERALIS.geom IS 'Champ géométrique de chaque voie de type multiligne.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LITTERALIS 
@@ -40,7 +42,22 @@ ADD CONSTRAINT TA_VOIE_LITTERALIS_PK
 PRIMARY KEY("OBJECTID") 
 USING INDEX TABLESPACE "G_ADT_INDX";
 
--- 4. Création des clés étrangères
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'TA_VOIE_LITTERALIS',
+    'GEOM',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Création des clés étrangères
 ALTER TABLE G_BASE_VOIE.TA_VOIE_LITTERALIS
 ADD CONSTRAINT TA_VOIE_LITTERALIS_FID_PNOM_SAISIE_FK
 FOREIGN KEY (fid_pnom_saisie)
@@ -71,7 +88,13 @@ ADD CONSTRAINT TA_VOIE_LITTERALIS_FID_METADONNEE_FK
 FOREIGN KEY (fid_metadonnee)
 REFERENCES G_GEO.ta_metadonnee(objectid);
 
--- 5. Création des index sur les clés étrangères
+-- 5. Création de l'index spatial sur le champ geom
+CREATE INDEX TA_VOIE_LITTERALIS_SIDX
+ON G_BASE_VOIE.TA_VOIE_LITTERALIS(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
+PARAMETERS('sdo_indx_dims=2, layer_gtype=MULTILINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
+
+-- 6. Création des index sur les clés étrangères
 CREATE INDEX TA_VOIE_LITTERALIS_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_VOIE_LITTERALIS(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
@@ -90,7 +113,7 @@ CREATE INDEX TA_VOIE_LITTERALIS_FID_RIVOLI_IDX ON G_BASE_VOIE.TA_VOIE_LITTERALIS
 CREATE INDEX TA_VOIE_LITTERALIS_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_VOIE_LITTERALIS(fid_metadonnee)
     TABLESPACE G_ADT_INDX;
     
--- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
+-- 7. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_VOIE_LITTERALIS TO G_ADMIN_SIG;
 
 /
