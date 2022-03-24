@@ -1,7 +1,10 @@
 /*
 Création de la table TEMP_ADRESSE_CORRECTE_LITTERALIS permettant d'avoir au format LITTERALIS les associations tronçon/seuil où tout va bien.
 */
-
+/*
+DROP TABLE G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS CASCADE CONSTRAINTS;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TEMP_ADRESSE_CORRECTE_LITTERALIS';
+*/
 -- 1. Création de la table dans laquelle insérer les seuils affecter à un tronçon disposant d'une seule domanialité et affecté à une seule voie
 CREATE TABLE G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS(
 	CODE_VOIE VARCHAR2(254), 
@@ -49,7 +52,7 @@ COMMIT;
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TEMP_ADRESSE_CORRECTE_LITTERALIS_SIDX
 ON G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS(GEOMETRY)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Affection des droits
