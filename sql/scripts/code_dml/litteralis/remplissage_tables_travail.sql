@@ -1,6 +1,7 @@
 /*
 Code permettant de remplir les tables de travail du projet LITTERALIS.
 Les tables en question sont :
+- TA_VOIE_LITTERALIS ;
 - TEMP_TRONCON_CORRECT_LITTERALIS ;
 - TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS ;
 - TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS ;
@@ -12,8 +13,109 @@ Les tables en question sont :
 Ces tables permettent de mettre les associations tronçon/seuil et tronçons/voies au format LITTERALIS, par type d'erreur (tronçon affecté à plusieurs voies, tronçons avec des domanialités différentes, etc), mais aussi pour les associations tronçon/seuil et tronçons/voies correctes.
 */
 
--- 1. LES TRONCONS
+-- TA_VOIE_LITTERALIS
+-- Insertion des voies principales dans TA_VOIE_LITTERALIS
+INSERT INTO G_BASE_VOIE.TA_VOIE_LITTERALIS(id_voie,libelle_voie,insee,mesure_voie,complement_nom_voie,geom,date_saisie,date_modification,fid_pnom_saisie,fid_pnom_modification,fid_typevoie,fid_genre_voie,fid_rivoli,fid_metadonnee)
+WITH
+    C_1 AS(
+        SELECT
+            a.id_voie,
+            a.libelle_voie,
+            GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM) AS INSEE,
+            SDO_GEOM.SDO_LENGTH(a.geom, 0.001) AS mesure_voie,
+            a.complement_nom_voie,
+            b.date_saisie,
+            b.date_modification,
+            b.fid_pnom_saisie,
+            b.fid_pnom_modification,
+            b.fid_typevoie,
+            b.fid_genre_voie,
+            b.fid_rivoli,
+            b.fid_metadonnee
+        FROM
+            G_BASE_VOIE.VM_VOIE_AGGREGEE a
+            INNER JOIN G_BASE_VOIE.TA_VOIE b ON b.objectid = a.id_voie
+            INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE b ON b.fid_voie_principale = a.id_voie
+        UNION ALL
+        SELECT
+            a.id_voie,
+            a.libelle_voie,
+            GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM) AS INSEE,
+            SDO_GEOM.SDO_LENGTH(a.geom, 0.001) AS mesure_voie,
+            a.complement_nom_voie,
+            b.date_saisie,
+            b.date_modification,
+            b.fid_pnom_saisie,
+            b.fid_pnom_modification,
+            b.fid_typevoie,
+            b.fid_genre_voie,
+            b.fid_rivoli,
+            b.fid_metadonnee
+        FROM
+            G_BASE_VOIE.VM_VOIE_AGGREGEE a
+            INNER JOIN G_BASE_VOIE.TA_VOIE b ON b.objectid = a.id_voie
+        WHERE
+            a.id_voie NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
+            AND a.id_voie NOT IN(SELECT fid_voie_principale FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
+    ),
+    
+    C_2 AS(
+        SELECT DISTINCT *
+        FROM
+            C_1
+    )
+    
+    SELECT
+        a.id_voie,
+        a.libelle_voie,
+        a.insee,
+        a.mesure_voie,
+        a.complement_nom_voie,
+        b.geom,
+        a.date_saisie,
+        a.date_modification,
+        a.fid_pnom_saisie,
+        a.fid_pnom_modification,
+        a.fid_typevoie,
+        a.fid_genre_voie,
+        a.fid_rivoli,
+        a.fid_metadonnee
+    FROM
+        C_2 a
+        INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE b ON b.id_voie = a.id_voie;
+-- Résultat : 17611 lignes insérées
 
+-- Insertion des voies secondaires dans TA_VOIE_LITTERALIS
+MERGE INTO G_BASE_VOIE.TA_VOIE_LITTERALIS a
+USING(
+    SELECT
+        a.id_voie,
+        b.fid_voie_principale,
+        a.libelle_voie || ' ANNEXE ' || ROW_NUMBER() OVER (PARTITION BY (UPPER(TRIM(a.libelle_voie)) || ' ' || GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM)) ORDER BY SDO_GEOM.SDO_LENGTH(a.geom, 0.001) DESC) AS libelle_voie,
+        GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM) AS INSEE,
+        SDO_GEOM.SDO_LENGTH(a.geom, 0.001) AS mesure_voie,
+        c.complement_nom_voie,
+        c.date_saisie,
+        c.date_modification,
+        c.fid_pnom_saisie,
+        c.fid_pnom_modification,
+        c.fid_typevoie,
+        c.fid_genre_voie,
+        c.fid_rivoli,
+        c.fid_metadonnee,
+        a.geom
+    FROM
+        G_BASE_VOIE.VM_VOIE_AGGREGEE a
+        INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE b ON b.FID_VOIE_SECONDAIRE = a.id_voie
+        INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.fid_voie_secondaire
+)t
+ON(a.id_voie = t.id_voie)
+WHEN NOT MATCHED THEN
+INSERT(a.id_voie, a.libelle_voie, a.insee, a.mesure_voie, a.complement_nom_voie, a.geom, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_typevoie, a.fid_genre_voie, a.fid_rivoli, a.fid_metadonnee)
+VALUES(t.id_voie, t.libelle_voie, t.insee, t.mesure_voie, t.complement_nom_voie, t.geom, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_typevoie, t.fid_genre_voie, t.fid_rivoli, t.fid_metadonnee);
+-- Résultat : 4531 lignes fusionnées
+
+-- 1. LES TRONCONS
 -- 1.1. Insertion des tronçons affectés à une et une seule voie et disposant d'une d'une seule domanialité dans TEMP_TRONCON_CORRECT_LITTERALIS
 
 DELETE FROM G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS;
