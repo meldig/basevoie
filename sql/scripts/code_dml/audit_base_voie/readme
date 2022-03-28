@@ -1,0 +1,3 @@
+## Audit de la base voie
+
+Ce répertoire contient les vues qui comptabilisent les erreurs pouvant être rencontrées dans la base voie avant et après migration de la base voie des instances oracle 11g vers oracle 12c. 
