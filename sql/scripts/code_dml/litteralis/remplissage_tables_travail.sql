@@ -1,6 +1,7 @@
 /*
 Code permettant de remplir les tables de travail du projet LITTERALIS.
 Les tables en question sont :
+- TA_VOIE_LITTERALIS ;
 - TEMP_TRONCON_CORRECT_LITTERALIS ;
 - TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS ;
 - TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS ;
@@ -12,28 +13,133 @@ Les tables en question sont :
 Ces tables permettent de mettre les associations tronçon/seuil et tronçons/voies au format LITTERALIS, par type d'erreur (tronçon affecté à plusieurs voies, tronçons avec des domanialités différentes, etc), mais aussi pour les associations tronçon/seuil et tronçons/voies correctes.
 */
 
--- 1. LES TRONCONS
+-- TA_VOIE_LITTERALIS
+-- Insertion des voies principales dans TA_VOIE_LITTERALIS
+INSERT INTO G_BASE_VOIE.TA_VOIE_LITTERALIS(id_voie,libelle_voie,insee,mesure_voie,complement_nom_voie,geom,date_saisie,date_modification,fid_pnom_saisie,fid_pnom_modification,fid_typevoie,fid_genre_voie,fid_rivoli,fid_metadonnee)
+WITH
+    C_1 AS(
+        SELECT
+            a.id_voie,
+            a.libelle_voie,
+            GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM) AS INSEE,
+            SDO_GEOM.SDO_LENGTH(a.geom, 0.001) AS mesure_voie,
+            a.complement_nom_voie,
+            b.date_saisie,
+            b.date_modification,
+            b.fid_pnom_saisie,
+            b.fid_pnom_modification,
+            b.fid_typevoie,
+            b.fid_genre_voie,
+            b.fid_rivoli,
+            b.fid_metadonnee
+        FROM
+            G_BASE_VOIE.VM_VOIE_AGGREGEE a
+            INNER JOIN G_BASE_VOIE.TA_VOIE b ON b.objectid = a.id_voie
+            INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE b ON b.fid_voie_principale = a.id_voie
+        UNION ALL
+        SELECT
+            a.id_voie,
+            a.libelle_voie,
+            GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM) AS INSEE,
+            SDO_GEOM.SDO_LENGTH(a.geom, 0.001) AS mesure_voie,
+            a.complement_nom_voie,
+            b.date_saisie,
+            b.date_modification,
+            b.fid_pnom_saisie,
+            b.fid_pnom_modification,
+            b.fid_typevoie,
+            b.fid_genre_voie,
+            b.fid_rivoli,
+            b.fid_metadonnee
+        FROM
+            G_BASE_VOIE.VM_VOIE_AGGREGEE a
+            INNER JOIN G_BASE_VOIE.TA_VOIE b ON b.objectid = a.id_voie
+        WHERE
+            a.id_voie NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
+            AND a.id_voie NOT IN(SELECT fid_voie_principale FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
+    ),
+    
+    C_2 AS(
+        SELECT DISTINCT *
+        FROM
+            C_1
+    )
+    
+    SELECT
+        a.id_voie,
+        a.libelle_voie,
+        a.insee,
+        a.mesure_voie,
+        a.complement_nom_voie,
+        b.geom,
+        a.date_saisie,
+        a.date_modification,
+        a.fid_pnom_saisie,
+        a.fid_pnom_modification,
+        a.fid_typevoie,
+        a.fid_genre_voie,
+        a.fid_rivoli,
+        a.fid_metadonnee
+    FROM
+        C_2 a
+        INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE b ON b.id_voie = a.id_voie;
+-- Résultat : 17611 lignes insérées
 
+-- Insertion des voies secondaires dans TA_VOIE_LITTERALIS
+MERGE INTO G_BASE_VOIE.TA_VOIE_LITTERALIS a
+USING(
+    SELECT
+        a.id_voie,
+        b.fid_voie_principale,
+        a.libelle_voie || ' ANNEXE ' || ROW_NUMBER() OVER (PARTITION BY (UPPER(TRIM(a.libelle_voie)) || ' ' || GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM)) ORDER BY SDO_GEOM.SDO_LENGTH(a.geom, 0.001) DESC) AS libelle_voie,
+        GET_CODE_INSEE_TRONCON('VM_VOIE_AGGREGEE', a.GEOM) AS INSEE,
+        SDO_GEOM.SDO_LENGTH(a.geom, 0.001) AS mesure_voie,
+        c.complement_nom_voie,
+        c.date_saisie,
+        c.date_modification,
+        c.fid_pnom_saisie,
+        c.fid_pnom_modification,
+        c.fid_typevoie,
+        c.fid_genre_voie,
+        c.fid_rivoli,
+        c.fid_metadonnee,
+        a.geom
+    FROM
+        G_BASE_VOIE.VM_VOIE_AGGREGEE a
+        INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE b ON b.FID_VOIE_SECONDAIRE = a.id_voie
+        INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.fid_voie_secondaire
+)t
+ON(a.id_voie = t.id_voie)
+WHEN NOT MATCHED THEN
+INSERT(a.id_voie, a.libelle_voie, a.insee, a.mesure_voie, a.complement_nom_voie, a.geom, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_typevoie, a.fid_genre_voie, a.fid_rivoli, a.fid_metadonnee)
+VALUES(t.id_voie, t.libelle_voie, t.insee, t.mesure_voie, t.complement_nom_voie, t.geom, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_typevoie, t.fid_genre_voie, t.fid_rivoli, t.fid_metadonnee);
+-- Résultat : 4531 lignes fusionnées
+
+-- 1. LES TRONCONS
 -- 1.1. Insertion des tronçons affectés à une et une seule voie et disposant d'une d'une seule domanialité dans TEMP_TRONCON_CORRECT_LITTERALIS
 
 DELETE FROM G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS;
+
+-- Insertion des tronçons des voies principales
 MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
     USING(
         WITH
-            C_1 AS(-- Sélection des tronçons affectés à une et une seule voie et disposant d'une seule domanialité
+            C_1 AS(-- Sélection des tronçons affectés à une et une seule voie PRINCIPALE et disposant d'une seule domanialité
                 SELECT
                     a.objectid AS code_troncon
                 FROM
                     G_BASE_VOIE.TA_TRONCON a
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
-                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
+                    INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.fid_voie
                     INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
+                WHERE
+                    c.objectid NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
                 GROUP BY
                     a.objectid
                 HAVING
                     COUNT(a.objectid) = 1
             )
-            
+
             SELECT
                 a.objectid AS CODE_TRONC,
                 a.objectid AS id_troncon,
@@ -50,10 +156,10 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
                     THEN 'VC' -- Voie Communale
                 END AS CLASSEMENT,
                 c.id_voie AS CODE_RUE_G,
-                c.libelle_voie AS NOM_RUE_G,
+                TRIM(UPPER(f.libelle) || ' ' || UPPER(c.libelle_voie) || ' ' || UPPER(c.complement_nom_voie)) AS NOM_RUE_G,
                 c.insee AS INSEE_G,
                 c.id_voie AS CODE_RUE_D,
-                c.libelle_voie AS NOM_RUE_D,
+                TRIM(UPPER(f.libelle) || ' ' || UPPER(c.libelle_voie) || ' ' || UPPER(c.complement_nom_voie)) AS NOM_RUE_D,
                 c.insee AS INSEE_D,
                 CAST('' AS NUMBER(8,0)) AS LARGEUR,
                 a.geom AS geometry
@@ -63,21 +169,137 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
                 INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
                 INNER JOIN SIREO_LEC.OUT_DOMANIALITE e ON e.cnumtrc = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE f ON f.objectid = c.fid_typevoie
             WHERE
-                c.insee IS NOT NULL
-                --c.id_voie NOT IN(3670725,5980305,3780330,4109016,3789288,6461183,2509041,3039032,3289399,3560237,3039000,2509042,3209014,6589008,3681700,3782043,1739021,2529011,139011,6029002,2990086,3320060,4210050,5990510,1631305,6461195,3503180,3600840,5850585,6480320,3710057,4870090,4570236,4700153,3503375,3781455,171620,3170480,900510,4210640,5995430,6502690,3500495,5070070,2989086,90202,3469046,95712,880311,1430360,3320370,3670767,3681460,3782070,2860870,3601220,1430214,3170440,3329010,3679001,3509252,5279049,2529007,3179061)
-                -- la condition ci-dessus est due au fait que ces voies étaient sur les limites communales. C'est pour ça qu'elles ont été doublonnées. Problème : en changeant de référentiel communal ces voies ne sont plus sur les limites
-        )t
+                a.objectid NOT IN(90351, 4273, 90959, 90004, 90005, 91002, 90854, 90890, 90088, 90008, 90416, 90314, 14850, 90681, 90828, 90986, 91001, 90988, 90992, 9825, 90761, 90532, 90807, 90189, 27322, 10970, 4272, 90006, 9115, 90931, 90291, 90285, 90067, 90976, 90009, 55369, 90398, 90400, 90052, 90184, 90748, 21285, 90232, 90499, 90450, 90118, 11836, 90098, 90288, 90582, 90315, 90018, 90981, 6506, 90440, 90151, 50342, 90424, 11091, 90960, 90972, 58471, 90324, 90214, 90215, 90091, 11837, 90852, 90095, 90953, 90675, 90233, 90937, 90292, 5302, 90229, 90002, 90791, 2066, 6508, 16058, 90781, 90402, 90640, 16552, 90856, 9824, 90497, 90859, 10969, 90160, 90973, 9114, 90303, 18019, 10174, 90936, 5736, 90977, 90090, 90581, 90760, 90410, 9687, 9623, 9624, 90531, 90346, 90022, 90023, 90427, 90156, 90880, 12503, 12504, 90299, 10173, 10172, 91003, 90096, 79841, 90286, 90068, 90975, 90583, 90797, 90829, 90403, 10942, 90857, 90409, 90720, 90530, 90350, 90344, 90858, 90507, 90426, 90428, 9217, 15713, 90231, 10187, 90451, 90302, 10175, 90947, 90287, 90089, 90768, 90417, 90465, 14197, 4317, 9747, 90549, 90425, 90135, 90881, 90325, 9116, 90954, 90676, 90290, 5303, 90282, 91000, 91006, 90715, 14851, 90987, 90401, 90404, 9686, 90080, 90169, 90961, 90543)
+    )t
     ON(a.code_tronc = t.code_tronc)
 WHEN NOT MATCHED THEN
     INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY)
     VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY);
 COMMIT;
--- Résultat : 47 427 tronçons affectés à une et une seule voie    
+-- Résultat : 41 995 tronçons affectés à une et une seule voie principale 
+
+-- Insertion des tronçons des voies secondaires
+MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
+    USING(
+        WITH
+            C_1 AS(-- Sélection des tronçons affectés à une et une seule voie PRINCIPALE et disposant d'une seule domanialité
+                SELECT
+                    a.objectid AS code_troncon
+                FROM
+                    G_BASE_VOIE.TA_TRONCON a
+                    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
+                    INNER JOIN G_BASE_VOIE.TA_VOIE c ON c.objectid = b.fid_voie
+                    INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
+                WHERE
+                    c.objectid NOT IN(SELECT fid_voie_principale FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
+                GROUP BY
+                    a.objectid
+                HAVING
+                    COUNT(a.objectid) = 1
+            )
+            
+            SELECT
+                a.objectid AS CODE_TRONC,
+                a.objectid AS id_troncon,
+                CASE 
+                    WHEN f.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
+                    THEN 'A'
+                    WHEN f.domania = 'ROUTE NATIONALE'
+                    THEN 'RN' -- Route Nationale
+                    WHEN f.domania IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
+                    THEN 'VP' -- Voie Privée
+                    WHEN f.domania = 'CHEMIN RURAL'
+                    THEN 'CR' -- Chemin Rural
+                    WHEN f.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
+                    THEN 'VC' -- Voie Communale
+                END AS CLASSEMENT,
+                e.id_voie AS CODE_RUE_G,
+                TRIM(UPPER(g.libelle) || ' ' || UPPER(e.libelle_voie) || ' ' || UPPER(e.complement_nom_voie)) AS NOM_RUE_G,
+                e.insee AS INSEE_G,
+                e.id_voie AS CODE_RUE_D,
+                TRIM(UPPER(g.libelle) || ' ' || UPPER(e.libelle_voie) || ' ' || UPPER(e.complement_nom_voie)) AS NOM_RUE_D,
+                e.insee AS INSEE_D,
+                CAST('' AS NUMBER(8,0)) AS LARGEUR,
+                a.geom AS geometry
+            FROM
+                G_BASE_VOIE.TA_TRONCON a
+                INNER JOIN C_1 d ON d.code_troncon = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE c ON c.fid_voie_secondaire = b.fid_voie
+                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS e ON e.id_voie = c.fid_voie_principale
+                INNER JOIN SIREO_LEC.OUT_DOMANIALITE f ON f.cnumtrc = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE g ON g.objectid = e.fid_typevoie
+            WHERE
+                a.objectid NOT IN(SELECT id_troncon FROM G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS)
+                AND a.objectid NOT IN(46738, 90877, 46599, 16627, 11383, 46606, 28361, 90351, 4273, 90959, 90004, 90005, 91002, 90854, 90890, 90088, 90008, 90416, 90314, 14850, 90681, 90828, 90986, 91001, 90988, 90992, 9825, 90761, 90532, 90807, 90189, 27322, 10970, 4272, 90006, 9115, 90931, 90291, 90285, 90067, 90976, 90009, 55369, 90398, 90400, 90052, 90184, 90748, 21285, 90232, 90499, 90450, 90118, 11836, 90098, 90288, 90582, 90315, 90018, 90981, 6506, 90440, 90151, 50342, 90424, 11091, 90960, 90972, 58471, 90324, 90214, 90215, 90091, 11837, 90852, 90095, 90953, 90675, 90233, 90937, 90292, 5302, 90229, 90002, 90791, 2066, 6508, 16058, 90781, 90402, 90640, 16552, 90856, 9824, 90497, 90859, 10969, 90160, 90973, 9114, 90303, 18019, 10174, 90936, 5736, 90977, 90090, 90581, 90760, 90410, 9687, 9623, 9624, 90531, 90346, 90022, 90023, 90427, 90156, 90880, 12503, 12504, 90299, 10173, 10172, 91003, 90096, 79841, 90286, 90068, 90975, 90583, 90797, 90829, 90403, 10942, 90857, 90409, 90720, 90530, 90350, 90344, 90858, 90507, 90426, 90428, 9217, 15713, 90231, 10187, 90451, 90302, 10175, 90947, 90287, 90089, 90768, 90417, 90465, 14197, 4317, 9747, 90549, 90425, 90135, 90881, 90325, 9116, 90954, 90676, 90290, 5303, 90282, 91000, 91006, 90715, 14851, 90987, 90401, 90404, 9686)
+                AND UPPER(g.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+    )t
+    ON(a.code_tronc = t.code_tronc)
+WHEN NOT MATCHED THEN
+    INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY)
+    VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY);
+COMMIT;
+-- Résultat : 5 375 tronçons affectés à une et une seule voie secondaire
+
+-- Mise à jour du code INSEE des tronçons situés à 15m maximum en-dehors du périmètre de la MEL et dont les champs insee_d et insee_g sont NULL
+MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
+USING(
+    SELECT
+        a.id_troncon,
+        b.code_insee
+    FROM
+        G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a,
+        G_REFERENTIEL.MEL_COMMUNE b, 
+        USER_SDO_GEOM_METADATA m
+    WHERE
+        m.table_name = 'TEMP_TRONCON_CORRECT_LITTERALIS'
+        AND a.insee_d IS NULL
+        AND SDO_GEOM.WITHIN_DISTANCE(SDO_LRS.CONVERT_TO_STD_GEOM(
+                SDO_LRS.LOCATE_PT(
+                                SDO_LRS.CONVERT_TO_LRS_GEOM(a.geometry,m.diminfo),
+                                SDO_GEOM.SDO_LENGTH(a.geometry,m.diminfo)/2
+                )
+            ), 15, b.geom, 0.005) = 'TRUE'
+)t
+ON(a.id_troncon = t.id_troncon)
+WHEN MATCHED THEN
+UPDATE SET a.insee_d = t.code_insee, a.insee_g = t.code_insee;
+COMMIT;
+-- 42 lignes mises à jour
+
+-- Mise à jour du code INSEE des tronçons situés à 30m maximum en-dehors du périmètre de la MEL et dont les champs insee_d et insee_g sont NULL
+MERGE INTO G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a
+USING(
+    SELECT
+        a.id_troncon,
+        b.code_insee
+    FROM
+        G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS a,
+        G_REFERENTIEL.MEL_COMMUNE b, 
+        USER_SDO_GEOM_METADATA m
+    WHERE
+        m.table_name = 'TEMP_TRONCON_CORRECT_LITTERALIS'
+        AND a.insee_d IS NULL
+        AND SDO_GEOM.WITHIN_DISTANCE(SDO_LRS.CONVERT_TO_STD_GEOM(
+                SDO_LRS.LOCATE_PT(
+                                SDO_LRS.CONVERT_TO_LRS_GEOM(a.geometry,m.diminfo),
+                                SDO_GEOM.SDO_LENGTH(a.geometry,m.diminfo)/2
+                )
+            ), 30, b.geom, 0.005) = 'TRUE'
+)t
+ON(a.id_troncon = t.id_troncon)
+WHEN MATCHED THEN
+UPDATE SET a.insee_d = t.code_insee, a.insee_g = t.code_insee;
+COMMIT;
+-- 1 ligne mise à jour
+
+-- Résultat Total : 47 370 tronçons affectés à une et une seule voie    
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- 1.2. Insertion des tronçons affectés à plusieurs voies et disposant d'une seule domanialité
-
+ 
 DELETE FROM G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS;
 MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS a
     USING(
@@ -91,7 +313,126 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS a
                     INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
                     INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
                 WHERE
-                    c.insee IS NOT NULL
+                    c.insee <> 'error'
+                GROUP BY
+                    a.objectid
+                HAVING
+                    COUNT(a.objectid) > 1
+                    AND COUNT(DISTINCT d.objectid) = 1
+                    AND COUNT(c.insee) > 1
+                    AND COUNT(DISTINCT c.id_voie) > 1
+            ),
+            
+            C_2 AS(-- Sélection de l'objectid max de TA_TRONCON afin de ne pas créer de doublons d'id
+                SELECT
+                    MAX(objectid) AS code_troncon_max
+                FROM
+                    G_BASE_VOIE.TA_TRONCON
+            ),
+            
+            C_3 AS(
+            SELECT
+                a.code_tronc,
+                d.id_voie,
+                TRIM(UPPER(e.libelle) || ' ' || UPPER(d.libelle_voie) || ' ' || UPPER(d.complement_nom_voie)) AS libelle_voie
+            FROM
+                C_1 a
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE c ON c.fid_voie_principale  = b.fid_voie
+                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS d ON d.id_voie = c.fid_voie_principale
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_typevoie
+            WHERE
+                UPPER(e.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+            UNION ALL
+            SELECT
+                a.code_tronc,
+                d.id_voie,
+                TRIM(UPPER(e.libelle) || ' ' || UPPER(d.libelle_voie) || ' ' || UPPER(d.complement_nom_voie)) AS libelle_voie
+            FROM
+                C_1 a
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE c ON c.fid_voie_secondaire = b.fid_voie
+                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS d ON d.id_voie = c.fid_voie_principale
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_typevoie
+            WHERE
+                UPPER(e.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+            ),
+            
+            C_4 AS(
+            -- Sélection des autes infos + création des id de tronçon virtuels : on part du code_tronçon max+1 et on incrémente de 1 par tronçon repéré dans C_1
+                SELECT DISTINCT
+                    a.code_troncon_max + 1 + rownum AS code_tronc,
+                    d.objectid AS id_troncon,
+                    CASE 
+                        WHEN c.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
+                        THEN 'A'
+                        WHEN c.domania = 'ROUTE NATIONALE'
+                        THEN 'RN' -- Route Nationale
+                        WHEN c.domania IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
+                        THEN 'VP' -- Voie Privée
+                        WHEN c.domania = 'CHEMIN RURAL'
+                        THEN 'CR' -- Chemin Rural
+                        WHEN c.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
+                        THEN 'VC' -- Voie Communale
+                    END AS CLASSEMENT,
+                    b.id_voie AS CODE_RUE_G,
+                    b.libelle_voie AS NOM_RUE_G,
+                    e.insee AS INSEE_G,
+                    b.id_voie AS CODE_RUE_D,
+                    b.libelle_voie AS NOM_RUE_D,
+                    e.insee AS INSEE_D,
+                    CAST('' AS NUMBER(8,0)) AS LARGEUR
+                FROM
+                    C_2 a,
+                    C_3 b
+                    INNER JOIN SIREO_LEC.OUT_DOMANIALITE c ON c.cnumtrc = b.code_tronc
+                    INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = b.code_tronc
+                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS e ON e.id_voie = b.id_voie
+                    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE f ON f.objectid = e.fid_typevoie
+                WHERE
+                    UPPER(f.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+            )
+            
+            SELECT
+                a.code_tronc,
+                a.id_troncon,
+                a.classement,
+                a.code_rue_g,
+                a.nom_rue_g,
+                a.insee_g,
+                a.code_rue_d,
+                a.nom_rue_d,
+                a.insee_d,
+                a.largeur,
+                b.geom AS geometry
+            FROM
+                C_4 a
+                INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.id_troncon
+    )t
+    ON(a.code_tronc = t.code_tronc)
+WHEN NOT MATCHED THEN
+    INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY)
+    VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY);
+COMMIT;
+-- Résultat : 859 lignes fusionnées en créant des codes tronçons différents (uniques) 
+
+-- Voies principales uniquement
+MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS a
+    USING(
+        WITH
+            C_1 AS(-- Sélection des tronçons affectés à plusieurs voies  au sein d'une même commune mais disposant d'une seule domanialité
+                SELECT
+                    a.objectid AS code_tronc
+                FROM
+                    G_BASE_VOIE.TA_TRONCON a
+                    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
+                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
+                    INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
+                WHERE
+                    c.insee <> 'error'
+                    AND c.id_voie NOT IN(SELECT fid_voie_principale AS id_voie FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE
+                                        UNION ALL SELECT fid_voie_secondaire AS id_voie FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE
+                                        )
                 GROUP BY
                     a.objectid
                 HAVING
@@ -110,42 +451,46 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS a
             
             -- Sélection des autes infos + création des id de tronçon virtuels : on part du code_tronçon max+1 et on incrémente de 1 par tronçon repéré dans C_1
             SELECT
-                a.code_troncon_max + 1 + rownum AS code_tronc,
-                f.objectid AS id_troncon,
+                a.code_troncon_max + 1 + 1000 + rownum AS code_tronc,
+                d.objectid AS id_troncon,
                 CASE 
-                    WHEN e.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
+                    WHEN c.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
                     THEN 'A'
-                    WHEN e.domania = 'ROUTE NATIONALE'
+                    WHEN c.domania = 'ROUTE NATIONALE'
                     THEN 'RN' -- Route Nationale
-                    WHEN e.domania IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
+                    WHEN c.domania IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
                     THEN 'VP' -- Voie Privée
-                    WHEN e.domania = 'CHEMIN RURAL'
+                    WHEN c.domania = 'CHEMIN RURAL'
                     THEN 'CR' -- Chemin Rural
-                    WHEN e.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
+                    WHEN c.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
                     THEN 'VC' -- Voie Communale
                 END AS CLASSEMENT,
-                d.id_voie AS CODE_RUE_G,
-                d.libelle_voie AS NOM_RUE_G,
-                d.insee AS INSEE_G,
-                d.id_voie AS CODE_RUE_D,
-                d.libelle_voie AS NOM_RUE_D,
-                d.insee AS INSEE_D,
+                e.id_voie AS CODE_RUE_G,
+                TRIM(UPPER(g.libelle) || ' ' || UPPER(e.libelle_voie) || ' ' || UPPER(e.complement_nom_voie)) AS NOM_RUE_G,
+                e.insee AS INSEE_G,
+                e.id_voie AS CODE_RUE_D,
+                TRIM(UPPER(g.libelle) || ' ' || UPPER(e.libelle_voie) || ' ' || UPPER(e.complement_nom_voie)) AS NOM_RUE_D,
+                e.insee AS INSEE_D,
                 CAST('' AS NUMBER(8,0)) AS LARGEUR,
-                f.geom AS geometry
+                d.geom AS geometry
             FROM
                 C_2 a,
                 C_1 b
-                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE c ON c.fid_troncon = b.code_tronc
-                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS d ON d.id_voie = c.fid_voie
-                INNER JOIN SIREO_LEC.OUT_DOMANIALITE e ON e.cnumtrc = b.code_tronc
-                INNER JOIN G_BASE_VOIE.TA_TRONCON f ON f.objectid = b.code_tronc
+                INNER JOIN SIREO_LEC.OUT_DOMANIALITE c ON c.cnumtrc = b.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = b.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE f ON f.fid_troncon = d.objectid
+                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS e ON e.id_voie = f.fid_voie
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE g ON g.objectid = e.fid_typevoie
+            WHERE
+                UPPER(g.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+                
     )t
     ON(a.code_tronc = t.code_tronc)
 WHEN NOT MATCHED THEN
     INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY)
     VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY);
 COMMIT;
--- Résultat : 1 518 lignes fusionnées en créant des codes tronçons différents (uniques) 
+-- Résultat : 880 lignes fusionnées en créant des codes tronçons différents (uniques)
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- 1.3. Insertion des tronçons affectés à une seule voie, mais disposant de sous-tronçons de domanialités différentes
@@ -153,6 +498,7 @@ COMMIT;
 DELETE FROM G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS;
 ALTER TABLE G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS ADD CODE_SOUS_TRONCON NUMBER(38,0);
 
+-- Voies principales/secondaires
 MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS a
     USING(
         -- Insertion des tronçons disposant de plusieurs domanialités
@@ -166,7 +512,99 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS a
                     INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
                     INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
                 WHERE
-                    c.insee IS NOT NULL
+                    c.insee <> 'error'
+                GROUP BY
+                    a.objectid
+                HAVING
+                    COUNT(a.objectid) > 1
+                    AND COUNT(DISTINCT b.fid_voie) = 1
+                    AND COUNT(DISTINCT d.domania) > 1
+            ),
+            
+            C_2 AS(
+                SELECT -- Sélection des tronçon des voies principales
+                    a.code_tronc,
+                    d.id_voie,
+                    TRIM(UPPER(e.libelle) || ' ' || UPPER(d.libelle_voie) || ' ' || UPPER(d.complement_nom_voie)) AS libelle_voie
+                FROM
+                    C_1 a
+                    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.code_tronc
+                    INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE c ON c.FID_VOIE_PRINCIPALE = b.FID_VOIE
+                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS d ON d.ID_VOIE = c.FID_VOIE_PRINCIPALE
+                    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_typevoie
+                WHERE
+                    UPPER(e.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+                UNION ALL
+                SELECT -- Sélection des tronçon des voies secondaires
+                    a.code_tronc,
+                    d.id_voie,
+                    TRIM(UPPER(e.libelle) || ' ' || UPPER(d.libelle_voie) || ' ' || UPPER(d.complement_nom_voie)) AS libelle_voie
+                FROM
+                    C_1 a
+                    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.code_tronc
+                    INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE c ON c.FID_VOIE_SECONDAIRE = b.FID_VOIE
+                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS d ON d.ID_VOIE = c.FID_VOIE_PRINCIPALE
+                    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_typevoie
+                WHERE
+                    UPPER(e.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+            )
+            
+            SELECT
+                a.code_tronc,
+                a.code_tronc AS id_troncon,
+                CASE 
+                    WHEN c.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
+                    THEN 'A'
+                    WHEN c.domania = 'ROUTE NATIONALE'
+                    THEN 'RN' -- Route Nationale
+                    WHEN c.domania = 'CHEMIN RURAL'
+                    THEN 'CR' -- Chemin Rural
+                    WHEN c.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
+                    THEN 'VC' -- Voie Communale
+                END AS CLASSEMENT,
+                b.id_voie AS CODE_RUE_G,
+                b.libelle_voie AS NOM_RUE_G,
+                b.insee AS INSEE_G,
+                b.id_voie AS CODE_RUE_D,
+                b.libelle_voie AS NOM_RUE_D,
+                b.insee AS INSEE_D,
+                CAST('' AS NUMBER(8,0)) AS LARGEUR,
+                d.geom AS geometry,
+                c.objectid AS CODE_SOUS_TRONCON
+            FROM
+                C_2 a
+                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS b ON b.id_voie = a.id_voie
+                INNER JOIN SIREO_LEC.OUT_DOMANIALITE c ON c.cnumtrc = a.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = a.code_tronc
+            WHERE
+                c.domania NOT IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
+                AND c.objectid <> 889 -- Cette condition est nécessaire pour éviter d'avoir un doublon du troncon 54215 avec la même domanialité, ce qu ne devrait normalement pas être, mais bon...
+    )t
+    ON(a.code_tronc = t.code_tronc)
+WHEN NOT MATCHED THEN
+    INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY, a.CODE_SOUS_TRONCON)
+    VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY, t.CODE_SOUS_TRONCON);
+COMMIT;
+-- Résultat : 3 lignes fusionnées
+
+-- Voies principales uniquement
+MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS a
+    USING(
+        -- Insertion des tronçons disposant de plusieurs domanialités
+        WITH
+            C_1 AS(-- Sélection des tronçons disposant de plusieurs domanialités, mais affectés à une seule voie
+                SELECT
+                    a.objectid AS code_tronc
+                FROM
+                    G_BASE_VOIE.TA_TRONCON a
+                    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_troncon = a.objectid
+                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS c ON c.id_voie = b.fid_voie
+                    INNER JOIN SIREO_LEC.OUT_DOMANIALITE d ON d.cnumtrc = a.objectid
+                WHERE
+                    c.insee <> 'error'
+                    AND c.id_voie NOT IN(SELECT fid_voie_principale AS id_voie FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE
+                                        UNION ALL SELECT fid_voie_secondaire AS id_voie FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE
+                                        )
                 GROUP BY
                     a.objectid
                 HAVING
@@ -176,43 +614,46 @@ MERGE INTO G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS a
             )
             
             SELECT
-                b.code_tronc,
-                b.code_tronc AS id_troncon,
+                a.code_tronc,
+                a.code_tronc AS id_troncon,
                 CASE 
-                    WHEN e.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
+                    WHEN c.domania = 'AUTOROUTE OU VOIE A CARACTERE AUTOROUTIER'
                     THEN 'A'
-                    WHEN e.domania = 'ROUTE NATIONALE'
+                    WHEN c.domania = 'ROUTE NATIONALE'
                     THEN 'RN' -- Route Nationale
-                    WHEN e.domania = 'CHEMIN RURAL'
+                    WHEN c.domania = 'CHEMIN RURAL'
                     THEN 'CR' -- Chemin Rural
-                    WHEN e.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
+                    WHEN c.domania IN ('VOIE METROPOLITAINE','GESTION COMMUNAUTAIRE','AUTRE VOIE PUBLIQUE')
                     THEN 'VC' -- Voie Communale
                 END AS CLASSEMENT,
-                d.id_voie AS CODE_RUE_G,
-                d.libelle_voie AS NOM_RUE_G,
-                d.insee AS INSEE_G,
-                d.id_voie AS CODE_RUE_D,
-                d.libelle_voie AS NOM_RUE_D,
-                d.insee AS INSEE_D,
+                b.id_voie AS CODE_RUE_G,
+                TRIM(UPPER(f.libelle) || ' ' || UPPER(b.libelle_voie) || ' ' || UPPER(b.complement_nom_voie)) AS NOM_RUE_G,
+                b.insee AS INSEE_G,
+                b.id_voie AS CODE_RUE_D,
+                TRIM(UPPER(f.libelle) || ' ' || UPPER(b.libelle_voie) || ' ' || UPPER(b.complement_nom_voie)) AS NOM_RUE_D,
+                b.insee AS INSEE_D,
                 CAST('' AS NUMBER(8,0)) AS LARGEUR,
-                f.geom AS geometry,
-                e.objectid AS CODE_SOUS_TRONCON
+                d.geom AS geometry,
+                c.objectid AS CODE_SOUS_TRONCON
             FROM
-                C_1 b
-                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE c ON c.fid_troncon = b.code_tronc
-                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS d ON d.id_voie = c.fid_voie
-                INNER JOIN SIREO_LEC.OUT_DOMANIALITE e ON e.cnumtrc = b.code_tronc
-                INNER JOIN G_BASE_VOIE.TA_TRONCON f ON f.objectid = b.code_tronc
+                C_1 a
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE e ON e.fid_troncon = a.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS b ON b.id_voie = e.fid_voie
+                INNER JOIN SIREO_LEC.OUT_DOMANIALITE c ON c.cnumtrc = a.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = a.code_tronc
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE f ON f.objectid = b.fid_typevoie
             WHERE
-                e.domania NOT IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
-                AND e.objectid <> 889 -- Cette condition est nécessaire pour éviter d'avoir un doublon du troncon 54215 avec la même domanialité, ce qu ne devrait normalement pas être, mais bon...
+                c.domania NOT IN ('VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS')
+                AND UPPER(f.libelle) NOT IN('LIBELLÉ NON-RENSEIGNÉ AVANT LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION','RIVIERE','TYPE DE VOIE PRÉSENT DANS VOIEVOI MAIS PAS DANS TYPEVOIE LORS DE LA MIGRATION')
+                AND c.objectid <> 889 -- Cette condition est nécessaire pour éviter d'avoir un doublon du troncon 54215 avec la même domanialité, ce qu ne devrait normalement pas être, mais bon...
     )t
     ON(a.code_tronc = t.code_tronc)
 WHEN NOT MATCHED THEN
     INSERT(a.CODE_TRONC,a.ID_TRONCON,a.CLASSEMENT,a.CODE_RUE_G,a.NOM_RUE_G,a.INSEE_G,a.CODE_RUE_D,a.NOM_RUE_D,a.INSEE_D,a.LARGEUR,a.GEOMETRY, a.CODE_SOUS_TRONCON)
     VALUES(t.CODE_TRONC,t.ID_TRONCON,t.CLASSEMENT,t.CODE_RUE_G,t.NOM_RUE_G,t.INSEE_G,t.CODE_RUE_D,t.NOM_RUE_D,t.INSEE_D,t.LARGEUR,t.GEOMETRY, t.CODE_SOUS_TRONCON);
 COMMIT;
--- Résultat : 187 lignes fusionnées
+-- Résultat : 8 lignes fusionnées
+-- Résultat total dans VM_TRONCON_LITTERALIS : 49120.
 
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
@@ -247,7 +688,7 @@ MERGE INTO G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS a
                     G_BASE_VOIE.TA_INFOS_SEUIL a
                     INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
-                    INNER JOIN G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS_2 d ON d.id_troncon = c.fid_troncon
+                    INNER JOIN G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS d ON d.id_troncon = c.fid_troncon
                 WHERE
                     a.objectid NOT IN(SELECT CAST(code_point AS NUMBER(38,0)) FROM G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS)
                 
@@ -265,13 +706,15 @@ MERGE INTO G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS a
             FROM
                 C_1 a
                 INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.CODE_POINT
+            WHERE
+                code_point NOT IN(332914,299591)
     )t
     ON(a.code_point = t.code_point AND a.code_voie = t.code_voie)
 WHEN NOT MATCHED THEN
     INSERT(a.code_voie, a.code_point, a.nature, a.libelle, a.numero, a.repetition, a.cote, a.geometry)
     VALUES(t.code_voie, t.code_point, t.nature, t.libelle, t.numero, t.repetition, t.cote, t.geometry);
 COMMIT;
--- Résultat : 290 191 seuils fusionnés
+-- Résultat : 286 571 seuils
 ------------------------------------------------------------------------------------------------------------------------
 
 -- 2.2. Insertion des seuils affectés à des tronçons affectés à plusieurs voies
@@ -302,7 +745,7 @@ WITH
             G_BASE_VOIE.TA_INFOS_SEUIL a
             INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
             INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
-            INNER JOIN G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS_2 d ON CAST(d.ID_TRONCON AS NUMBER(38,0)) = c.fid_troncon,
+            INNER JOIN G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS d ON CAST(d.ID_TRONCON AS NUMBER(38,0)) = c.fid_troncon,
             USER_SDO_GEOM_METADATA m            
     ),
     
@@ -343,7 +786,7 @@ WITH
         C_2 a
         INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil;
 COMMIT;
--- Résultat : 3 718 seuils fusionnés
+-- Résultat : 3147 seuils
 --------------------------------------------------------------------------------------------------------------------------
 
 -- 2.3. Insertion des seuils affectés à des tronçons disposant de sous-tronçons de domanialités différentes.
@@ -376,7 +819,7 @@ USING(
                     G_BASE_VOIE.TA_INFOS_SEUIL a
                     INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
-                    INNER JOIN G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS_2 d ON CAST(d.ID_TRONCON AS NUMBER(38,0)) = c.fid_troncon AND d.insee_g = GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', b.geom)
+                    INNER JOIN G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS d ON CAST(d.ID_TRONCON AS NUMBER(38,0)) = c.fid_troncon AND d.insee_g = GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', b.geom)
                     INNER JOIN SIREO_LEC.OUT_DOMANIALITE e ON e.cnumtrc = d.id_troncon AND e.objectid = d.code_sous_troncon
                 GROUP BY
                     TRIM(d.code_rue_g),
@@ -415,7 +858,7 @@ WHEN NOT MATCHED THEN
 INSERT(a.CODE_VOIE,a.CODE_POINT,a.NATURE,a.LIBELLE,a.NUMERO,a.REPETITION,a.COTE,a.GEOMETRY)
 VALUES(t.CODE_VOIE,t.CODE_POINT,t.NATURE,t.LIBELLE,t.NUMERO,t.REPETITION,t.COTE,t.GEOMETRY);
 COMMIT;
--- Résultat : 89 seuils fusionnés
+-- Résultat : 89 seuils insérés
 
 --------------------------------------------------------------------------------------------------------------------------------
 
@@ -436,7 +879,7 @@ USING(
                 SELECT
                     CAST(code_point AS NUMBER(38,0)) AS code_point
                 FROM
-                    G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS_2
+                    G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS
                 UNION ALL
                 SELECT
                     CAST(code_point AS NUMBER(38,0)) AS code_point
@@ -453,7 +896,7 @@ USING(
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
                     INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.fid_troncon
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE e ON e.fid_troncon = d.objectid
-                    INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS f ON f.id_voie = e.fid_voie
+                    INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE f ON f.id_voie = e.fid_voie
                WHERE
                     a.objectid NOT IN(SELECT code_point FROM C_1) 
                 GROUP BY
@@ -481,7 +924,7 @@ USING(
                         G_BASE_VOIE.TA_INFOS_SEUIL a
                         INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
                         INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
-                        INNER JOIN G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS_2 d ON d.id_troncon = c.fid_troncon
+                        INNER JOIN G_BASE_VOIE.TEMP_TRONCON_CORRECT_LITTERALIS d ON d.id_troncon = c.fid_troncon
                         INNER JOIN C_2 e ON e.objectid = a.objectid
             )
             
@@ -497,7 +940,8 @@ WHEN NOT MATCHED THEN
 INSERT(a.CODE_VOIE,a.CODE_POINT,a.NATURE,a.LIBELLE,a.NUMERO,a.REPETITION,a.COTE,a.GEOMETRY)
 VALUES(t.CODE_VOIE,t.CODE_POINT,t.NATURE,t.LIBELLE,t.NUMERO,t.REPETITION,t.COTE,t.GEOMETRY);
 COMMIT;    
--- Résultat : 51 586 seuils fusionnés
+-- Résultat : 52 454 seuils
+
 ---------------------------------------------------------------------------------------------------------------
 
 -- 2.5. Insertion des adresses restantes liées aux tronçons affectés à plusieurs voies
@@ -524,7 +968,7 @@ MERGE INTO G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_VOIE_LITTERALIS a
                 SELECT
                     code_point
                 FROM
-                    G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS_2      
+                    G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS      
             ),
             
             C_1 AS(
@@ -547,7 +991,7 @@ MERGE INTO G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_VOIE_LITTERALIS a
                     G_BASE_VOIE.TA_INFOS_SEUIL a
                     INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.fid_seuil
                     INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
-                    INNER JOIN G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS_2 d ON CAST(d.ID_TRONCON AS NUMBER(38,0)) = c.fid_troncon,
+                    INNER JOIN G_BASE_VOIE.TEMP_TRONCON_DOUBLON_VOIE_LITTERALIS d ON CAST(d.ID_TRONCON AS NUMBER(38,0)) = c.fid_troncon,
                     USER_SDO_GEOM_METADATA m 
                 WHERE
                     a.objectid NOT IN(SELECT CAST(code_point AS NUMBER(38,0)) FROM C_0)
@@ -593,35 +1037,36 @@ WHEN NOT MATCHED THEN
     INSERT(a.code_voie, a.code_point, a.nature, a.libelle, a.numero, a.repetition, a.cote, a.geometry)
     VALUES(t.code_voie, t.code_point, t.nature, t.libelle, t.numero, t.repetition, t.cote, t.geometry);
 COMMIT;
--- Résultat : 934 seuils fusionnés
+-- Résultat : 1 662 seuils
+
 ------------------------------------------------------------------------------------------------------------------------------
 
 -- 2.6. Insertion des seuils restants dans TEMP_ADRESSE_AUTRES_LITTERALIS
 -- Même remarque qu'au point 2.5, normalement ce code ne devrait pas être nécessaire, mais sans lui il manque des seuils (et le résultat qu'il renvoie est correct)
 
-MERGE INTO G_BASE_VOIE.TEMP_ADRESSE_AUTRES_LITTERALIS_2 a
+MERGE INTO G_BASE_VOIE.TEMP_ADRESSE_AUTRES_LITTERALIS a
 USING(
     WITH
         C_0 AS(
                 SELECT
                     code_point
                 FROM
-                    G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_VOIE_LITTERALIS_2
+                    G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_VOIE_LITTERALIS
                 UNION ALL
                 SELECT
                     code_point
                 FROM
-                    G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS_2
+                    G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS
                 UNION ALL
                 SELECT
                     code_point
                 FROM
-                    G_BASE_VOIE.TEMP_ADRESSE_AUTRES_LITTERALIS_2
+                    G_BASE_VOIE.TEMP_ADRESSE_AUTRES_LITTERALIS
                 UNION ALL
                 SELECT
                     code_point
                 FROM
-                    G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS_2      
+                    G_BASE_VOIE.TEMP_ADRESSE_CORRECTE_LITTERALIS      
         ),
             
         C_1 AS( -- Sélection des seuils restants
@@ -633,7 +1078,7 @@ USING(
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
                 INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.fid_troncon
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE e ON e.fid_troncon = d.objectid
-                INNER JOIN G_BASE_VOIE.TA_VOIE_LITTERALIS f ON f.id_voie = e.fid_voie                       
+                INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE f ON f.id_voie = e.fid_voie                       
             WHERE
                 a.objectid NOT IN(331519,299591,332914,181776)
                 AND a.objectid NOT IN(SELECT CAST(code_point AS NUMBER(38,0)) FROM C_0)
@@ -665,7 +1110,7 @@ USING(
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL c ON c.fid_seuil = b.objectid
                 INNER JOIN G_BASE_VOIE.TA_TRONCON d ON d.objectid = c.fid_troncon
                 INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE e ON e.fid_troncon = d.objectid
-                INNER JOIN G_BASE_VOIE.VM_TRONCON_LITTERALIS_2 f ON CAST(f.code_rue_g AS NUMBER(38,0))= e.fid_voie
+                INNER JOIN G_BASE_VOIE.VM_TRONCON_LITTERALIS f ON CAST(f.code_rue_g AS NUMBER(38,0))= e.fid_voie
             WHERE
                 g.objectid NOT IN(331519,299591,332914,181776)
         )
@@ -681,4 +1126,4 @@ WHEN NOT MATCHED THEN
 INSERT(a.CODE_VOIE,a.CODE_POINT,a.NATURE,a.LIBELLE,a.NUMERO,a.REPETITION,a.COTE,a.GEOMETRY)
 VALUES(t.CODE_VOIE,t.CODE_POINT,t.NATURE,t.LIBELLE,t.NUMERO,t.REPETITION,t.COTE,t.GEOMETRY);
 COMMIT; 
--- Résultat : 1133 seuils fusionnés
+-- Résultat : 1 527 seuils

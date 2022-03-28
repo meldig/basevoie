@@ -18,7 +18,7 @@ CREATE TABLE G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS(
 COMMENT ON TABLE G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS IS 'Table contenant tous les seuils affectés à un tronçon disposant de plusieurs domanialités différentes (une par sous-tronçon). En conséquence la table des tronçons utilisée pour faire les associations est TEMP_TRONCON_DOMANIA_DOUBLON_LITTERALIS.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.code_voie IS 'Identifiant de chaque voie au format LITTERALIS (VARCHAR).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.code_point IS 'Identifiant de chaque seuil au format LITTERALIS (VARCHAR) présent dans la table TA_INFOS_SEUIL(objectid).';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.nature IS 'Nature du point. Toutes les valeurs sont ''ADR'''.;
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.nature IS 'Nature du point. Toutes les valeurs sont ''ADR''.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.libelle IS 'Libelle de chaque seuil qui est la concaténation du numéro de seuil et du complément de numéro de seuil (quand il y en a un) présents dans TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.numero IS 'Numéro du seuil au format LITTERALIS NUMBER(8) présent dans TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS.repetition IS 'Complément du numéro de seuil au format LITTERALIS (VARCHAR(10)) présent dans TA_INFOS_SEUIL.';
@@ -49,7 +49,7 @@ COMMIT;
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS_SIDX
 ON G_BASE_VOIE.TEMP_ADRESSE_DOUBLON_DOMANIA_LITTERALIS(GEOMETRY)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Affection des droits
