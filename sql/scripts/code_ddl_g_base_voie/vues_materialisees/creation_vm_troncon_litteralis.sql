@@ -55,8 +55,8 @@ SELECT
         GEOMETRY
     FROM
         G_BASE_VOIE.TEMP_TRONCON_DOUBLON_DOMANIA_LITTERALIS
-    WHERE
-        code_rue_g IN('6090099','4269121','6090098')
+    /*WHERE
+        code_rue_g IN('6090099','4269121','6090098')*/
     UNION ALL
     SELECT
         CODE_TRONC,
@@ -70,7 +70,21 @@ SELECT
         LARGEUR,
         GEOMETRY
     FROM
-        G_BASE_VOIE.TEMP_TRC_SANS_DOMANIA_LITTERALIS;
+        G_BASE_VOIE.TEMP_TRC_SANS_DOMANIA_LITTERALIS
+    UNION ALL
+    SELECT
+        CODE_TRONC,
+        CLASSEMENT,
+        CODE_RUE_G,
+        NOM_RUE_G,
+        INSEE_G,
+        CODE_RUE_D,
+        NOM_RUE_D,
+        INSEE_D,
+        LARGEUR,
+        GEOMETRY
+    FROM
+        G_BASE_VOIE.TEMP_TRONCON_AUTRES_LITTERALIS;
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TRONCON_LITTERALIS IS 'Vue matérialisée rassemblant toutes les associations tronçons/voies au format LITTERALIS. Cette VM est utilisée pour exporter les données pour le projet LITTERALIS mené par le service voirie et le prestataire SOGELINK.';

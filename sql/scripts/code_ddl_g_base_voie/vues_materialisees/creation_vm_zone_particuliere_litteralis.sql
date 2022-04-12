@@ -121,7 +121,12 @@ WITH
     
     SELECT
         rownum AS objectid,
-        a.*
+        CAST(a.type_zone AS VARCHAR2(254)),
+        CAST(a.code_voie AS VARCHAR2(254)),
+        CAST(a.cote_voie AS VARCHAR2(254)),
+        CAST(a.code_insee AS VARCHAR2(254)),
+        CAST(a.categorie AS NUMBER(8,0)),
+        a.geom
     FROM
         C_7 a;
       

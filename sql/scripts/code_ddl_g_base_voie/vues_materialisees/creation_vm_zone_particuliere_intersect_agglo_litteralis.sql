@@ -12,18 +12,20 @@ REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
     SELECT
-        rownum AS objectid,
-        'Agglomération' AS type_zone,
-        b.id_voie AS code_voie,
-        'LesDeuxCotes' AS cote_voie,
-        b.insee AS code_insee,
-       0 AS categorie,
-       SDO_GEOM.SDO_INTERSECTION(b.geom, c.geom, 0.005) AS geometry
+      rownum AS objectid,
+      'Agglomération' AS type_zone,
+      b.id_voie AS code_voie,
+      'LesDeuxCotes' AS cote_voie,
+      b.insee AS code_insee,
+      0 AS categorie,
+      SDO_GEOM.SDO_INTERSECTION(b.geom, c.geom, 0.005) AS geometry
     FROM
-        G_BASE_VOIE.VM_VOIE_AGGREGEE_LITTERALIS b,
-        G_BASE_VOIE.VM_ZONE_AGGLOMERATION c
+      G_BASE_VOIE.VM_VOIE_AGGREGEE_LITTERALIS b,
+      G_BASE_VOIE.VM_ZONE_AGGLOMERATION c
     WHERE
-        SDO_RELATE(b.geom, c.geom, 'mask=OVERLAPBDYDISJOINT+OVERLAPBDYINTERSECT') = 'TRUE';
+      b.id_voie NOT IN(6509276, 5229000, 5989431, 449036, 2990930, 2990840, 5992720, 90800, 2999025, 99623, 4109024, 91000, 3780870, 4100890, 3503015, 2989932, 2980410, 5990280, 4210315, 3500245, 2200600, 6480100, 5600176, 3560280, 6110280, 3550820, 4700270, 4570070, 4570236, 4700153, 4570020, 3179004, 4700060, 2520320, 6530090, 5240520, 5249028)
+      AND SDO_GEOM.SDO_INTERSECTION(b.geom, c.geom, 0.005).sdo_gtype IN(2002, 2006)
+      SDO_RELATE(b.geom, c.geom, 'mask=OVERLAPBDYDISJOINT+OVERLAPBDYINTERSECT') = 'TRUE';
 
 -- 2. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_ZONE_PARTICULIERE_INTERSECT_AGGLO_LITTERALIS IS 'Vue matérialisée - pour le projet LITTERALIS - regroupant toutes les voies ou les parties de voies intersectant la zone d''agglomération.';

@@ -27,7 +27,7 @@ GROUP BY
     a.nom_rue_g;
 
 -- 3. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE_LITTERALIS IS 'Vue matérialisée matérialisant la géométrie des voies.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE_LITTERALIS IS 'Vue matérialisée matérialisant la géométrie des voies pour le projet LITTERALIS UNIQUEMENT.';
 
 -- 4. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
