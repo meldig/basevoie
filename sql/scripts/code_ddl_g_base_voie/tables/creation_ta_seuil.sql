@@ -77,3 +77,6 @@ TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_SEUIL TO G_ADMIN_SIG;
+
+/
+

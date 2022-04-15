@@ -224,3 +224,6 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_TERRITOIRE_VOIRIE.identifiant IS 'Clé primaire 
 COMMENT ON COLUMN G_BASE_VOIE.VM_TERRITOIRE_VOIRIE.nom IS 'Nom de chaque territoire.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TERRITOIRE_VOIRIE.geometry IS 'géométries des Territoires.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TERRITOIRE_VOIRIE.type IS 'Type de regroupement.';
+
+/
+

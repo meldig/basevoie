@@ -11,11 +11,11 @@ SET /p INSTANCE_P="Veuillez saisir l'instance Oracle de provenance : "
 SET /p USER_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir l'utilisateur Oracle de provenance : "
 SET /p MDP_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir le mot de passe de l'utilisateur Oracle de provenance : "
 SET /p INSTANCE_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir l'instance Oracle de provenance : "
-::SET /p USER_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'utilisateur Oracle de destination : "
-::SET /p MDP_FAM_LIB_D="Famille - Libelle : Veuillez saisir le mot de passe de l'utilisateur Oracle de destination : "
-::SET /p INSTANCE_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'instance Oracle de destination : "
+SET /p USER_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'utilisateur Oracle de destination : "
+SET /p MDP_FAM_LIB_D="Famille - Libelle : Veuillez saisir le mot de passe de l'utilisateur Oracle de destination : "
+SET /p INSTANCE_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'instance Oracle de destination : "
 SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
-SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier integration : "
+SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier import des donnees : "
 
 :: 2. se mettre dans l'environnement QGIS
 cd C:\Program Files\QGIS 3.20.3\bin
@@ -64,10 +64,10 @@ ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% OCI:%USER_P%/%MDP_P%@%INSTA
 ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_AGENT%/TEMP_AGENT.csv
 
 :: 5.13. table TEMP_FAMILLE
-::ogr2ogr.exe -f OCI OCI:%USER_FAM_LIB_D%/%MDP_FAM_LIB_D%@%INSTANCE_FAM_LIB_D% %CHEMIN_INTEGRATION%/TEMP_FAMILLE.csv
+ogr2ogr.exe -f OCI OCI:%USER_FAM_LIB_D%/%MDP_FAM_LIB_D%@%INSTANCE_FAM_LIB_D% %CHEMIN_INTEGRATION%/TEMP_FAMILLE.csv
 
 :: 5.14. table TEMP_LIBELLE_LONG
-::ogr2ogr.exe -f OCI OCI:%USER_FAM_LIB_D%/%MDP_FAM_LIB_D%@%INSTANCE_FAM_LIB_D% %CHEMIN_INTEGRATION%/TEMP_LIBELLE.csv
+ogr2ogr.exe -f OCI OCI:%USER_FAM_LIB_D%/%MDP_FAM_LIB_D%@%INSTANCE_FAM_LIB_D% %CHEMIN_INTEGRATION%/TEMP_LIBELLE.csv
 
 :: 5.15. table TEMP_CODE_FANTOIR
 ogr2ogr.exe -f OCI OCI:%USER_D%/%MDP_D%@%INSTANCE_D% %CHEMIN_INTEGRATION%/TEMP_CODE_FANTOIR.csv

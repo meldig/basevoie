@@ -116,3 +116,6 @@ PARAMETERS(
 -- 6. Don du droit de lecture de la vue matérialisée au schéma G_BASE_VOIE_LEC et aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_TRONCON_VOIE TO G_BASE_VOIE_LEC;
 GRANT SELECT ON G_BASE_VOIE.VM_TRONCON_VOIE TO G_ADMIN_SIG;
+
+/
+

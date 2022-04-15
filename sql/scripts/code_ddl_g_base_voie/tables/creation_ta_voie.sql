@@ -89,3 +89,6 @@ CREATE INDEX TA_VOIE_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_VOIE(fid_metadonnee)
     
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_VOIE TO G_ADMIN_SIG;
+
+/
+
