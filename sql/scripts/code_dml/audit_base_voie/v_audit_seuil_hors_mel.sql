@@ -1,11 +1,12 @@
 -- V_AUDIT_SEUIL_HORS_MEL: Seuils situés hors MEL suite au changement de référentiel commune
 
 -- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW V_AUDIT_SEUIL_HORS_MEL(identifiant,code_seuil,
+CREATE OR REPLACE FORCE VIEW V_AUDIT_SEUIL_HORS_MEL(identifiant,code_seuil, geom,
 CONSTRAINT "V_AUDIT_SEUIL_HORS_MEL_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS
 SELECT
 	ROWNUM as identifiant,
-	a.idseui
+	a.idseui,
+	a.ora_geometry
 FROM
 	G_BASE_VOIE.temp_iltaseu a,
 	G_REFERENTIEL.MEL b
@@ -19,4 +20,5 @@ COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_SEUIL_HORS_MEL  IS 'Seuils situés hors MEL
 
 -- 3. Commentaire des colonnes
 COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_SEUIL_HORS_MEL.IDENTIFIANT IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_SEUIL_HORS_MEL.CODE_SEUIL IS 'Numéro du seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_SEUIL_HORS_MEL.CODE_SEUIL IS 'Identifiant du seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_SEUIL_HORS_MEL.GEOM IS 'Géométrie du seuil de type point.';

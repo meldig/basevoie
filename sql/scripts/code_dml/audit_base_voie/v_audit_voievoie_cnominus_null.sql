@@ -7,7 +7,7 @@ WITH CTE_1 AS
     SELECT
         ccomvoi
     FROM
-        temp_voievoi
+        G_BASE_VOIE.TEMP_VOIEVOI
     WHERE
         cdvalvoi = 'V'
         AND 

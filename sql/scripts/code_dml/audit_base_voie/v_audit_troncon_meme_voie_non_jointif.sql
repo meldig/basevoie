@@ -3,7 +3,7 @@
 CREATE OR REPLACE FORCE VIEW V_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF (identifiant, code_troncon_a, code_troncon_b, statut_connection,
 CONSTRAINT "V_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS
 SELECT
-    rownum as identifiant
+    rownum as identifiant,
     a.cnumtrc AS code_troncon_a,
     c.cnumtrc AS code_troncon_b,
     SDO_LRS.CONNECTED_GEOM_SEGMENTS(
@@ -16,6 +16,7 @@ FROM
     INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc,
     G_BASE_VOIE.TEMP_ILTATRC c
     INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
 WHERE 
     a.cnumtrc <> c.cnumtrc
     AND a.cnumtrc < c.cnumtrc
@@ -34,6 +35,7 @@ WHERE
     AND c.cdvaltro = 'V'
     AND b.cvalide = 'V'
     AND d.cvalide = 'V'
+    AND e.cdvalvoi = 'V'
 ;
 
 -- 2. Commentaire vue

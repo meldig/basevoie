@@ -9,7 +9,7 @@ WITH CTE_1 AS (
         lityvoie,
         cdclatvo
     FROM
-        temp_typevoie
+        G_BASE_VOIE.TEMP_TYPEVOIE
     WHERE
         lityvoie IS NULL
     )

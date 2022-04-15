@@ -1,8 +1,11 @@
--- V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M: Seuils dont la distance par rapport à leur tronçon d'appartenance est supérieure à 1km
+-- VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM: Seuils dont la distance par rapport à leur tronçon d'appartenance est supérieure à 1km
 
 -- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M (identifiant,code_seuil,distance,code_troncon,
-CONSTRAINT "V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS
+CREATE MATERIALIZED VIEW VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM (identifiant,code_seuil,distance,code_troncon, geom)
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE
+AS
 WITH CTE_1 AS
     (
     SELECT
@@ -14,7 +17,8 @@ WITH CTE_1 AS
                             0
                         ),
                         a.ora_geometry)) AS DISTANCE,
-        c.cnumtrc
+        c.cnumtrc,
+        a.ora_geometry
     FROM
         G_BASE_VOIE.TEMP_ILTASEU a
         INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
@@ -40,18 +44,24 @@ SELECT
     rownum,
     idseui,
     distance,
-    cnumtrc
+    cnumtrc,
+    ora_geometry
 FROM
     CTE_1
 ;
 
+-- 1. Clé primaire
+ALTER TABLE G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM
+ADD CONSTRAINT VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM_PK 
+PRIMARY KEY (IDENTIFIANT);
 
--- 2. Commentaire de la vue.
-COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M  IS 'Vue permettant d''identifier les seuils associés troncons dont la distance est supérieur à 1000m.';
+-- 3. Commentaire de la vue.
+COMMENT ON TABLE G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM  IS 'Vue permettant d''identifier les seuils dont la distance par rapport à leur tronçon d''affectation est supérieure à 1000m.';
 
 
--- 3. Commentaire des colonnes
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M.IDENTIFIANT IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M.CODE_SEUIL IS 'Numéro du seuil.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M.DISTANCE IS 'Numéro du seuil.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_DISTANCE_SEUILS_TRONCON_SUP_1000_M.CODE_TRONCON IS 'Numéro du troncons.';
+-- 4. Commentaire des colonnes
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM.IDENTIFIANT IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM.CODE_SEUIL IS 'Identifiant du seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM.DISTANCE IS 'Distance entre le seuil et son tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM.CODE_TRONCON IS 'Identifiant du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_SUPERIEURE_1KM.GEOM IS 'Géométrie du seuil de type point.';

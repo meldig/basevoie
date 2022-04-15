@@ -7,13 +7,13 @@ WITH CTE_1 AS
     SELECT
         DISTINCT ccodtvo AS ccodtvo
     FROM 
-        TEMP_VOIEVOI
+        G_BASE_VOIE.TEMP_VOIEVOI
     WHERE 
         ccodtvo NOT IN (
                         SELECT 
                             ccodtvo
                         FROM
-                            temp_typevoie
+                            G_BASE_VOIE.TEMP_TYPEVOIE
                         )
     )
 SELECT

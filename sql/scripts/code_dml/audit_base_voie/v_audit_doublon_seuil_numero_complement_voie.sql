@@ -11,11 +11,11 @@ WITH CTE_1 AS
         a.NSSEUI,
         d.ccomvoi
     FROM
-        TEMP_ILTASEU a
-        INNER JOIN TEMP_ILTASIT b ON b.idseui = a.idseui
-        INNER JOIN TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
-        INNER JOIN TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
-        INNER JOIN TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
+        G_BASE_VOIE.TEMP_ILTASEU a
+        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+        INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+        INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+        INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI e ON e.ccomvoi = d.ccomvoi
     WHERE
         c.cdvaltro = 'V'
     AND
@@ -41,7 +41,7 @@ WITH CTE_1 AS
 ;
 
 -- 2. Commentaire de la vue.
-COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE  IS 'Vue permettant d''identifier les adresses en doublons.';
+COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE  IS 'Vue permettant d''identifier les adresses en doublons de numéro, côté de la voie, complément de numéro de seuil et identifiant de voie.';
 
 -- 3. Commentaire des colonnes
 COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE.IDENTIFIANT IS 'Clé primaire de la vue.';
