@@ -1,7 +1,7 @@
 -- VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE: Seuils en doublon de numéro, complément, voie et de distance seuil/voie
 
 -- 1. Création de la vue
-CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE (identifiant,nombre,numero_seuil,complement_seuil,code_voie,distance)
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE (identifiant, nombre, numero_seuil, complement_seuil, code_voie, distance)
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE
@@ -90,8 +90,8 @@ ALTER TABLE G_BASE_VOIE.VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE
 ADD CONSTRAINT VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE_PK 
 PRIMARY KEY (IDENTIFIANT);
 
--- 2. Commentaire de la vue.
-COMMENT ON TABLE G_BASE_VOIE.VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE  IS 'Vue permettant d''identifier les adresses en doublons de numéro, côté de la voie, complément de numéro de seuil, identifiant de voie et distance seuil/tronçon.';
+-- 2. Commentaire de la vue matérialisée.
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE  IS 'Vue permettant d''identifier les adresses en doublons de numéro, côté de la voie, complément de numéro de seuil, identifiant de voie et distance seuil/tronçon.';
 
 
 -- 3. Commentaire des colonnes

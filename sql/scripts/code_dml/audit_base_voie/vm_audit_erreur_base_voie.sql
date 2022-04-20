@@ -117,8 +117,8 @@ ALTER TABLE G_BASE_VOIE.VM_AUDIT_ERREUR_BASE_VOIE
 ADD CONSTRAINT VM_AUDIT_ERREUR_BASE_VOIE_PK 
 PRIMARY KEY (IDENTIFIANT);
 
--- 3. Commentaire de la vue
-COMMENT ON TABLE G_BASE_VOIE.VM_AUDIT_ERREUR_BASE_VOIE  IS 'Vue présentant le nombre d''erreur par type d''erreur dans la base voie.';
+-- 3. Commentaire de la vue matérialisée
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_ERREUR_BASE_VOIE  IS 'Vue présentant le nombre d''erreur par type d''erreur dans la base voie.';
 
 
 -- 4. Commentaire des colonnes

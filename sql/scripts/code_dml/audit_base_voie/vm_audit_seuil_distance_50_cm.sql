@@ -49,8 +49,8 @@ ALTER TABLE G_BASE_VOIE.VM_AUDIT_SEUIL_DISTANCE_50_CM
 ADD CONSTRAINT VM_AUDIT_SEUIL_DISTANCE_50_CM_PK 
 PRIMARY KEY (IDENTIFIANT);
 
--- 3. Commentaire de la vue.
-COMMENT ON TABLE G_BASE_VOIE.VM_AUDIT_SEUIL_DISTANCE_50_CM  IS 'Vue permettant les seuils distant de moins de 50 cm.';
+-- 3. Commentaire de la vue matérialisée.
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_SEUIL_DISTANCE_50_CM  IS 'Vue permettant les seuils distant de moins de 50 cm.';
 
 -- 4. Commentaire des champs de la vue
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_SEUIL_DISTANCE_50_CM.IDENTIFIANT IS 'Clé primaire de la vue.';

@@ -32,8 +32,8 @@ ALTER TABLE G_BASE_VOIE.VM_AUDIT_INTERSECTION_HORS_POINTS_DEPART_ARRIVE
 ADD CONSTRAINT VM_AUDIT_INTERSECTION_HORS_POINTS_DEPART_ARRIVE_PK 
 PRIMARY KEY (IDENTIFIANT);
 
--- 2. Commentaire de la vue
-COMMENT ON TABLE G_BASE_VOIE.VM_AUDIT_INTERSECTION_HORS_POINTS_DEPART_ARRIVE  IS 'Vue permettant de connaitre les troncons qui ne s''intersectent pas sur les points de depart ni d''arrivé';
+-- 2. Commentaire de la vue matérialisée
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_INTERSECTION_HORS_POINTS_DEPART_ARRIVE  IS 'Vue permettant de connaitre les troncons qui ne s''intersectent pas sur les points de depart ni d''arrivé';
 
 
 -- 3. Commentaire des champs

@@ -34,8 +34,8 @@ ADD CONSTRAINT VM_AUDIT_INTERSECTION_SEUIL_TRONCON_PK
 PRIMARY KEY (IDENTIFIANT);
 
 
--- 3. Commentaire de la vue
-COMMENT ON TABLE G_BASE_VOIE.VM_AUDIT_INTERSECTION_SEUIL_TRONCON  IS 'Vue permettant de connaitre les seuils et les troncons qui s''intersectent.';
+-- 3. Commentaire de la vue materialisée
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_INTERSECTION_SEUIL_TRONCON  IS 'Vue permettant de connaitre les seuils et les troncons qui s''intersectent.';
 
 
 -- 4. Commentaire des colonnes
