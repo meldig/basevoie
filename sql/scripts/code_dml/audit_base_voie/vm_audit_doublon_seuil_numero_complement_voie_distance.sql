@@ -1,5 +1,8 @@
 -- VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE: Seuils en doublon de numéro, complément, voie et de distance seuil/voie
 
+-- 0. Suppression de l'ancienne vue matérialisée
+DROP MATERIALIZED VIEW VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE;
+
 -- 1. Création de la vue
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_DISTANCE (identifiant, nombre, numero_seuil, complement_seuil, code_voie, distance)
 REFRESH ON DEMAND

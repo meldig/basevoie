@@ -1,4 +1,9 @@
 -- VM_AUDIT_SEUIL_DISTANCE_50_CM: Seuils situés à moins de 50cm les uns des autres  Certains seuils uniques se situent à moins de 50cm les uns des autres
+
+-- 0. Suppression de l'ancienne vue matérialisée
+-- DROP MATERIALIZED VIEW VM_AUDIT_SEUIL_DISTANCE_50_CM;
+
+
 -- 1. Creation de la vue.
 CREATE MATERIALIZED VIEW VM_AUDIT_SEUIL_DISTANCE_50_CM (identifiant, seuil_a, distance, seuil_b)
 REFRESH ON DEMAND

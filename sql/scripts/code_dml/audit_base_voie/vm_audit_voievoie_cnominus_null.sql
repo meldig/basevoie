@@ -1,4 +1,8 @@
 -- VM_AUDIT_VOIEVOIE_CNOMINUS_NULL: champ CNOMINUS NULL dans VOIEVOI (nom de voie). Certaines voies n'ont pas de nom de voie
+
+-- 0. Suppression de l'ancienne vue matérialisée
+-- DROP MATERIALIZED VIEW VM_AUDIT_VOIEVOIE_CNOMINUS_NULL;
+
 -- 1. Creation de la vue.
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_VOIEVOIE_CNOMINUS_NULL (IDENTIFIANT, CODE_VOIE)
 REFRESH ON DEMAND
