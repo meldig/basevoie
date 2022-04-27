@@ -1,7 +1,7 @@
 -- VM_AUDIT_TYPE_VOIE_SANS_LITY_VOIE: Type de voie disposant d'un code mais pas de libellé: Certains types de voies de TYPEVOIE disposent d'un CCODTVO, mais pas d'un LITYVOIE (libelle)
 
 -- 0. Suppression de l'ancienne vue matérialisée
--- DROP MATERIALIZED VIEW VM_AUDIT_TYPE_VOIE_DANS_VOIEVOI_MAIS_ABSENT_TYPE_VOIE;
+-- DROP MATERIALIZED VIEW VM_AUDIT_TYPE_VOIE_SANS_LITY_VOIE;
 
 -- 1. Création de la vue.
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TYPE_VOIE_SANS_LITY_VOIE (identifiant, code_type, libelle_type, cdclatvo)

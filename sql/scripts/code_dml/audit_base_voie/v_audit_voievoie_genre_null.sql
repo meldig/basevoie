@@ -1,4 +1,5 @@
 -- V_AUDIT_VOIEVOIE_GENRE_NULL: Genre des voies valides NULL Le genre de certaines voies valides n'est pas renseigné (hors c'était une demande des élus)
+
 --1. Creation de la vue
 CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_AUDIT_VOIEVOIE_GENRE_NULL (IDENTIFIANT, CODE_VOIE,
 CONSTRAINT "V_AUDIT_VOIEVOIE_GENRE_NULL_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS

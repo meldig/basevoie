@@ -1,4 +1,5 @@
 -- V_AUDIT_TRONCON_PLUSIEURS_VOIES: Tronçon affecté à plusieurs voies: Des tronçons au sein comme en limite de communes peuvent être affectés à plusieurs voies.
+
 -- 1. Création de la vue
 CREATE OR REPLACE FORCE VIEW V_AUDIT_TRONCON_PLUSIEURS_VOIES (identifiant, code_troncon, code_voie,geom,
 CONSTRAINT "V_AUDIT_TRONCON_PLUSIEURS_VOIES_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS

@@ -1,4 +1,4 @@
--- V_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF: Troncon d'une meme voie non jointif
+-- VM_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF: Troncon d'une meme voie non jointif
 
 -- 0. Suppression de l'ancienne vue matérialisée
 -- DROP MATERIALIZED VIEW VM_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF;

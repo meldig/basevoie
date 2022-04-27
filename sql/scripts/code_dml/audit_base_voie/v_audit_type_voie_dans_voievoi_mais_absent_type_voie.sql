@@ -1,4 +1,5 @@
 -- V_AUDIT_TYPE_VOIE_DANS_VOIEVOI_MAIS_ABSENT_TYPE_VOIE: Types de voie présents dans VOIEVOI, mais absents de TYPEVOIE: Certains types de voies sont présents dans le champ CCODTVO de VOIEVOIE, mais sont absents de TYPEVOIE. Ce cas correspond aux types de voies qu'on a arrêté de saisir tel que les canaux, les ruisseaux et les rivières. Les types ont été supprimés de TYPEVOIE, mais les tronçons n'ont pas été invalidés.
+
 -- 1. Creation de la vue
 CREATE OR REPLACE FORCE VIEW V_AUDIT_TYPE_VOIE_DANS_VOIEVOI_MAIS_ABSENT_TYPE_VOIE (identifiant,code_type,
 CONSTRAINT "V_AUDIT_TYPE_VOIE_DANS_VOIEVOI_MAIS_ABSENT_TYPE_VOIE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS

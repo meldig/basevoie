@@ -1,4 +1,5 @@
 -- V_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF: Troncon f'une meme voie non jointif
+
 -- 1. Creation vue
 CREATE OR REPLACE FORCE VIEW V_AUDIT_SEUIL_TRONCON_NON_JOINTIF (identifiant, code_troncon_a, statut_connection,
 CONSTRAINT "V_AUDIT_SEUIL_TRONCON_NON_JOINTIF_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS

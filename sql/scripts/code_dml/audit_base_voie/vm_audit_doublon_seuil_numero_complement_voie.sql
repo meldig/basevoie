@@ -1,4 +1,5 @@
 -- VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE: Seuils en doublon de numéro, complément et voie.
+
 -- 0. Suppression de l'ancienne vue matérialisée
 -- DROP MATERIALIZED VIEW VM_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE;
 
@@ -14,7 +15,12 @@ WITH CTE_1 AS
         COUNT(a.IDSEUI) AS NOMBRE,
         a.nuseui,
         a.cdcote,
-        a.NSSEUI,
+        CASE
+            WHEN a.nsseui IS NOT NULL
+            THEN a.nsseui
+        ELSE
+            'pas de complément'
+        END AS complement,
         d.ccomvoi
     FROM
         G_BASE_VOIE.TEMP_ILTASEU a
@@ -40,7 +46,7 @@ WITH CTE_1 AS
         nombre,
         nuseui,
         cdcote,
-        nsseui,
+        complement,
         ccomvoi
     FROM
         CTE_1

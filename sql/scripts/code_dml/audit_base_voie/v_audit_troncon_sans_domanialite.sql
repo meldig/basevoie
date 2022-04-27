@@ -1,4 +1,5 @@
 -- V_AUDIT_TRONCON_SANS_DOMANIALITE: vue permettant de connaitre les troncons qui ne n''ont pas de domanialite (absent de la table SIREO_LEC.OUT_DOMANIALITE)
+
 -- 1. Creation de la vue
 CREATE OR REPLACE FORCE VIEW V_AUDIT_TRONCON_SANS_DOMANIALITE (identifiant, code_troncon, geom,
 CONSTRAINT "V_AUDIT_TRONCON_SANS_DOMANIALITE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS

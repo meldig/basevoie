@@ -1,4 +1,5 @@
 -- V_AUDIT_VOIEVOIE_CNOMINUS_NULL: champ CNOMINUS NULL dans VOIEVOI (nom de voie). Certaines voies n'ont pas de nom de voie
+
 -- 1. Creation de la vue.
 CREATE OR REPLACE FORCE VIEW V_AUDIT_VOIEVOIE_CNOMINUS_NULL (identifiant, code_voie,
 CONSTRAINT "V_AUDIT_VOIEVOIE_CNOMINUS_NULL_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS

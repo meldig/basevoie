@@ -1,4 +1,4 @@
--- VM_AUDIT_TRONCON_SANS_DOMANIALITE: vue permettant de connaitre les troncons qui ne n''ont pas de domanialite (absent de la table SIREO_LEC.OUT_DOMANIALITE)
+-- VM_AUDIT_TRONCON_SANS_DOMANIALITE: vue permettant de connaitre les troncons qui ne nont pas de domanialite (absent de la table SIREO_LEC.OUT_DOMANIALITE)
 
 -- 0. Suppression de l'ancienne vue matérialisée
 /*

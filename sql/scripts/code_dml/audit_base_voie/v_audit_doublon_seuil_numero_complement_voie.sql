@@ -1,4 +1,5 @@
 -- V_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE: Seuils en doublon de numéro, complément et voie.
+
 -- 1. Création de la vue
 CREATE OR REPLACE FORCE VIEW G_BASE_VOIE.V_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE (identifiant,nombre,numero_seuil,cdcote,complement,code_voie,
 CONSTRAINT "V_AUDIT_DOUBLON_SEUIL_NUMERO_COMPLEMENT_VOIE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS
@@ -8,7 +9,12 @@ WITH CTE_1 AS
         COUNT(a.IDSEUI) AS NOMBRE,
         a.nuseui,
         a.cdcote,
-        a.NSSEUI,
+        CASE
+            WHEN a.nsseui IS NOT NULL
+            THEN a.nsseui
+        ELSE
+            'pas de complément'
+        END AS complement,
         d.ccomvoi
     FROM
         G_BASE_VOIE.TEMP_ILTASEU a
@@ -34,7 +40,12 @@ WITH CTE_1 AS
         nombre,
         nuseui,
         cdcote,
-        nsseui,
+        CASE
+            WHEN a.nsseui IS NOT NULL
+            THEN a.nsseui
+        ELSE
+            'pas de complément'
+        END,
         ccomvoi
     FROM
         CTE_1

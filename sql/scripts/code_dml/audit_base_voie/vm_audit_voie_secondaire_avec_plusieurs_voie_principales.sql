@@ -1,4 +1,4 @@
--- VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES: Vue permettant de connaitre les voies secondaire affectées à plusiseurs voie
+-- VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES: Vue permettant de connaitre les voies secondaires affectées à plusiseurs voie.
 
 -- 0. Suppression de l'ancienne vue matérialisée
 -- DROP MATERIALIZED VIEW VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES;

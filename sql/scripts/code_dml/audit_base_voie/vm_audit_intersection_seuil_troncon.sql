@@ -1,8 +1,8 @@
 -- VM_AUDIT_INTERSECTION_SEUIL_TRONCON: Intersection seuil / tronçon Certains seuils intersectent le tronçon auquel ils appartiennent. Cela est dû aux anciennes migrations.
+
 -- 0. Suppression de l'ancienne vue matérialisée
-/*
-DROP MATERIALIZED VIEW VM_AUDIT_INTERSECTION_SEUIL_TRONCON;
-*/
+-- DROP MATERIALIZED VIEW VM_AUDIT_INTERSECTION_SEUIL_TRONCON;
+
 
 -- 1. Création de la vue.
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_INTERSECTION_SEUIL_TRONCON (identifiant, code_seuil, code_troncon, geom)
