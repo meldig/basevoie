@@ -8,6 +8,7 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL_LOG(
     geom SDO_GEOMETRY NOT NULL,
     cote_troncon CHAR(1) NOT NULL,
     code_insee VARCHAR2(4000) NOT NULL,
+    id_troncon NUMBER(38,0),
     date_action DATE NOT NULL,
     fid_type_action NUMBER(38,0),
     fid_seuil NUMBER(38,0) NOT NULL,
@@ -20,6 +21,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.objectid IS 'Clé primaire auto-incr�
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.geom IS 'Géométrie de type point de chaque seuil présent dans la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.cote_troncon IS 'Côté du tronçon auquel est rattaché le seuil. G = gauche ; D = droite. En agglomération le sens des tronçons est déterminé par ses numéros de seuils. En d''autres termes il commence au niveau du seuil dont le numéro est égal à 1. Hors agglomération, le sens du tronçon dépend du sens de circulation pour les rues à sens unique. Pour les rues à double-sens chaque tronçon est doublé donc leur sens dépend aussi du sens de circulation.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque seuil le code insee de la commune dans laquelle il se trouve (issue de la table G_REFERENTIEL.MEL_COMMUNES).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.id_troncon IS 'Identifiant de la table TA_TRONCON permettant d''associer un troncon à un ou plusieurs seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.date_action IS 'Date de création, modification ou suppression d''un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_seuil IS 'Clé étrangère vers la table TA_SEUIL permettant de savoir sur quel seuil les actions ont été entreprises.';
@@ -48,7 +50,7 @@ VALUES(
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TA_SEUIL_LOG_SIDX
 ON G_BASE_VOIE.TA_SEUIL_LOG(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Création des clés étrangères
@@ -73,6 +75,9 @@ CREATE INDEX TA_SEUIL_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_LOG_CODE_INSEE_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(code_insee)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_SEUIL_LOG_ID_TRONCON_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(id_troncon)
     TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs

@@ -19,19 +19,22 @@ BEGIN
 
     -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TA_AGENT. 
     IF INSERTING THEN 
-       :new.fid_pnom_saisie := v_id_agent;
-       :new.fid_pnom_modification := v_id_agent;
+        :new.objectid := SEQ_TA_TRONCON_OBJECTID.NEXTVAL;
+        :new.fid_pnom_saisie := v_id_agent;
+        :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
+        :new.fid_pnom_modification := v_id_agent;
+        :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
     ELSE
         -- En cas de mise à jour on édite le champ date_modification avec la date du jour et le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le tronçon, présent dans TA_AGENT.
         IF UPDATING THEN 
-             :new.date_modification := sysdate;
+             :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
              :new.fid_pnom_modification := v_id_agent;
         END IF;
     END IF;
 
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - B_IUX_TA_TRONCON_DATE_PNOM','bjacq@lillemetropole.fr');
+            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TA_TRONCON_DATE_PNOM','bjacq@lillemetropole.fr');
 END;
 
 /

@@ -45,35 +45,38 @@ BEGIN
         b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee, id_voie)
             VALUES(
                     :new.objectid,
                     :new.geom,
                     sysdate,
                     v_id_insertion,
                     v_id_agent,
-                    :new.fid_metadonnee);
+                    :new.fid_metadonnee,
+                    :new.fid_voie);
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee, id_voie)
             VALUES(
                     :old.objectid,
                     :old.geom,
                     sysdate,
                     v_id_modification,
                     v_id_agent,
-                    :old.fid_metadonnee);
+                    :old.fid_metadonnee,
+                    :old.fid_voie);
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee, id_voie)
         VALUES(
                 :old.objectid,
                 :old.geom,
                 sysdate,
                 v_id_suppression,
                 v_id_agent,
-                :old.fid_metadonnee);
+                :old.fid_metadonnee,
+                :old.fid_voie);
     END IF;
     EXCEPTION
         WHEN OTHERS THEN

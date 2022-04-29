@@ -7,11 +7,14 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 :: 2. Déclaration et valorisation des variables
 SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du schema : "
 SET /p chemin_code_trigger="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des DECLENCHEURS du schema : "
+SET /p chemin_code_sequence="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des SEQUENCES du schema : "
 SET /p chemin_code_fonction="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des FONCTIONS du schema : "
-SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
-SET /p USER="Veuillez saisir l'utilisateur Oracle : "
-SET /p MDP="Veuillez saisir le MDP : "
-SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
+SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du schema : "
+SET /p chemin_code_vue_materialisees="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES MATERIALISEES du schema : "
+SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration/creation_tables_finales : "
+::SET /p USER="Veuillez saisir l'utilisateur Oracle : "
+::SET /p MDP="Veuillez saisir le MDP : "
+::SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 
 copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_contain_point.sql + ^
@@ -23,28 +26,25 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_97_communes_pourcentage.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_97_communes_within_distance.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_97_communes_troncon.sql + ^
+%chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
 %chemin_code_table%\creation_ta_agent.sql + ^
 %chemin_code_table%\creation_ta_rivoli.sql + ^
-%chemin_code_table%\creation_ta_troncon.sql + ^
-%chemin_code_table%\creation_ta_troncon_log.sql + ^
 %chemin_code_table%\creation_ta_type_voie.sql + ^
 %chemin_code_table%\creation_ta_voie.sql + ^
 %chemin_code_table%\creation_ta_hierarchisation_voie.sql + ^
 %chemin_code_table%\creation_ta_voie_log.sql + ^
-%chemin_code_table%\creation_ta_relation_troncon_voie.sql + ^
-%chemin_code_table%\creation_ta_relation_troncon_voie_log.sql + ^
+%chemin_code_table%\creation_ta_troncon.sql + ^
+%chemin_code_table%\creation_ta_troncon_log.sql + ^
 %chemin_code_table%\creation_ta_seuil.sql + ^
 %chemin_code_table%\creation_ta_seuil_log.sql + ^
 %chemin_code_table%\creation_ta_infos_seuil.sql + ^
 %chemin_code_table%\creation_ta_infos_seuil_log.sql + ^
-%chemin_code_table%\creation_ta_relation_troncon_seuil.sql + ^
 %chemin_code_table%\creation_ta_point_interet.sql + ^
 %chemin_code_table%\creation_ta_point_interet_log.sql + ^
 %chemin_code_table%\creation_ta_infos_point_interet.sql + ^
 %chemin_code_table%\creation_ta_infos_point_interet_log.sql + ^
 %chemin_code_temp%\ajout_temp_code_fantoir_a_temp_voievoi.sql + ^
 %chemin_code_trigger%\creation_a_iud_ta_infos_seuil_log.sql + ^
-%chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_troncon_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_voie_log.sql + ^
@@ -55,8 +55,21 @@ copy /b %chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_voie_date_pnom.sql + ^
 %chemin_code_trigger%\creation_b_iux_ta_point_interet_date_pnom.sql + ^
-%chemin_code_trigger%\creation_b_iux_ta_infos_point_interet_date_pnom.sql ^
+%chemin_code_trigger%\creation_b_iux_ta_infos_point_interet_date_pnom.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_voie_aggregee.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_gru_adresse.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_travail_voie_aggregee_code_insee.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_travail_voie_code_insee_longueur.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_travail_voie_principale_longueur.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_travail_voie_secondaire_longueur.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_temp_voie_aggregee.sql + ^
+%chemin_code_vue%\creation_v_troncon_voie_gru.sql ^
 %chemin_code_temp%\temp_code_ddl_schema.sql
+
+::%chemin_code_table%\creation_ta_relation_troncon_voie.sql + ^
+::%chemin_code_table%\creation_ta_relation_troncon_voie_log.sql + ^
+::%chemin_code_table%\creation_ta_relation_troncon_seuil.sql + ^
+::%chemin_code_trigger%\creation_b_iud_ta_relation_troncon_voie_log.sql + ^
 
 :: 3. lancement de SQL plus.
 ::CD C:/ora12c/R1/BIN

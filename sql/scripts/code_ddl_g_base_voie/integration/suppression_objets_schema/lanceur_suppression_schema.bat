@@ -5,7 +5,7 @@ echo Bienvenu dans la suppression des objets de la Base Voie ! Cette commande va
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
 :: 2. Déclaration et valorisation des variables
-SET /p chemin_integration="Veuillez saisir le chemin d'acces du dossier integration : "
+SET /p chemin_integration="Veuillez saisir le chemin d'acces du dossier integration/suppression_objets_schema : "
 SET /p USER="Veuillez saisir l'utilisateur Oracle : "    
 SET /p MDP="Veuillez saisir le MDP : "    
 SET /p INSTANCE="Veuillez saisir l'instance Oracle : " 
