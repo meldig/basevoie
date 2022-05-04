@@ -6,12 +6,7 @@ CONSTRAINT "V_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF_PK" PRIMARY KEY ("IDENTIFIANT"
 SELECT
     rownum as identifiant,
     a.cnumtrc AS code_troncon_a,
-    d.cnumtrc AS code_troncon_b,
-    SDO_LRS.CONNECTED_GEOM_SEGMENTS(
-        SDO_LRS.CONVERT_TO_LRS_GEOM(a.ora_geometry),
-        SDO_LRS.CONVERT_TO_LRS_GEOM(d.ora_geometry),
-        0.005
-    ) AS statut_connection
+    d.cnumtrc AS code_troncon_b
 FROM
     G_BASE_VOIE.TEMP_ILTATRC a
     INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc
@@ -20,8 +15,7 @@ FROM
     INNER JOIN G_BASE_VOIE.TEMP_VOIECVT e ON e.cnumtrc = d.cnumtrc
     INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI f ON f.ccomvoi = e.ccomvoi
 WHERE 
-    a.cnumtrc <> d.cnumtrc
-    AND a.cnumtrc < d.cnumtrc
+    a.cnumtrc < d.cnumtrc
     AND SDO_WITHIN_DISTANCE(
             d.ora_geometry, 
             a.ora_geometry, 
