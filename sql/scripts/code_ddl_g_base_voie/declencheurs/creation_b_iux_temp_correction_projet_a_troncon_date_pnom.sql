@@ -1,9 +1,9 @@
 /*
-Déclencheur permettant de récupérer dans la table TEMP_TRONCON, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
+Déclencheur permettant de récupérer dans la table TEMP_CORRECTION_PROJET_A_TRONCON, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
 */
 
-CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_TEMP_TRONCON_DATE_PNOM
-BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TEMP_TRONCON
+CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_TEMP_CORRECTION_PROJET_A_TRONCON_DATE_PNOM
+BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TEMP_CORRECTION_PROJET_A_TRONCON
 FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
@@ -19,7 +19,7 @@ BEGIN
 
     -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TEMP_AGENT. 
     IF INSERTING THEN 
-        :new.objectid := SEQ_TEMP_TRONCON_OBJECTID.NEXTVAL;
+        :new.objectid := SEQ_TEMP_CORRECTION_PROJET_A_TRONCON_OBJECTID.NEXTVAL;
         :new.fid_pnom_saisie := v_id_agent;
         :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
         :new.fid_pnom_modification := v_id_agent;
@@ -34,7 +34,7 @@ BEGIN
 
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TEMP_TRONCON_DATE_PNOM','bjacq@lillemetropole.fr');
+            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TEMP_CORRECTION_PROJET_A_TRONCON_DATE_PNOM','bjacq@lillemetropole.fr');
 END;
 
 /

@@ -20,14 +20,15 @@ copy /b %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_contain_
 %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_pourcentage.sql + ^
 %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_within_distance.sql + ^
 %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_troncon.sql + ^
-%chemin_code_sequence%\creation_seq_temp_troncon_objectid.sql + ^
+%chemin_code_sequence%\creation_seq_temp_correction_projet_a_troncon_objectid.sql + ^
 %chemin_code_table%\creation_temp_type_voie.sql + ^
-%chemin_code_table%\creation_temp_voie.sql + ^
-%chemin_code_table%\creation_temp_troncon.sql + ^
-%chemin_code_table%\creation_temp_relation_troncon_voie.sql + ^
-%chemin_code_trigger%\creation_b_iux_temp_troncon_date_pnom.sql + ^
-%chemin_code_trigger%\creation_b_iux_temp_voie_date_pnom.sql + ^
-%chemin_code_vue_materialisees%\creation_vm_temp_voie_aggregee.sql ^
+%chemin_code_table%\creation_temp_correction_projet_a_voie.sql + ^
+%chemin_code_table%\creation_temp_correction_projet_a_troncon.sql + ^
+%chemin_code_table%\creation_temp_correction_projet_a_relation_troncon_voie.sql + ^
+%chemin_code_trigger%\creation_b_iux_temp_correction_projet_a_troncon_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_temp_correction_projet_a_voie_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_temp_correction_projet_a_relation_troncon_voie_date_pnom.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_voie_aggregee.sql ^
 %chemin_code_temp%\temp_code_ddl_schema.sql
 
 :: 3. lancement de SQL plus.

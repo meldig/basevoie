@@ -1,9 +1,9 @@
 /*
-Déclencheur permettant de récupérer dans la table TEMP_VOIE, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
+Déclencheur permettant de récupérer dans la table TEMP_CORRECTION_PROJET_A_VOIE, les dates de création/modification des entités ainsi que le pnom de l'agent les ayant effectués.
 */
 
-CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_TEMP_VOIE_DATE_PNOM
-BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TEMP_VOIE
+CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUX_TEMP_CORRECTION_PROJET_A_VOIE_DATE_PNOM
+BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TEMP_CORRECTION_PROJET_A_VOIE
 FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
@@ -32,7 +32,7 @@ BEGIN
 
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TEMP_VOIE_DATE_PNOM','bjacq@lillemetropole.fr');
+            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TEMP_CORRECTION_PROJET_A_VOIE_DATE_PNOM','bjacq@lillemetropole.fr');
 END;
 
 /
