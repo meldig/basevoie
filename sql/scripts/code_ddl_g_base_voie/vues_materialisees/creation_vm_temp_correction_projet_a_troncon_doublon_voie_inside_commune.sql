@@ -38,7 +38,7 @@ DISABLE QUERY REWRITE AS
     FROM
         C_1 a
         INNER JOIN G_BASE_VOIE.V_TEMP_CORRECTION_PROJET_A_RELATION_TRONCON_VOIE_DOUBLON b ON b.id_troncon = a.id_troncon
-        INNER JOIN G_BASE_VOIE.TEMP_VOIE c ON c.objectid = b.id_voie
+        INNER JOIN G_BASE_VOIE.TEMP_CORRECTION_PROJET_A_VOIE c ON c.objectid = b.id_voie
         INNER JOIN G_BASE_VOIE.TEMP_TYPE_VOIE d ON d.objectid = c.fid_typevoie
     WHERE
         c.cdvalvoi = 'V';

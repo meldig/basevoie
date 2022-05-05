@@ -4,7 +4,7 @@ Création de la vue matérialisée VM_TEMP_CORRECTION_PROJET_A_TRONCON_DOUBLON_V
 /*
 DROP MATERIALIZED VIEW VM_TEMP_CORRECTION_PROJET_A_TRONCON_DOUBLON_VOIE_OVERLAPBDYDISJOINT_COMMUNE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TEMP_CORRECTION_PROJET_A_TRONCON_DOUBLON_VOIE_OVERLAPBDYDISJOINT_COMMUNE';
-COMIT;
+COMMIT;
 */
 -- 1. Création de la vue matérialisée
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TEMP_CORRECTION_PROJET_A_TRONCON_DOUBLON_VOIE_OVERLAPBDYDISJOINT_COMMUNE" ("OBJECTID", "ID_TRONCON", "ID_VOIE", "NOM_VOIE", "VALIDITE", "GEOM") 
@@ -12,22 +12,22 @@ REFRESH COMPLETE
 START WITH trunc(sysdate) + 16/24
 NEXT trunc(sysdate) + 40/24
 DISABLE QUERY REWRITE AS
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.id_troncon
-        FROM
-            G_BASE_VOIE.V_TEMP_CORRECTION_PROJET_A_RELATION_TRONCON_VOIE_DOUBLON a
-            INNER JOIN G_BASE_VOIE.VM_TEMP_CORRECTION_PROJET_A_VOIE_AGGREGEE b ON b.id_voie = a.id_voie,
-            G_REFERENTIEL.MEL_COMMUNE_LLH c
-        WHERE
-            SDO_OVERLAPBDYDISJOINT(b.geom, c.geom) = 'TRUE'
-        GROUP BY
-            a.id_troncon
-        HAVING
-            COUNT(a.id_troncon)>1
-    )
-    
+    WITH
+        C_1 AS(
+            SELECT DISTINCT
+                a.id_troncon
+            FROM
+                G_BASE_VOIE.V_TEMP_CORRECTION_PROJET_A_RELATION_TRONCON_VOIE_DOUBLON a
+                INNER JOIN G_BASE_VOIE.VM_TEMP_CORRECTION_PROJET_A_VOIE_AGGREGEE b ON b.id_voie = a.id_voie,
+                G_REFERENTIEL.MEL_COMMUNE_LLH c
+            WHERE
+                SDO_OVERLAPBDYDISJOINT(b.geom, c.geom) = 'TRUE'
+            GROUP BY
+                a.id_troncon
+            HAVING
+                COUNT(a.id_troncon)>1
+        )
+        
     SELECT
         rownum AS objectid,
         a.id_troncon,
