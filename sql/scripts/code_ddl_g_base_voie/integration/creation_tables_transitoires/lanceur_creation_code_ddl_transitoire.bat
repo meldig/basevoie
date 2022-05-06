@@ -30,16 +30,14 @@ copy /b %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_contain_
 %chemin_code_trigger%\creation_b_iux_temp_correction_projet_a_relation_troncon_voie_date_pnom.sql + ^
 %chemin_code_vue%\creation_v_temp_correction_projet_a_relation_troncon_voie_doublon.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_voie_aggregee.sql + ^
-%chemin_code_vue%\creation_v_temp_correction_projet_a_voie_doublon.sql + ^
-%chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_troncon_doublon_voie_inside_commune.sql + ^
-%chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_troncon_doublon_voie_overlapbdydisjoint_commune.sql ^
-%chemin_code_temp%\temp_code_ddl_schema.sql
+%chemin_code_vue%\creation_v_temp_correction_projet_a_voie_doublon.sql ^
+%chemin_code_temp%\temp_code_ddl_schema_transitoire_projet_a.sql
 
 :: 3. lancement de SQL plus.
 ::CD C:/ora12c/R1/BIN
 
 :: 4. Execution de sqlplus. pour lancer les requetes SQL.
-::sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_temp%\temp_code_ddl_schema.sql
+::sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_temp%\temp_code_ddl_schema_transitoire_projet_a.sql
 
 :: 5. MISE EN PAUSE
 PAUSE
