@@ -11,7 +11,7 @@ SET /p MDP="Veuillez saisir le MDP : "
 SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 
 copy /b %chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_troncon_doublon_voie_inside_commune.sql + ^
-%chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_troncon_doublon_voie_overlapbdydisjoint_commune.sql ^
+%chemin_code_vue_materialisees%\creation_vm_temp_correction_projet_a_troncon_doublon_voie_intersect_commune.sql ^
 %chemin_code_temp%\temp_vues_materialisees_schema_transitoire_projet_a.sql
 
 :: 3. lancement de SQL plus.
