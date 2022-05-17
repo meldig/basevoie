@@ -647,7 +647,6 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON(
     ordre_troncon NUMBER(2,0),
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
-    fid_voie NUMBER(38,0),
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
     fid_pnom_modification NUMBER(38,0) NOT NULL,
     fid_metadonnee NUMBER(38,0) NULL
@@ -663,7 +662,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_saisie IS 'date de saisie du tron�
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.date_modification IS 'Dernière date de modification du tronçon (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_voie IS 'Clé étrangère vers la table TA_VOIE permettant d''associer une voie à un ou plusieurs tronçons. Ancien champ : CCOMVOI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des tronçons (MEL ou IGN).';
 
 -- 3. Création de la clé primaire
@@ -689,7 +687,7 @@ VALUES(
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TA_TRONCON_SIDX
 ON G_BASE_VOIE.TA_TRONCON(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Création des clés étrangères
@@ -704,11 +702,6 @@ FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
 
 ALTER TABLE G_BASE_VOIE.TA_TRONCON
-ADD CONSTRAINT TA_TRONCON_FID_VOIE_FK
-FOREIGN KEY (fid_voie)
-REFERENCES G_BASE_VOIE.TA_VOIE(objectid);
-
-ALTER TABLE G_BASE_VOIE.TA_TRONCON
 ADD CONSTRAINT TA_TRONCON_FID_METADONNEE_FK
 FOREIGN KEY (fid_metadonnee)
 REFERENCES G_GEO.ta_metadonnee(objectid);
@@ -718,9 +711,6 @@ CREATE INDEX TA_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_s
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TRONCON_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_TRONCON(fid_pnom_modification)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_TRONCON_FID_VOIE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_voie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TRONCON_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON(fid_metadonnee)
@@ -747,7 +737,6 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON_LOG(
     geom SDO_GEOMETRY NOT NULL,
     sens CHAR(1 BYTE),
     ordre_troncon NUMBER(2,0),
-    id_voie NUMBER(38,0),
     date_action DATE NOT NULL,
     fid_type_action NUMBER(38,0) NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL,
@@ -762,7 +751,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.objectid IS 'Clé primaire auto-inc
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.geom IS 'Géométrie de type ligne simple de chaque tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.sens IS 'Code permettant de connaître le sens de saisie du tronçon par rapport au sens de la voie : + = dans le sens de la voie ; - = dans le sens inverse de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.ordre_troncon IS 'Ordre dans lequel les tronçons se positionnent afin de constituer la voie. 1 est égal au début de la voie et 1 + n est égal au tronçon suivant.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.id_voie IS 'Identifiant de la table TA_VOIE permettant d''associer une voie à un ou plusieurs tronçons. Ancien champ : CCOMVOI.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.date_action IS 'date de saisie, modification et suppression du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de catégoriser le type d''action effectué sur les tronçons.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TRONCON_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au tronçon qu''il a créé, modifié ou supprimé.';
@@ -793,7 +781,7 @@ VALUES(
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TA_TRONCON_LOG_SIDX
 ON G_BASE_VOIE.TA_TRONCON_LOG(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Création des clés étrangères
@@ -828,9 +816,6 @@ CREATE INDEX TA_TRONCON_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_pnom)
 CREATE INDEX TA_TRONCON_LOG_FID_METADONNEE_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_metadonnee)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_TRONCON_LOG_ID_VOIE_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(id_voie)
-    TABLESPACE G_ADT_INDX;
-
 CREATE INDEX TA_TRONCON_LOG_ORDRE_TRONCON_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(ordre_troncon)
     TABLESPACE G_ADT_INDX;
     
@@ -853,7 +838,6 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_pnom_saisie NUMBER(38,0) NOT NULL,
     fid_pnom_modification NUMBER(38,0) NOT NULL,
-    fid_troncon NUMBER(38,0),
     temp_idseui NUMBER(38,0)
 );
 
@@ -867,7 +851,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_saisie IS 'date de saisie du seuil (
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.date_modification IS 'Dernière date de modification du seuil(par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un seuil.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_troncon IS 'Clé étrangère vers la table TA_TRONCON permettant d''associer un troncon à un ou plusieurs seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.temp_idseui IS 'Champ temporaire servant à l''import des données. Ce champ sera supprimé une fois l''import terminé.';
 
 -- 3. Création de la clé primaire
@@ -893,7 +876,7 @@ VALUES(
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TA_SEUIL_SIDX
 ON G_BASE_VOIE.TA_SEUIL(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Création des clés étrangères
@@ -907,19 +890,11 @@ ADD CONSTRAINT TA_SEUIL_FID_PNOM_MODIFICATION_FK
 FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
 
-ALTER TABLE G_BASE_VOIE.TA_SEUIL
-ADD CONSTRAINT TA_SEUIL_FID_TRONCON_FK
-FOREIGN KEY (fid_troncon)
-REFERENCES G_BASE_VOIE.TA_TRONCON(objectid);
-
 -- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_SEUIL_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_modification)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_SEUIL_FID_TRONCON_IDX ON G_BASE_VOIE.TA_SEUIL(fid_troncon)
     TABLESPACE G_ADT_INDX;
     
 -- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du seuil. 
@@ -943,7 +918,6 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL_LOG(
     geom SDO_GEOMETRY NOT NULL,
     cote_troncon CHAR(1) NOT NULL,
     code_insee VARCHAR2(4000) NOT NULL,
-    id_troncon NUMBER(38,0),
     date_action DATE NOT NULL,
     fid_type_action NUMBER(38,0),
     fid_seuil NUMBER(38,0) NOT NULL,
@@ -956,7 +930,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.objectid IS 'Clé primaire auto-incr�
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.geom IS 'Géométrie de type point de chaque seuil présent dans la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.cote_troncon IS 'Côté du tronçon auquel est rattaché le seuil. G = gauche ; D = droite. En agglomération le sens des tronçons est déterminé par ses numéros de seuils. En d''autres termes il commence au niveau du seuil dont le numéro est égal à 1. Hors agglomération, le sens du tronçon dépend du sens de circulation pour les rues à sens unique. Pour les rues à double-sens chaque tronçon est doublé donc leur sens dépend aussi du sens de circulation.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.code_insee IS 'Champ calculé via une requête spatiale, permettant d''associer à chaque seuil le code insee de la commune dans laquelle il se trouve (issue de la table G_REFERENTIEL.MEL_COMMUNES).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.id_troncon IS 'Identifiant de la table TA_TRONCON permettant d''associer un troncon à un ou plusieurs seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.date_action IS 'Date de création, modification ou suppression d''un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_seuil IS 'Clé étrangère vers la table TA_SEUIL permettant de savoir sur quel seuil les actions ont été entreprises.';
@@ -985,7 +958,7 @@ VALUES(
 -- 5. Création de l'index spatial sur le champ geom
 CREATE INDEX TA_SEUIL_LOG_SIDX
 ON G_BASE_VOIE.TA_SEUIL_LOG(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
 
 -- 6. Création des clés étrangères
@@ -1010,9 +983,6 @@ CREATE INDEX TA_SEUIL_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_LOG_CODE_INSEE_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(code_insee)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_SEUIL_LOG_ID_TRONCON_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(id_troncon)
     TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
@@ -1631,6 +1601,49 @@ END;
 
 /
 /*
+La table TA_RELATION_TRONCON_SEUIL fait la relation entre les tronçons de la table TA_TRONCON et les seuils de la table TA_SEUIl qui s''y rattachent dans la base voie.
+*/
+
+-- 1. Création de la table TA_RELATION_TRONCON_SEUIL
+CREATE TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL(
+    fid_troncon NUMBER(38,0) NOT NULL,
+    fid_seuil NUMBER(38,0) NOT NULL
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL IS 'Table pivot faisant la relation entre les tronçons de la table TA_TRONCON et les seuils de la table TA_SEUIl qui s''y rattachent. Ancienne table : ILTASIT.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL.fid_troncon IS 'Clé primaire et étrangère vers la table TA_TRONCON permettant d''asocier un tronçons aux seuils.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL.fid_seuil IS 'Clé primaire et clé étrangère vers la table TA_SEUIL permettant d''associer un ou plusieurs seuils à un tronçon.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL 
+ADD CONSTRAINT TA_RELATION_TRONCON_SEUIL_PK 
+PRIMARY KEY("FID_TRONCON", "FID_SEUIL") 
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des clés étrangères
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL
+ADD CONSTRAINT TA_RELATION_TRONCON_SEUIL_FID_TRONCON_FK 
+FOREIGN KEY (fid_troncon)
+REFERENCES G_BASE_VOIE.TA_TRONCON(objectid);
+
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL
+ADD CONSTRAINT TA_RELATION_TRONCON_SEUIL_FID_SEUIL_FK
+FOREIGN KEY (fid_seuil)
+REFERENCES G_BASE_VOIE.TA_SEUIL(objectid);
+
+-- 5. Création des index sur les clés étrangères
+CREATE INDEX TA_RELATION_TRONCON_SEUIL_FID_TRONCON_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL(fid_troncon)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_RELATION_TRONCON_SEUIL_FID_SEUIL_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL(fid_seuil)
+    TABLESPACE G_ADT_INDX;
+
+-- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
+GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL TO G_ADMIN_SIG;
+
+/
+/*
 Déclencheur permettant de remplir la table de logs TA_TRONCON_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_TRONCON avec leur date et le pnom de l'agent les ayant effectuées.
 */
@@ -1808,6 +1821,208 @@ BEGIN
     EXCEPTION
         WHEN OTHERS THEN
             mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_LOG','bjacq@lillemetropole.fr');
+END;
+
+/
+/*
+La table TA_RELATION_TRONCON_VOIE regroupant tous les types et états permettant de catégoriser les objets de la base voie.
+*/
+
+-- 1. Création de la table TA_RELATION_TRONCON_VOIE
+CREATE TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(
+    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
+    sens CHAR(1) NOT NULL,
+    ordre_troncon NUMBER(2,0) NOT NULL,
+    fid_voie NUMBER(38,0) NOT NULL,
+    fid_troncon NUMBER(38,0) NOT NULL,
+    date_saisie DATE DEFAULT sysdate NOT NULL,
+    date_modification DATE DEFAULT sysdate NOT NULL,
+    fid_pnom_saisie NUMBER(38,0) NOT NULL,
+    fid_pnom_modification NUMBER(38,0) NOT NULL
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE IS 'Table pivot permettant d''associer les tronçons de la table TA_TRONCON à leur voie présente dans TA_VOIE. Ancienne table : VOIECVT.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.objectid IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.sens IS 'Code permettant de connaître le sens du tronçon. Ancien champ : CCODSTR. A préciser avec Marie-Hélène, car les valeurs ne sont pas compréhensibles sans documentation.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.ordre_troncon IS 'Ordre dans lequel les tronçons se positionnent afin de contituer la voie. 1 est égal au début de la voie et 1 + n est égal au tronçon suivant.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.fid_voie IS 'Clé étrangère vers la table TA_VOIE permettant d''associer une voie à un ou plusieurs tronçons. Ancien champ : CCOMVOI.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.fid_troncon IS 'Clé étrangère vers la table TA_TRONCON permettant d''associer un ou plusieurs tronçons à une voie. Ancien champ : CNUMTRC.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.date_saisie IS 'Date de saisie de la relation troncon/voie en base (par défaut la date du jour).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.date_modification IS 'Date de la dernière modification de la relation troncon/voie en base (par défaut la date du jour).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.fid_pnom_saisie IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant créé la relation.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié la relation.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE 
+ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_PK 
+PRIMARY KEY("OBJECTID") 
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des clés étrangères
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE
+ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_FID_VOIE_FK
+FOREIGN KEY (fid_voie)
+REFERENCES G_BASE_VOIE.ta_voie(objectid);
+
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE
+ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_FID_TRONCON_FK
+FOREIGN KEY (fid_troncon)
+REFERENCES G_BASE_VOIE.ta_troncon(objectid);
+
+-- 5. Création des index sur les clés étrangères
+CREATE INDEX TA_RELATION_TRONCON_VOIE_FID_VOIE_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(fid_voie)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_RELATION_TRONCON_VOIE_FID_TRONCON_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE(fid_troncon)
+    TABLESPACE G_ADT_INDX;
+
+-- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
+GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE TO G_ADMIN_SIG;
+
+/
+
+/*
+La table TA_RELATION_TRONCON_VOIE_LOG regroupant tous les types et états permettant de catégoriser les objets de la base voie.
+*/
+
+-- 1. Création de la table TA_RELATION_TRONCON_VOIE_LOG
+CREATE TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(
+    objectid NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY,
+    sens CHAR(1),
+    ordre_troncon NUMBER(2),
+    date_action DATE NOT NULL,
+    fid_relation_troncon_voie NUMBER(38,0) NOT NULL,
+    fid_voie NUMBER(38,0) NOT NULL,
+    fid_troncon NUMBER(38,0) NOT NULL,
+    fid_type_action NUMBER(38,0) NOT NULL,
+    fid_pnom NUMBER(38,0) NOT NULL
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG IS 'Table de log enregistrant l''évolution des associations voies / tronçons.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.objectid IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.sens IS 'Code permettant de connaître le sens du tronçon. Ancien champ : CCODSTR Il s''agit du sens de codage du tronçon qui suit l''ordre de numération des seuils.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.ordre_troncon IS 'Ordre dans lequel les tronçons se positionnent afin de contituer la voie. 1 est égal au début de la voie et 1 + n est égal au tronçon suivant.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.date_action IS 'Date de création, modification ou suppression de la voie avec ce tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_relation_troncon_voie IS 'Clé étrangère vers la table TA_RELATION_TRONCON_VOIE permettant d''identifier les relations tronçon/voies.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_voie IS 'Identifiant des voies permettant d''associer une voie à un ou plusieurs tronçons. Ancien champ : CCOMVOI.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_troncon IS 'Identifiant des tronçons permettant d''associer un ou plusieurs tronçons à une voie. Ancien champ : CNUMTRC.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur l''association tronçon / voie.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent à l''association voie / tronçon qu''il a créé, modifié ou supprimé.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG 
+ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_LOG_PK 
+PRIMARY KEY("OBJECTID") 
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des clés étrangères
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG
+ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_LOG_FID_TYPE_ACTION_FK
+FOREIGN KEY (fid_type_action)
+REFERENCES G_GEO.TA_LIBELLE(objectid);
+
+ALTER TABLE G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG
+ADD CONSTRAINT TA_RELATION_TRONCON_VOIE_LOG_FID_PNOM_FK
+FOREIGN KEY (fid_pnom)
+REFERENCES G_BASE_VOIE.ta_agent(numero_agent);
+
+-- 5. Création des index sur les clés étrangères et autre
+CREATE INDEX TA_RELATION_TRONCON_VOIE_LOG_FID_RELATION_TRONCON_VOIE_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_RELATION_TRONCON_VOIE_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_type_action)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_RELATION_TRONCON_VOIE_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_pnom)
+    TABLESPACE G_ADT_INDX;
+
+-- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
+GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG TO G_ADMIN_SIG;
+
+/
+
+/*
+Déclencheur permettant de remplir la table de logs TA_RELATION_TRONCON_VOIE_LOG dans laquelle sont enregistrés chaque insertion, 
+modification et suppression des données de la table TA_RELATION_TRONCON_VOIE avec leur date et le pnom de l'agent les ayant effectuées.
+*/
+
+CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUD_TA_RELATION_TRONCON_VOIE_LOG
+BEFORE INSERT OR UPDATE OR DELETE ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE
+FOR EACH ROW
+DECLARE
+    username VARCHAR2(100);
+    v_id_agent NUMBER(38,0);
+    v_id_insertion NUMBER(38,0);
+    v_id_modification NUMBER(38,0);
+    v_id_suppression NUMBER(38,0);
+BEGIN
+    -- Sélection du pnom
+    SELECT sys_context('USERENV','OS_USER') into username from dual;
+
+    -- Sélection de l'id du pnom correspondant dans la table TA_AGENT
+    SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TA_AGENT WHERE pnom = username;
+
+    -- Sélection des id des actions présentes dans la table TA_LIBELLE
+    SELECT 
+        a.objectid INTO v_id_insertion 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'insertion';
+
+    SELECT 
+        a.objectid INTO v_id_modification 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'édition';
+            
+    SELECT 
+        a.objectid INTO v_id_suppression 
+    FROM 
+        G_GEO.TA_LIBELLE a
+        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+    WHERE 
+        b.valeur = 'suppression';
+
+    IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
+        INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
+            VALUES(
+                    :new.objectid, 
+                    :new.fid_voie, 
+                    :new.fid_troncon, 
+                    sysdate,
+                    v_id_insertion,
+                    v_id_agent);
+    ELSE
+        IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
+            INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
+            VALUES(
+                    :old.objectid, 
+                    :old.fid_voie, 
+                    :old.fid_troncon, 
+                    sysdate,
+                    v_id_modification,
+                    v_id_agent);
+        END IF;
+    END IF;
+    IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_RELATION_TRONCON_VOIE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
+        INSERT INTO G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG(fid_relation_troncon_voie, fid_voie, fid_troncon, date_action, fid_type_action, fid_pnom)
+        VALUES(
+                :old.objectid, 
+                :old.fid_voie, 
+                :old.fid_troncon, 
+                sysdate,
+                v_id_suppression,
+                v_id_agent);
+    END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_RELATION_TRONCON_VOIE_LOG','bjacq@lillemetropole.fr');
 END;
 
 /
@@ -2733,6 +2948,82 @@ CREATE INDEX VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR_COMPOSE_IDX ON G_BASE_VOIE.VM_T
 
 -- 6. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_SECONDAIRE_LONGUEUR TO G_ADMIN_SIG;
+
+/
+
+/*
+Création d'une vue matérialisée matérialisant la géométrie des voies pour corriger les tronçons affectés à plusieurs voies.
+*/
+-- 1. Suppression de la VM et de ses métadonnées
+/*DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_VOIE_AGGREGEE;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TEMP_VOIE_AGGREGEE';
+COMMIT;
+*/
+-- 2. Création de la VM
+CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TEMP_VOIE_AGGREGEE" ("ID_VOIE","LIBELLE_VOIE","LONGUEUR","GEOM")        
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE AS
+SELECT
+    a.ccomvoi AS id_voie,
+    TRIM(UPPER(b.LITYVOIE)) ||' '|| TRIM(UPPER(a.cnominus)) ||' '|| TRIM(UPPER(a.cinfos)) AS libelle_voie,
+    ROUND(SDO_GEOM.SDO_LENGTH(SDO_AGGR_UNION(SDOAGGRTYPE(d.ora_geometry, 0.005)), 0.001), 2) AS longueur,
+    SDO_AGGR_UNION(SDOAGGRTYPE(d.ora_geometry, 0.005)) AS geom
+FROM
+    G_BASE_VOIE.TEMP_VOIEVOI a
+    INNER JOIN G_BASE_VOIE.TEMP_TYPEVOIE b ON b.ccodtvo = a.ccodtvo
+    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT c ON c.ccomvoi = a.ccomvoi
+    INNER JOIN G_BASE_VOIE.TEMP_ILTATRC d ON d.cnumtrc = c.cnumtrc
+WHERE
+    a.cdvalvoi = 'V'
+    AND c.cvalide = 'V'
+    AND d.cdvaltro ='V'
+GROUP BY
+    a.ccomvoi,
+    TRIM(UPPER(b.LITYVOIE)) ||' '|| TRIM(UPPER(a.cnominus)) ||' '|| TRIM(UPPER(a.cinfos));
+    
+-- 3. Création des commentaires de la VM
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_VOIE_AGGREGEE IS 'Vue matérialisée matérialisant la géométrie des voies depuis les tables d''import. Cette VM sert UNIQUEMENT à corriger les tronçons affectés à plusieurs voies.';
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'VM_TEMP_VOIE_AGGREGEE',
+    'GEOM',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Création de la clé primaire
+ALTER MATERIALIZED VIEW VM_TEMP_VOIE_AGGREGEE 
+ADD CONSTRAINT VM_TEMP_VOIE_AGGREGEE_PK 
+PRIMARY KEY (ID_VOIE);
+
+-- 6. Création des index
+CREATE INDEX VM_TEMP_VOIE_AGGREGEE_SIDX
+ON G_BASE_VOIE.VM_TEMP_VOIE_AGGREGEE(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
+PARAMETERS(
+  'sdo_indx_dims=2, 
+  layer_gtype=MULTILINE, 
+  tablespace=G_ADT_INDX, 
+  work_tablespace=DATA_TEMP'
+);
+
+CREATE INDEX VM_TEMP_VOIE_AGGREGEE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_TEMP_VOIE_AGGREGEE(LIBELLE_VOIE)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_TEMP_VOIE_AGGREGEE_LONGUEUR_IDX ON G_BASE_VOIE.VM_TEMP_VOIE_AGGREGEE(LONGUEUR)
+    TABLESPACE G_ADT_INDX;
+    
+-- 7. Affectations des droits
+GRANT SELECT ON G_BASE_VOIE.VM_TEMP_VOIE_AGGREGEE TO G_ADMIN_SIG;
 
 /
 
