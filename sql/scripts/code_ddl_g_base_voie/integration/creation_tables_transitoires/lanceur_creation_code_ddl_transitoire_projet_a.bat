@@ -22,9 +22,11 @@ copy /b %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_contain_
 %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_troncon.sql + ^
 %chemin_code_sequence%\creation_seq_temp_a_troncon_objectid.sql + ^
 %chemin_code_table%\creation_temp_a_agent.sql + ^
+%chemin_code_table%\creation_temp_a_libelle.sql + ^
 %chemin_code_table%\creation_temp_a_type_voie.sql + ^
 %chemin_code_table%\creation_temp_a_voie.sql + ^
-%chemin_code_table%\creation_temp_a_libelle_voie.sql + ^
+%chemin_code_table%\creation_temp_a_voie_physique.sql + ^
+%chemin_code_table%\creation_temp_a_voie_administrative.sql + ^
 %chemin_code_table%\creation_temp_a_troncon.sql + ^
 %chemin_code_trigger%\creation_b_iux_temp_a_troncon_date_pnom.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_temp_import_voie_agregee.sql + ^
