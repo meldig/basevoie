@@ -46,7 +46,7 @@ FROM
 MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE a
     USING(
         SELECT -- Pour les voies en doublon de géométrie, on ne garde que la voie disposant de l'identifiant minimum
-            a.id_voie AS id_voie
+            CAST(a.id_voie AS NUMBER(38,0)) AS id_voie
         FROM
             G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE a,
             G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE b 
@@ -87,7 +87,7 @@ MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE a
             )
             
             SELECT
-                id_voie
+                CAST(id_voie AS NUMBER(38,0)) AS id_voie
             FROM
                 G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE
             WHERE
@@ -97,7 +97,17 @@ ON(a.objectid = t.id_voie)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid)
     VALUES(id_voie);
--- Résultat : 22 052 lignes fusionnées.
+-- Résultat : 22 059 lignes fusionnées.
+
+CREATE INDEX TEMP_ILTASEU_IDSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(idseui) TABLESPACE G_ADT_INDX;
+CREATE INDEX TEMP_ILTASEU_NUSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(nuseui) TABLESPACE G_ADT_INDX;
+CREATE INDEX TEMP_ILTASEU_NSSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(nsseui) TABLESPACE G_ADT_INDX;
+CREATE INDEX TEMP_ILTASIT_IDSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASIT(idseui) TABLESPACE G_ADT_INDX;
+CREATE INDEX TEMP_ILTASIT_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_ILTASIT(cnumtrc) TABLESPACE G_ADT_INDX;
+CREATE INDEX TEMP_ILTATRC_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_ILTATRC(cnumtrc) TABLESPACE G_ADT_INDX;  
+CREATE INDEX TEMP_VOIECVT_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_VOIECVT(cnumtrc) TABLESPACE G_ADT_INDX; 
+CREATE INDEX TEMP_VOIECVT_CCOMVOI_IDX ON G_BASE_VOIE.TEMP_VOIECVT(ccomvoi) TABLESPACE G_ADT_INDX;
+CREATE INDEX TEMP_VOIEVOI_CCOMVOI_IDX ON G_BASE_VOIE.TEMP_VOIEVOI(ccomvoi) TABLESPACE G_ADT_INDX;
 
 -- Insertion des libellés des voies en doublons de géométrie
 MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
@@ -135,6 +145,8 @@ MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
             WHERE
                 SDO_EQUAL(a.geom, d.geom) = 'TRUE'
                 AND e.pnom = 'import_donnees'
+                AND a.id_voie IN(99004, 3503380, 3560237, 3559121, 3503180, 3600840, 5990510, 6110390, 1939071, 6029100, 1430360, 2529007, 3320060, 3601220, 520080, 90299, 6461183, 6502690, 5995430, 1439083, 1739021, 2990086, 3469061, 3551330, 2860870, 3782070, 3681460, 3780330, 4870090, 5070070, 4210050, 6439004, 3789288, 6480011, 6480320, 5539009, 3209014, 449036, 1960053, 2509041, 3179061, 3569025, 3781455, 3889023, 4570236, 3670725, 4570360, 1631270, 1631305, 5850585, 1460120, 99294, 3503375, 4109016, 900510, 4779044, 3500495, 6460080, 6461195, 6480015, 5850040, 3039000, 1430214, 3289399, 3600370, 3320370, 3329010, 3679001, 4700153, 1529110, 4829031, 5124552, 6029002, 6461054, 1289003, 1969029, 2570276, 3170440, 3670767, 3681700, 2819017, 4210640, 3710057, 1631341, 3509252, 5980305, 1529422, 6489112, 5859036, 2509042, 880311, 2529011, 2509406, 2989086, 90202, 3039032, 95712, 3469046, 3501895, 3782043, 4100840, 3501483, 5279049, 139011, 6539092, 6589008)
+                -- la condition ci-dessus n'est NORMALEMENT pas nécessaire, mais sans ça la requête tourne sans jamais aboutir
     )t
 ON(a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique AND a.fid_type_voie = t.fid_type_voie)
 WHEN NOT MATCHED THEN
@@ -165,7 +177,7 @@ MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
             )
             
             SELECT DISTINCT -- Sélection de toutes les libellés des voies auxquelles un tronçon est affecté une et une seule fois
-                c.ccomvoi AS objectid,
+                CAST(c.ccomvoi AS NUMBER(38,0)) AS objectid,
                 c.cnominus AS libelle_voie,
                 c.cinfos AS complement_nom_voie,
                 CASE
@@ -178,7 +190,7 @@ MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
                     END AS code_insee,
                 f.objectid AS fid_lateralite,
                 e.objectid AS fid_type_voie,
-                d.objectid AS fid_voie_physique,
+                CAST(d.objectid AS NUMBER(38,0)) AS fid_voie_physique,
                 d.numero_agent AS fid_pnom_saisie,
                 d.numero_agent AS fid_pnom_modification,
                 TO_DATE(sysdate, 'dd/mm/yyyy') AS date_saisie,
@@ -187,7 +199,7 @@ MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
                 C_1 a
                 INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc
                 INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI c ON c.ccomvoi = b.ccomvoi
-                INNER JOIN G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE d ON d.objectid = c.ccomvoi
+                INNER JOIN G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE d ON d.objectid = CAST(c.ccomvoi AS NUMBER(38,0))
                 INNER JOIN G_BASE_VOIE.TEMP_A_TYPE_VOIE e ON e.code_type_voie = c.ccodtvo,
                 G_BASE_VOIE.TEMP_A_AGENT d,
                 G_BASE_VOIE.TEMP_A_libelle f
@@ -202,25 +214,25 @@ WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.libelle_voie, a.complement_nom_voie, a.code_insee, a.fid_lateralite, a.fid_type_voie, a.fid_voie_physique, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification)
     VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_lateralite, t.fid_type_voie, t.fid_voie_physique, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification);
 COMMIT;        
--- Résultat : 21 859 lignes fusionnées.
+-- Résultat : 21 866 lignes fusionnées.
 
 -- Insertion des voies restantes, c'est-à-dire des voies disposant de tronçons affectés à plusieurs voie dont la géométrie n'est pas identique
 MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
     USING (
         SELECT
-            a.id_voie AS objectid,
+            CAST(a.id_voie AS NUMBER(38,0)) AS objectid,
             b.cnominus AS libelle_voie,
             b.cinfos AS complement_nom_voie,
             a.code_insee,
             c.objectid AS fid_type_voie,
-            a.id_voie AS fid_voie_physique,
+            CAST(a.id_voie AS NUMBER(38,0)) AS fid_voie_physique,
             d.numero_agent AS fid_pnom_saisie,
             d.numero_agent AS fid_pnom_modification,
             TO_DATE(sysdate, 'dd/mm/yyyy') AS date_saisie,
             TO_DATE(sysdate, 'dd/mm/yyyy') AS date_modification
         FROM
             G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE a
-            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI b ON b.ccomvoi = a.id_voie
+            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI b ON b.ccomvoi = CAST(a.id_voie AS NUMBER(38,0))
             INNER JOIN G_BASE_VOIE.TEMP_A_TYPE_VOIE c ON c.code_type_voie = b.ccodtvo,
             G_BASE_VOIE.TEMP_A_AGENT d
         WHERE
@@ -254,18 +266,18 @@ MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
             )
 
         SELECT
-            a.objectid,
+            CAST(a.objectid AS NUMBER(38,0)) AS objectid,
             b.ora_geometry AS geom,
             TO_DATE(sysdate, 'dd/mm/yyyy') AS date_saisie,
             e.numero_agent AS fid_pnom_saisie,
             TO_DATE(sysdate, 'dd/mm/yyyy') AS date_modification,
             e.numero_agent AS fid_pnom_modification,
-            d.objectid AS fid_voie_physique
+            CAST(d.objectid AS NUMBER(38,0)) AS fid_voie_physique
         FROM
             C_1 a
             INNER JOIN G_BASE_VOIE.TEMP_ILTATRC b ON b.cnumtrc = a.objectid
             INNER JOIN G_BASE_VOIE.TEMP_VOIECVT c ON c.cnumtrc = b.cnumtrc
-            INNER JOIN G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE d ON d.objectid = c.ccomvoi,
+            INNER JOIN G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE d ON d.objectid = CAST(c.ccomvoi AS NUMBER(38,0)),
             G_BASE_VOIE.TEMP_A_AGENT e
         WHERE
             e.pnom = 'import_donnees'
@@ -274,7 +286,7 @@ ON(a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
 INSERT(a.objectid, a.geom, a.date_saisie, a.fid_pnom_saisie, a.date_modification, a.fid_pnom_modification, a.fid_voie_physique)
 VALUES(t.objectid, t.geom, t.date_saisie, t.fid_pnom_saisie, t.date_modification, t.fid_pnom_modification, t.fid_voie_physique);
--- Résultat : 49 431 lignes fusionnées.
+-- Résultat : 49 451 lignes fusionnées.
 
 -- Insertion des tronçons affectés à plusieurs voies ayant la même géométrie
 MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
@@ -294,15 +306,15 @@ MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
             
             C_2 AS(
                 SELECT DISTINCT
-                    c.cnumtrc AS objectid,
-                    d.id_voie AS fid_voie_physique,
+                    CAST(c.cnumtrc AS NUMBER(38,0)) AS objectid,
+                    CAST(d.id_voie AS NUMBER(38,0)) AS fid_voie_physique,
                     e.numero_agent AS fid_pnom_saisie,
                     e.numero_agent AS fid_pnom_modification,
                     TO_DATE(sysdate, 'dd/mm/yyyy') AS date_saisie,
                     TO_DATE(sysdate, 'dd/mm/yyyy') AS date_modification
                 FROM
                     G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE a
-                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.ccomvoi = a.id_voie
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON CAST(b.ccomvoi AS NUMBER(38,0)) = a.id_voie
                     INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc,
                     C_1 d,
                     G_BASE_VOIE.TEMP_A_AGENT e
@@ -329,83 +341,107 @@ WHEN NOT MATCHED THEN
 COMMIT;
 -- Résultat : 166 lignes fusionnées.
 
--- Insertion des tronçons affectés à plusieurs voies de tailles différentes
+-- Insertion des tronçons affectés à plusieurs voies ayant des géométries différentes
 MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
     USING(
         WITH
             C_1 AS(
-                SELECT -- Sélection des tronçons affectés à plusieurs voies
-                    a.cnumtrc AS objectid            
-                FROM
-                    G_BASE_VOIE.TEMP_ILTATRC a
-                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc
-                WHERE
-                    a.cdvaltro = 'V'
-                    AND b.cvalide = 'V'
-                GROUP BY
-                    a.cnumtrc
-                HAVING
-                    COUNT(a.cnumtrc) > 1
-            ),
-            
-            C_2 AS(
-                SELECT -- Sélection des id des voies en doublon de géométrie
-                    a.id_voie AS id_voie_min,
-                    b.id_voie AS id_voie_max, 
+                SELECT -- Pour les voies en doublon de géométrie, on ne garde que la voie disposant de l'identifiant minimum
+                    a.id_voie AS id_voie,
                     a.geom
                 FROM
                     G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE a,
                     G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE b 
                 WHERE
                     a.id_voie < b.id_voie
-                    AND SDO_EQUAL(a.geom, b.geom) = 'TRUE'
+                    AND SDO_EQUAL(a.geom, b.geom) <> 'TRUE'
             ),
             
-            C_3 AS(
-                SELECT
-                    id_voie_min AS id_voie
+            C_2 AS(
+                SELECT DISTINCT
+                    CAST(c.cnumtrc AS NUMBER(38,0)) AS objectid,
+                    CAST(d.id_voie AS NUMBER(38,0)) AS fid_voie_physique,
+                    e.numero_agent AS fid_pnom_saisie,
+                    e.numero_agent AS fid_pnom_modification,
+                    TO_DATE(sysdate, 'dd/mm/yyyy') AS date_saisie,
+                    TO_DATE(sysdate, 'dd/mm/yyyy') AS date_modification
                 FROM
-                    C_2
-                UNION ALL
-                SELECT
-                    id_voie_max AS id_voie
-                FROM
-                    C_2
+                    G_BASE_VOIE.VM_TEMP_IMPORT_VOIE_AGREGEE a
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON CAST(b.ccomvoi AS NUMBER(38,0)) = a.id_voie
+                    INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc,
+                    C_1 d,
+                    G_BASE_VOIE.TEMP_A_AGENT e
+                WHERE
+                    c.cdvaltro = 'V'
+                    AND b.cvalide = 'V'
+                    AND e.pnom = 'import_donnees'
+                    AND SDO_EQUAL(a.geom, d.geom) <> 'TRUE'
             )
-        
+            
             SELECT
-                a.objectid,
-                c.ccodstr AS sens,
-                b.ora_geometry AS geom,
-                g.objectid AS fid_voie_physique,
-                f.numero_agent AS fid_pnom_saisie,
-                f.numero_agent AS fid_pnom_modification,
-                TO_DATE(sysdate, 'dd/mm/yyyy') AS date_saisie,
-                TO_DATE(sysdate, 'dd/mm/yyyy') AS date_modification
+                a.*,
+                b.ora_geometry AS geom
             FROM
-                C_1 a
+                C_2 a
                 INNER JOIN G_BASE_VOIE.TEMP_ILTATRC b ON b.cnumtrc = a.objectid
-                INNER JOIN G_BASE_VOIE.TEMP_VOIECVT c ON c.cnumtrc = b.cnumtrc
-                INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI d ON d.ccomvoi = c.ccomvoi
-                INNER JOIN G_BASE_VOIE.TEMP_TYPEVOIE e ON e.ccodtvo = d.ccodtvo
-                INNER JOIN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE f ON f.objectid = d.ccomvoi
-                INNER JOIN G_BASE_VOIE.TEMP_A_VOIE_PHYSIQUE g ON g.objectid = f.fid_voie_physique,
-                G_BASE_VOIE.TEMP_A_AGENT f
             WHERE
                 b.cdvaltro = 'V'
-                AND c.cvalide = 'V'
-                AND d.cdvalvoi = 'V'
-                AND f.pnom = 'import_donnees'
-                AND e.lityvoie IS NOT NULL
-                AND d.ccomvoi NOT IN(SELECT id_voie FROM C_3)
-        )t
+    )t
 ON(a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.geom, a.date_saisie, a.fid_pnom_saisie, a.date_modification, a.fid_pnom_modification, a.fid_voie_physique)
     VALUES(t.objectid, t.geom, t.date_saisie, t.fid_pnom_saisie, t.date_modification, t.fid_pnom_modification, t.fid_voie_physique);
 COMMIT;
--- Résultat : 1 686 lignes fusionnées.
+-- Résultat :  lignes fusionnées.
 
+-- Insertion du sens pour les tronçons
+MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
+    USING(
+        SELECT DISTINCT
+            a.objectid,
+            a.fid_voie_physique,
+            b.ccodstr AS sens
+        FROM
+            G_BASE_VOIE.TEMP_A_TRONCON a
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON CAST(b.ccomvoi AS NUMBER(38,0)) = a.fid_voie_physique AND b.cnumtrc = a.objectid
+        WHERE
+            b.cvalide = 'V'
+    )t
+ON (a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
+WHEN MATCHED THEN
+    UPDATE SET a.sens = t.sens;
+COMMIT;
+-- Résultat : 166 lignes fusionnées.
+
+
+-- Correction du sens de la géométrie des tronçons : si le sens est "-" alors ses startpoint et endpoint seront inversés, sinon ils resterons tels quels.
+MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
+    USING(
+        SELECT
+            a.objectid,
+            a.fid_voie_physique,
+            CASE
+                WHEN a.sens = '-'
+                    THEN '+'
+                ELSE
+                    a.sens
+            END AS sens,
+            CASE
+                WHEN a.sens = '-'
+                    THEN SDO_LRS.REVERSE_GEOMETRY(a.geom, m.diminfo)
+                ELSE
+                    a.geom
+            END AS geom
+        FROM
+            G_BASE_VOIE.TEMP_A_TRONCON a,
+            USER_SDO_GEOM_METADATA m
+        WHERE
+            m.table_name = 'TEMP_A_TRONCON'
+    )t
+ON (a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
+WHEN MATCHED THEN
+    UPDATE SET a.sens = t.sens, a.geom = t.geom;
+COMMIT;
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------- Vérification import des données ------------------------------------------

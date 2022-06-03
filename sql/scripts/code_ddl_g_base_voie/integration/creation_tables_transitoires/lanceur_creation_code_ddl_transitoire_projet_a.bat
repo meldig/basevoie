@@ -30,6 +30,7 @@ copy /b %chemin_code_fonction%\creation_get_temp_code_insee_97_communes_contain_
 %chemin_code_table%\creation_temp_a_troncon.sql + ^
 %chemin_code_trigger%\creation_b_iux_temp_a_troncon_date_pnom.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_temp_import_voie_agregee.sql + ^
+%chemin_code_vue%\creation_v_temp_voie_agregee_sens_circulation_rectifie.sql + ^
 %chemin_code_temp%\desactivation_contraintes_index_tables_transitoires.sql ^
 %chemin_code_temp%\temp_code_ddl_schema_transitoire_projet_a.sql
 
