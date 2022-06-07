@@ -99,16 +99,6 @@ WHEN NOT MATCHED THEN
     VALUES(id_voie);
 -- Résultat : 22 059 lignes fusionnées.
 
-CREATE INDEX TEMP_ILTASEU_IDSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(idseui) TABLESPACE G_ADT_INDX;
-CREATE INDEX TEMP_ILTASEU_NUSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(nuseui) TABLESPACE G_ADT_INDX;
-CREATE INDEX TEMP_ILTASEU_NSSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASEU(nsseui) TABLESPACE G_ADT_INDX;
-CREATE INDEX TEMP_ILTASIT_IDSEUI_IDX ON G_BASE_VOIE.TEMP_ILTASIT(idseui) TABLESPACE G_ADT_INDX;
-CREATE INDEX TEMP_ILTASIT_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_ILTASIT(cnumtrc) TABLESPACE G_ADT_INDX;
-CREATE INDEX TEMP_ILTATRC_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_ILTATRC(cnumtrc) TABLESPACE G_ADT_INDX;  
-CREATE INDEX TEMP_VOIECVT_CNUMTRC_IDX ON G_BASE_VOIE.TEMP_VOIECVT(cnumtrc) TABLESPACE G_ADT_INDX; 
-CREATE INDEX TEMP_VOIECVT_CCOMVOI_IDX ON G_BASE_VOIE.TEMP_VOIECVT(ccomvoi) TABLESPACE G_ADT_INDX;
-CREATE INDEX TEMP_VOIEVOI_CCOMVOI_IDX ON G_BASE_VOIE.TEMP_VOIEVOI(ccomvoi) TABLESPACE G_ADT_INDX;
-
 -- Insertion des libellés des voies en doublons de géométrie
 MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
     USING(
@@ -216,6 +206,8 @@ WHEN NOT MATCHED THEN
 COMMIT;        
 -- Résultat : 21 866 lignes fusionnées.
 
+DELETE FROM G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE;
+
 -- Insertion des voies restantes, c'est-à-dire des voies disposant de tronçons affectés à plusieurs voie dont la géométrie n'est pas identique
 MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
     USING (
@@ -247,7 +239,7 @@ COMMIT;
 -- Résultat : 193 lignes fusionnées.
 
 -- Insertion des tronçons affectés à une et une seule voie
-MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
+/*MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
     USING (
         WITH
             C_1 AS(
@@ -285,7 +277,7 @@ MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
 ON(a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
 INSERT(a.objectid, a.geom, a.date_saisie, a.fid_pnom_saisie, a.date_modification, a.fid_pnom_modification, a.fid_voie_physique)
-VALUES(t.objectid, t.geom, t.date_saisie, t.fid_pnom_saisie, t.date_modification, t.fid_pnom_modification, t.fid_voie_physique);
+VALUES(t.objectid, t.geom, t.date_saisie, t.fid_pnom_saisie, t.date_modification, t.fid_pnom_modification, t.fid_voie_physique);*/
 -- Résultat : 49 451 lignes fusionnées.
 
 -- Insertion des tronçons affectés à plusieurs voies ayant la même géométrie
@@ -341,8 +333,10 @@ WHEN NOT MATCHED THEN
 COMMIT;
 -- Résultat : 166 lignes fusionnées.
 
+DELETE FROM TEMP_A_TRONCON;
+
 -- Insertion des tronçons affectés à plusieurs voies ayant des géométries différentes
-MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
+/*MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
     USING(
         WITH
             C_1 AS(
@@ -391,10 +385,10 @@ ON(a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.geom, a.date_saisie, a.fid_pnom_saisie, a.date_modification, a.fid_pnom_modification, a.fid_voie_physique)
     VALUES(t.objectid, t.geom, t.date_saisie, t.fid_pnom_saisie, t.date_modification, t.fid_pnom_modification, t.fid_voie_physique);
-COMMIT;
+COMMIT;*/
 -- Résultat :  lignes fusionnées.
 
--- Insertion du sens pour les tronçons
+-- Insertion du sens pour les tronçons sauf pour 10 tronçons problématiques
 MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
     USING(
         SELECT DISTINCT
@@ -403,19 +397,40 @@ MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
             b.ccodstr AS sens
         FROM
             G_BASE_VOIE.TEMP_A_TRONCON a
-            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON CAST(b.ccomvoi AS NUMBER(38,0)) = a.fid_voie_physique AND b.cnumtrc = a.objectid
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON CAST(b.ccomvoi AS NUMBER(38,0)) = a.fid_voie_physique --AND b.cnumtrc = a.objectid
         WHERE
             b.cvalide = 'V'
+            AND a.objectid NOT IN(20,54,58,61,71,72,73,74,78,79,186,220,224,227,237,238,239,240,244,245)
     )t
 ON (a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN MATCHED THEN
     UPDATE SET a.sens = t.sens;
 COMMIT;
--- Résultat : 166 lignes fusionnées.
+-- Résultat : 156 lignes fusionnées.
 
+-- Insertion du sens pour les 10 tronçons problématiques
+MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
+    USING(
+        SELECT DISTINCT
+            a.objectid,
+            a.fid_voie_physique,
+            b.ccomvoi,
+            '-' AS sens
+        FROM
+            G_BASE_VOIE.TEMP_A_TRONCON a
+            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON CAST(b.ccomvoi AS NUMBER(38,0)) = a.fid_voie_physique
+        WHERE
+            b.cvalide = 'V'
+            AND a.objectid IN(20,54,58,61,71,72,73,74,78,79,186,220,224,227,237,238,239,240,244,245)
+    )t
+ON (a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
+WHEN MATCHED THEN
+    UPDATE SET a.sens = t.sens;
+COMMIT;
+-- Résultat : 10 lignes fusionnées
 
 -- Correction du sens de la géométrie des tronçons : si le sens est "-" alors ses startpoint et endpoint seront inversés, sinon ils resterons tels quels.
-MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
+/*MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
     USING(
         SELECT
             a.objectid,
@@ -441,7 +456,7 @@ MERGE INTO G_BASE_VOIE.TEMP_A_TRONCON a
 ON (a.objectid = t.objectid AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN MATCHED THEN
     UPDATE SET a.sens = t.sens, a.geom = t.geom;
-COMMIT;
+COMMIT;*/
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------- Vérification import des données ------------------------------------------

@@ -288,7 +288,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.date_modification IS 'D
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.fid_pnom_saisie IS 'Clé étrangère vers la table TEMP_A_AGENT indiquant le pnom de l''agent créateur du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.fid_pnom_modification IS 'Clé étrangère vers la table TEMP_A_AGENT indiquant le pnom de l''agent éditeur du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.fid_type_voie IS 'Clé étrangère vers la table TEMP_A_TYPE_VOIE permettant d''associer une voie à un type de voie.';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.fid_voie_physique IS 'Clé étrangère vers la table TA_VOIE_PHYSIQUE permettant d''affecter un ou plusieurs noms à une voie physique.';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.fid_voie_physique IS 'Clé étrangère vers la table TA_VOIE permettant d''affecter un ou plusieurs noms à une voie physique.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE.fid_lateralite IS 'Clé étrangère vers la table TA_LIBELLE permettant de récupérer la latéralité de la voie. En limite de commune le côté gauche de la voie physique peut appartenir à la commune A et le côté droit à la comune B, tandis qu''au sein de la commune la voie physique appartient à une et une seule commune et est donc affectée à une et une seule voie administrative. Cette distinction se fait grâce à ce champ.';
 
 -- 3. Création de la clé primaire
