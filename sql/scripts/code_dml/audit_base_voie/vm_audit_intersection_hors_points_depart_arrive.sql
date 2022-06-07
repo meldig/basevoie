@@ -9,26 +9,18 @@ REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE
 AS
-WITH CTE_1 AS
-    (
-    SELECT 
-        a.cnumtrc troncon_a, 
-        b.cnumtrc troncon_b
-    FROM
-        G_BASE_VOIE.TEMP_ILTATRC a,
-        G_BASE_VOIE.TEMP_ILTATRC b
-    WHERE
-        a.cnumtrc < b.cnumtrc
-        AND a.cdvaltro = 'V'
-        AND b.cdvaltro = 'V'
-        AND SDO_RELATE(SDO_UTIL.RECTIFY_GEOMETRY(a.ora_geometry, 0.005),SDO_UTIL.RECTIFY_GEOMETRY(b.ora_geometry, 0.005), 'mask=OVERLAPBDYDISJOINT') = 'TRUE'
-    )
 SELECT
-    rownum,
-    troncon_a,
-    troncon_b
+    rownum, 
+    a.cnumtrc troncon_a, 
+    b.cnumtrc troncon_b
 FROM
-    CTE_1
+    G_BASE_VOIE.TEMP_ILTATRC a,
+    G_BASE_VOIE.TEMP_ILTATRC b
+WHERE
+    a.cnumtrc < b.cnumtrc
+    AND a.cdvaltro = 'V'
+    AND b.cdvaltro = 'V'
+    AND SDO_RELATE(SDO_UTIL.RECTIFY_GEOMETRY(a.ora_geometry, 0.005),SDO_UTIL.RECTIFY_GEOMETRY(b.ora_geometry, 0.005), 'mask=OVERLAPBDYDISJOINT') = 'TRUE'
 ;
 
 -- 2. Clé primaire

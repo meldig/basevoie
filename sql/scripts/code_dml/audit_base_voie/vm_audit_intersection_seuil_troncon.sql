@@ -10,27 +10,18 @@ REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE
 AS
-WITH CTE_1 AS
-    (
-    SELECT
-        a.idseui,
-        c.cnumtrc,
-        a.ora_geometry
-    FROM
-        G_BASE_VOIE.TEMP_ILTASEU a
-        INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
-        INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
-    WHERE
-        c.cdvaltro = 'V'
-        AND SDO_RELATE(a.ora_geometry,c.ora_geometry,'mask = OVERLAPBDYINTERSECT') = 'TRUE'
-    )
 SELECT
     rownum,
-    idseui,
-    cnumtrc,
-    ora_geometry
+    a.idseui,
+    c.cnumtrc,
+    a.ora_geometry
 FROM
-    CTE_1
+    G_BASE_VOIE.TEMP_ILTASEU a
+    INNER JOIN G_BASE_VOIE.TEMP_ILTASIT b ON b.idseui = a.idseui
+    INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+WHERE
+    c.cdvaltro = 'V'
+    AND SDO_ANYINTERACT(a.ora_geometry,c.ora_geometry) = 'TRUE'
 ;
 
 -- 2. Clé primaire

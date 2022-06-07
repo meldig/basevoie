@@ -42,7 +42,7 @@ ADD CONSTRAINT VM_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF_PK
 PRIMARY KEY (IDENTIFIANT);
 
 -- 3. Commentaire vue materialisée
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF IS 'Vue permettant de connaitre les troncons d''une meme voie qui ne s''intersectent pas sur les points de depart ni d''arrivé';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF IS 'Vue permettant de connaitre les tronçons d''une même voie qui ne s''intersectent pas et ne se connectent pas sur les points de départ/arrivée dans un rayon de 50 cm autours de chaque tronçon.';
 
 -- 4. Commentaires champs
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_TRONCON_MEME_VOIE_NON_JOINTIF.IDENTIFIANT IS 'Clé primaire de la vue.';

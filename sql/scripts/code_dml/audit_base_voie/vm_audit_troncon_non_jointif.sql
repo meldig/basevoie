@@ -33,7 +33,7 @@ PRIMARY KEY (IDENTIFIANT);
 
 
 -- 3. Commentaire de la vue materialisée.
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIF  IS 'Vue permettant de connaitre les voies secondaire affectées à plusiseurs voie';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIF  IS 'Vue permettant de connaitre les troncons qui ne sont pas jointifs.';
 
 
 -- 4. Commentaire des colonnes.

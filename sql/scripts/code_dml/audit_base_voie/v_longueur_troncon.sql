@@ -18,7 +18,7 @@ WHERE
 
 
 -- 2. Commentaire de la vue.
-COMMENT ON TABLE G_BASE_VOIE.V_LONGUEUR_TRONCON  IS 'Vue qui présente la longueur des troncons';
+COMMENT ON TABLE G_BASE_VOIE.V_LONGUEUR_TRONCON  IS 'Vue qui présente la longueur des troncons valides';
 
 -- 3. Commentaire des colonnes
 COMMENT ON COLUMN G_BASE_VOIE.V_LONGUEUR_TRONCON.IDENTIFIANT IS 'Clé primaire de la vue, numero du troncon.';
