@@ -56,3 +56,6 @@ CREATE INDEX TA_RELATION_TRONCON_VOIE_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_RELATIO
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_RELATION_TRONCON_VOIE_LOG TO G_ADMIN_SIG;
+
+/
+

@@ -13,23 +13,21 @@ FORCE
 DISABLE QUERY REWRITE AS
 SELECT
     a.objectid AS id_voie,
-    UPPER(TRIM(d.libelle)) AS type_de_voie,
+    UPPER(TRIM(c.libelle)) AS type_de_voie,
     UPPER(TRIM(a.libelle_voie)) AS libelle_voie,
     UPPER(TRIM(a.complement_nom_voie)) AS complement_nom_voie,
     SDO_AGGR_UNION(
-        SDOAGGRTYPE(c.geom, 0.005)
+        SDOAGGRTYPE(b.geom, 0.005)
     ) AS geom
 FROM
     G_BASE_VOIE.TA_VOIE a
-    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_voie = a.objectid
-    INNER JOIN G_BASE_VOIE.TA_TRONCON c ON c.objectid = b.fid_troncon
-    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = a.fid_typevoie
+    INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.fid_voie = a.objectid
+    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE c ON c.objectid = a.fid_typevoie
 GROUP BY
     a.objectid,
-    UPPER(TRIM(d.libelle)),
+    UPPER(TRIM(c.libelle)),
     UPPER(TRIM(a.libelle_voie)),
-    UPPER(TRIM(a.complement_nom_voie))
-;
+    UPPER(TRIM(a.complement_nom_voie));
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE IS 'Vue matérialisée matérialisant la géométrie des voies.';
@@ -44,7 +42,7 @@ INSERT INTO USER_SDO_GEOM_METADATA(
 VALUES(
     'VM_VOIE_AGGREGEE',
     'GEOM',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 594000, 964000, 0.005),SDO_DIM_ELEMENT('Y', 6987000, 7165000, 0.005)), 
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
     2154
 );
 COMMIT;
@@ -70,4 +68,6 @@ CREATE INDEX VM_VOIE_AGGREGEE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_VOIE_AGGREGEE(L
 
 -- 7. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_VOIE_AGGREGEE TO G_ADMIN_SIG;
+
+/
 

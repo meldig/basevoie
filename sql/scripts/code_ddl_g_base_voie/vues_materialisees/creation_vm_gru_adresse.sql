@@ -1,87 +1,93 @@
 /*
 Création de la vue matérialisée G_BASE_VOIE.VM_GRU_ADRESSE proposant les adresses de la MEL pour la Gestion des Relations des Usagers.
 */
-
+/*
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_GRU_ADRESSE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_GRU_ADRESSE';
 COMMIT;
-
+*/
 -- 1. Création de la vue matérialisée
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_GRU_ADRESSE(
-    objectid,
     id_seuil,
     numero,
     nom_voie,
-    commune,
+    code_insee,
     geom
 )
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
-WITH
-    C_1 AS(
-        SELECT -- Sélection des seuils affectés aux voies secondaires pour lesquelles on conserve les noms des voies principales
-            b.objectid AS id_seuil,
-            TRIM(c.numero_seuil || ' ' || COALESCE(c.complement_numero_seuil, '')) AS numero,
-            UPPER(i.libelle) || ' ' || UPPER(h.libelle_voie) || ' ' || UPPER(h.complement_nom_voie) AS nom_voie,
-            CASE
-                WHEN UPPER(a.nom) = UPPER('Lomme')
-                    THEN UPPER('lille (lomme)')
-                WHEN UPPER(a.nom) = UPPER('Hellemmes-Lille')
-                    THEN UPPER('lille (hellemmes)')
-                WHEN UPPER(a.nom) NOT IN(UPPER('Lomme'), UPPER('Hellemmes-Lille'))
-                    THEN UPPER(a.nom)
-            END AS commune,
-            b.geom
+    WITH
+        C_1 AS(
+            SELECT -- Sélection des seuils affectés aux voies principales dont on conserve les noms
+                b.objectid AS id_seuil,
+                TRIM(b.numero_seuil || ' ' || COALESCE(b.complement_numero_seuil, '')) AS numero,
+                e.objectid AS id_voie,
+                UPPER(f.libelle) || ' ' || UPPER(e.libelle_voie) || ' ' || UPPER(e.complement_nom_voie) AS nom_voie,
+                CAST(TRIM(GET_CODE_INSEE_LLH_CONTAIN_POINT('TA_SEUIL', a.geom)) AS VARCHAR2(8 BYTE)) AS code_insee,
+                a.geom
+            FROM
+                G_BASE_VOIE.TA_SEUIL a
+                INNER JOIN G_BASE_VOIE.TA_INFOS_SEUIL b ON b.fid_seuil = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL g ON g.fid_seuil = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_TRONCON c ON c.objectid = g.fid_troncon  
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE h ON h.fid_troncon = c.objectid
+                INNER JOIN G_BASE_VOIE.TA_VOIE e ON e.objectid = h.fid_voie
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE f on f.objectid = e.fid_typevoie
+            WHERE
+                b.objectid NOT IN(320765,308322)
+                AND e.objectid NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
+        ),
+        
+        C_2 AS(
+            SELECT -- Sélection des seuils affectés aux voies secondaires pour lesquelles on conserve les noms des voies principales
+                b.objectid AS id_seuil,
+                TRIM(b.numero_seuil || ' ' || COALESCE(b.complement_numero_seuil, '')) AS numero,
+                e.objectid AS id_voie,
+                UPPER(f.libelle) || ' ' || UPPER(e.libelle_voie) || ' ' || UPPER(e.complement_nom_voie) AS nom_voie,
+                CAST(TRIM(GET_CODE_INSEE_LLH_CONTAIN_POINT('TA_SEUIL', a.geom)) AS VARCHAR2(8 BYTE)) AS code_insee,
+                a.geom
+            FROM
+                G_BASE_VOIE.TA_SEUIL a
+                INNER JOIN G_BASE_VOIE.TA_INFOS_SEUIL b ON b.fid_seuil = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL g ON g.fid_seuil = a.objectid
+                INNER JOIN G_BASE_VOIE.TA_TRONCON c ON c.objectid = g.fid_troncon  
+                INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE h ON h.fid_troncon = c.objectid
+                INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE d ON d.fid_voie_secondaire = h.fid_voie
+                INNER JOIN G_BASE_VOIE.TA_VOIE e ON e.objectid = d.fid_voie_principale
+                INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE f on f.objectid = e.fid_typevoie
+            WHERE
+                b.objectid NOT IN(320765,308322)
+                AND b.objectid NOT IN(SELECT id_seuil FROM C_1)
+        ),
+        
+        C_3 AS(  
+            SELECT
+                id_seuil,
+                numero,
+                id_voie,
+                nom_voie,
+                code_insee,
+                geom
+            FROM
+                C_1
+            UNION ALL
+            SELECT
+                id_seuil,
+                numero,
+                id_voie,
+                nom_voie,
+                code_insee,
+                geom
+            FROM
+                C_2
+        )
+        
+        SELECT
+            rownum AS objectid,
+            a.*
         FROM
-            G_REFERENTIEL.MEL_COMMUNE_LLH a
-            INNER JOIN G_BASE_VOIE.TA_SEUIL b ON TRIM(GET_CODE_INSEE_LLH_CONTAIN_POINT('TA_SEUIL', b.geom)) = TRIM(a.code_insee)
-            INNER JOIN G_BASE_VOIE.TA_INFOS_SEUIL c ON c.fid_seuil = b.objectid
-            INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL d ON d.fid_seuil = b.objectid
-            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON e.objectid = d.fid_troncon
-            INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE f ON f.fid_troncon = e.objectid   
-            INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = f.fid_voie
-            INNER JOIN G_BASE_VOIE.TA_VOIE h ON h.objectid = g.fid_voie_principale
-            INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE i on i.objectid = h.fid_typevoie
-        WHERE
-            UPPER(i.libelle) NOT IN('Libellé non-renseigné avant la migration', 'type de voie présent dans VOIEVOI mais pas dans TYPEVOIE lors de la migration')
-        UNION ALL
-        SELECT -- Sélection des seuils affectés aux voies principales dont on conserve les noms
-            b.objectid AS id_seuil,
-            c.numero_seuil || COALESCE(c.complement_numero_seuil, '') AS numero,
-            UPPER(h.libelle) || ' ' || UPPER(g.libelle_voie) || ' ' || UPPER(g.complement_nom_voie) AS nom_voie,
-            CASE
-                WHEN UPPER(a.nom) = UPPER('Lomme')
-                    THEN UPPER('lille (lomme)')
-                WHEN UPPER(a.nom) = UPPER('Hellemmes-Lille')
-                    THEN UPPER('lille (hellemmes)')
-                WHEN UPPER(a.nom) NOT IN(UPPER('Lomme'), UPPER('Hellemmes-Lille'))
-                    THEN UPPER(a.nom)
-            END AS commune,
-            b.geom
-        FROM
-            G_REFERENTIEL.MEL_COMMUNE_LLH a
-            INNER JOIN G_BASE_VOIE.TA_SEUIL b ON TRIM(GET_CODE_INSEE_LLH_CONTAIN_POINT('TA_SEUIL', b.geom)) = TRIM(a.code_insee)
-            INNER JOIN G_BASE_VOIE.TA_INFOS_SEUIL c ON c.fid_seuil = b.objectid
-            INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL d ON d.fid_seuil = b.objectid
-            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON e.objectid = d.fid_troncon
-            INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE f ON f.fid_troncon = e.objectid   
-            INNER JOIN G_BASE_VOIE.TA_VOIE g ON g.objectid = f.fid_voie
-            INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE h on h.objectid = g.fid_typevoie
-        WHERE
-            UPPER(h.libelle) NOT IN('Libellé non-renseigné avant la migration', 'type de voie présent dans VOIEVOI mais pas dans TYPEVOIE lors de la migration')
-            AND g.objectid NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
-    )
-    
-    SELECT
-        rownum,
-        id_seuil,
-        numero,
-        nom_voie,
-        commune,
-        geom
-    FROM
-        C_1;
+            C_3 a;
     
 -- 2. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
@@ -93,7 +99,7 @@ INSERT INTO USER_SDO_GEOM_METADATA(
 VALUES(
     'VM_GRU_ADRESSE',
     'GEOM',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 594000, 964000, 0.005),SDO_DIM_ELEMENT('Y', 6987000, 7165000, 0.005)), 
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
     2154
 );
 COMMIT;
@@ -116,19 +122,20 @@ PARAMETERS(
 );
 
 -- autres index
-CREATE INDEX VM_GRU_ADRESSE_COMMUNE_NOM_VOIE_NUMERO_IDX ON G_BASE_VOIE.VM_GRU_ADRESSE(COMMUNE, NOM_VOIE, NUMERO)
+CREATE INDEX VM_GRU_ADRESSE_COMMUNE_ID_NOM_VOIE_NUMERO_IDX ON G_BASE_VOIE.VM_GRU_ADRESSE(CODE_INSEE, ID_VOIE, NOM_VOIE, NUMERO)
     TABLESPACE G_ADT_INDX;
 
 -- 5. Création des commentaires de table et de colonnes
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_GRU_ADRESSE IS 'Vue matérialisée proposant les adresses de la MEL pour la Gestion des Relations des Usagers.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.id_seuil IS 'Clé primaire de la VM correspondant aux identifiants de chaque seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.numero IS 'Numéro de chaque seuil avec son suffixe b, bis, ter, etc quand il existe.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.nom_voie IS 'Nom de chaque voie : type de voie + nom de la voie + complément du nom';
-COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.commune IS 'Nom de la commune d''appartenance du seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.nom_voie IS 'Nom de chaque voie : type de voie + nom de la voie + complément du nom.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.code_insee IS 'Code INSEE de la commune d''appartenance du seuil (calculé à partir de MEL LLH (97 communes)).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_GRU_ADRESSE.geom IS 'géométries de type point de chaque seuil.';
 
 -- 6. Création des droits de lecture pour les admins
 GRANT SELECT ON G_BASE_VOIE.VM_GRU_ADRESSE TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.VM_GRU_ADRESSE TO G_BASE_VOIE_LEC;
 
 /
 

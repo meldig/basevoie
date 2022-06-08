@@ -71,3 +71,6 @@ PARAMETERS(
 
 -- 6. Don du droit de lecture aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_ETUDE_VOIE_PRINCIPALE_SECONDAIRE TO G_ADMIN_SIG;
+
+/
+

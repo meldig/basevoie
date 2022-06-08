@@ -38,8 +38,7 @@ WITH
         G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
         INNER JOIN C_1 b ON TRIM(UPPER(b.libelle_voie_principale)) = TRIM(UPPER(a.libelle_voie))
                         AND b.code_insee_voie_principale = a.code_insee
-                        AND b.longueur_voie_principale = a.longueur_voie
-;
+                        AND b.longueur_voie_principale = a.longueur_voie;
 
 -- 3. Création des commentaires
 COMMENT ON MATERIALIZED VIEW VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR IS 'Vue matérialisée regroupant toutes les voies dites principales de la base, c-a-d les voies ayant la plus grande longueur au sein d''un ensemble de voie ayant le même libellé et code insee.';

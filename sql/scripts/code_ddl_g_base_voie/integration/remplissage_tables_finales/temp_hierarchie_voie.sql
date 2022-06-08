@@ -1,38 +1,23 @@
 /*
-Création d'une vue matérialisée matérialisant la géométrie des voies.
+Création de la VM VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE permettant de récupérer la géométrie et le code INSEE de chaque voie.
 */
--- 1. Suppression de la VM et de ses métadonnées
-/*DROP MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_VOIE_AGGREGEE';
-COMMIT;
-*/
--- 2. Création de la VM
-CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_VOIE_AGGREGEE" ("ID_VOIE","TYPE_DE_VOIE","LIBELLE_VOIE","COMPLEMENT_NOM_VOIE", "GEOM")        
+
+CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE" ("ID_VOIE","TYPE_DE_VOIE","LIBELLE_VOIE","COMPLEMENT_NOM_VOIE", "CODE_INSEE", "GEOM")        
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
 SELECT
-    a.objectid AS id_voie,
-    UPPER(TRIM(d.libelle)) AS type_de_voie,
-    UPPER(TRIM(a.libelle_voie)) AS libelle_voie,
-    UPPER(TRIM(a.complement_nom_voie)) AS complement_nom_voie,
-    SDO_AGGR_UNION(
-        SDOAGGRTYPE(c.geom, 0.005)
-    ) AS geom
+    id_voie,
+    type_de_voie,
+    libelle_voie,
+    complement_nom_voie,
+    TRIM(GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_VOIE_AGGREGEE', geom)) AS code_insee,
+    geom
 FROM
-    G_BASE_VOIE.TA_VOIE a
-    INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_VOIE b ON b.fid_voie = a.objectid
-    INNER JOIN G_BASE_VOIE.TA_TRONCON c ON c.objectid = b.fid_troncon
-    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE d ON d.objectid = a.fid_typevoie
-GROUP BY
-    a.objectid,
-    UPPER(TRIM(d.libelle)),
-    UPPER(TRIM(a.libelle_voie)),
-    UPPER(TRIM(a.complement_nom_voie))
-;
-
+    G_BASE_VOIE.VM_VOIE_AGGREGEE;
+    
 -- 3. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_VOIE_AGGREGEE IS 'Vue matérialisée matérialisant la géométrie des voies.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE IS 'Vue matérialisée de travail permettant de récupérer le code insee et la géométrie des voies.';
 
 -- 4. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
@@ -42,7 +27,7 @@ INSERT INTO USER_SDO_GEOM_METADATA(
     SRID
 )
 VALUES(
-    'VM_VOIE_AGGREGEE',
+    'VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE',
     'GEOM',
     SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 594000, 964000, 0.005),SDO_DIM_ELEMENT('Y', 6987000, 7165000, 0.005)), 
     2154
@@ -50,14 +35,14 @@ VALUES(
 COMMIT;
 
 -- 5. Création de la clé primaire
-ALTER MATERIALIZED VIEW VM_VOIE_AGGREGEE 
-ADD CONSTRAINT VM_VOIE_AGGREGEE_PK 
+ALTER MATERIALIZED VIEW VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE 
+ADD CONSTRAINT VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE_PK 
 PRIMARY KEY (ID_VOIE);
 
 -- 6. Création des index
-CREATE INDEX VM_VOIE_AGGREGEE_SIDX
-ON G_BASE_VOIE.VM_VOIE_AGGREGEE(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX
+CREATE INDEX VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE_SIDX
+ON G_BASE_VOIE.VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
 PARAMETERS(
   'sdo_indx_dims=2, 
   layer_gtype=MULTILINE, 
@@ -65,11 +50,13 @@ PARAMETERS(
   work_tablespace=DATA_TEMP'
 );
 
-CREATE INDEX VM_VOIE_AGGREGEE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_VOIE_AGGREGEE(LIBELLE_VOIE)
+CREATE INDEX VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE_IDX ON G_BASE_VOIE.VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE(CODE_INSEE, TYPE_DE_VOIE, LIBELLE_VOIE, COMPLEMENT_NOM_VOIE)
     TABLESPACE G_ADT_INDX;
 
 -- 7. Affectations des droits
-GRANT SELECT ON G_BASE_VOIE.VM_VOIE_AGGREGEE TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE TO G_ADMIN_SIG;
+
+/
 
 /*
 Création d'une vue matérialisée regroupant toutes les voies avec leur nom, code INSEE et longueur
@@ -85,12 +72,12 @@ SELECT
     b.type_de_voie,
     b.libelle_voie,
     b.complement_nom_voie,
-    CAST(GET_CODE_INSEE_97_COMMUNES_TRONCON('VM_VOIE_AGGREGEE', b.geom) AS VARCHAR2(5))AS code_insee,
+    b.code_insee,
     SDO_GEOM.SDO_LENGTH(b.geom) AS longueur_voie,
     b.geom
 FROM
     G_BASE_VOIE.TA_VOIE a
-    INNER JOIN G_BASE_VOIE.VM_VOIE_AGGREGEE b ON b.id_voie = a.objectid;
+    INNER JOIN G_BASE_VOIE.VM_TRAVAIL_VOIE_AGGREGEE_CODE_INSEE b ON b.id_voie = a.objectid;
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR IS 'Vue matérialisée récupérant le code INSEE, la longueur, le type , le nom, la géométrie et le complément de chaque voie.';
@@ -105,7 +92,7 @@ INSERT INTO USER_SDO_GEOM_METADATA(
 VALUES(
     'VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR',
     'GEOM',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 594000, 964000, 0.005),SDO_DIM_ELEMENT('Y', 6987000, 7165000, 0.005)), 
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
     2154
 );
 COMMIT;
@@ -137,6 +124,8 @@ CREATE INDEX VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR_LIBELLE_VOIE_IDX ON G_BASE_VOIE
 
 -- 5. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR TO G_ADMIN_SIG;
+
+/
 
 /*
 VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR : Vue matérialisée regroupant toutes les voies dites principales de la base, c-a-d les voies ayant la plus grande longueur au sein d''un ensemble de voie ayant le même libellé et code insee.
@@ -178,8 +167,7 @@ WITH
         G_BASE_VOIE.VM_TRAVAIL_VOIE_CODE_INSEE_LONGUEUR a
         INNER JOIN C_1 b ON TRIM(UPPER(b.libelle_voie_principale)) = TRIM(UPPER(a.libelle_voie))
                         AND b.code_insee_voie_principale = a.code_insee
-                        AND b.longueur_voie_principale = a.longueur_voie
-;
+                        AND b.longueur_voie_principale = a.longueur_voie;
 
 -- 3. Création des commentaires
 COMMENT ON MATERIALIZED VIEW VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR IS 'Vue matérialisée regroupant toutes les voies dites principales de la base, c-a-d les voies ayant la plus grande longueur au sein d''un ensemble de voie ayant le même libellé et code insee.';
@@ -197,6 +185,7 @@ VALUES(
     SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
     2154
 );
+COMMIT;
 
 -- 5. Création de la clé primaire
 ALTER MATERIALIZED VIEW VM_TRAVAIL_VOIE_PRINCIPALE_LONGUEUR 
@@ -252,9 +241,9 @@ WITH
         WHERE
             a.longueur_voie < b.longueur
             AND SDO_WITHIN_DISTANCE(a.geom, b.geom, 'distance=1') = 'TRUE'
-    )/*,
+    ),
     
-    C_2 AS(-- Sélection des voies secondaires qui intersectent une voie secondaire elle-même intersectant une voie principale*/
+    C_2 AS(-- Sélection des voies secondaires qui intersectent une voie secondaire elle-même intersectant une voie principale
         SELECT
             c.id_voie_secondaire AS id__intersect,
             TRIM(UPPER(c.libelle_voie_secondaire)) AS libelle_intersect,
@@ -431,3 +420,47 @@ WHEN NOT MATCHED THEN
     INSERT(a.fid_voie_principale, a.fid_voie_secondaire)
     VALUES(t.id_voie_principale, t.id_voie_secondaire);
 COMMIT;
+
+-- Lors du remplissage de la table TA_VOIE_LITTERALIS, je me suis aperçu que toutes les voies secondaires n'étaient pas dans TA_HIERARCHISATION_VOIE, le code ci-dessous permet de rectifier la situation :
+/*INSERT INTO G_BASE_VOIE.TA_HIERARCHISATION_VOIE(fid_voie_principale, fid_voie_secondaire)
+WITH
+        C_1 AS(
+            SELECT
+                libelle_voie,
+                GET_CODE_INSEE_97_COMMUNES_TRONCON('TA_VOIE_LITTERALIS', geom) AS insee
+            FROM
+                TA_VOIE_LITTERALIS
+            GROUP BY
+                libelle_voie, GET_CODE_INSEE_97_COMMUNES_TRONCON('TA_VOIE_LITTERALIS', geom)
+            HAVING
+                COUNT(libelle_voie) > 1
+                AND COUNT(GET_CODE_INSEE_97_COMMUNES_TRONCON('TA_VOIE_LITTERALIS', geom)) > 1
+        )
+        
+            SELECT DISTINCT
+                c.id_voie AS id_voie_principale,
+                --c.libelle_voie AS nom_voie_principale,
+                --c.insee,
+                --c.mesure_voie,
+                a.ID_VOIE AS id_voie_secondaire
+                --a.LIBELLE_VOIE,
+                --a.INSEE,
+                --a.MESURE_VOIE,
+                --a.COMPLEMENT_NOM_VOIE,
+                --a.DATE_SAISIE,
+                --a.DATE_MODIFICATION,
+                --a.FID_PNOM_SAISIE,
+                --a.FID_PNOM_MODIFICATION,
+                --a.FID_TYPEVOIE,
+                --a.FID_GENRE_VOIE,
+                --a.FID_RIVOLI,
+                --a.FID_METADONNEE
+            FROM
+                TA_VOIE_LITTERALIS a
+                INNER JOIN C_1 b ON UPPER(b.libelle_voie) = UPPER(a.libelle_voie) AND b.insee = GET_CODE_INSEE_97_COMMUNES_TRONCON('TA_VOIE_LITTERALIS', a.geom)
+                INNER JOIN TA_VOIE_LITTERALIS c ON UPPER(c.libelle_voie) = UPPER(a.libelle_voie) AND c.insee = GET_CODE_INSEE_97_COMMUNES_TRONCON('TA_VOIE_LITTERALIS', a.geom)
+                INNER JOIN TA_HIERARCHISATION_VOIE d ON d.fid_voie_principale = c.id_voie
+        WHERE
+            a.id_voie <> c.id_voie
+            AND a.id_voie NOT IN(SELECT fid_voie_secondaire FROM TA_HIERARCHISATION_VOIE);
+*/

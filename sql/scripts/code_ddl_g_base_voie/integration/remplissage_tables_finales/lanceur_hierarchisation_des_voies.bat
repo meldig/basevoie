@@ -6,9 +6,10 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
 :: 2. Déclaration et valorisation des variables
 SET /p chemin_code_vue_materialise="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES MATERIALISEES du schema : "
-SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
+SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier remplissage_tables_finales : "
 
 copy /b %chemin_code_vue_materialise%\creation_vm_voie_aggregee.sql + ^
+%chemin_code_vue_materialise%\creation_vm_travail_voie_aggregee_code_insee.sql + ^
 %chemin_code_vue_materialise%\creation_vm_travail_voie_code_insee_longueur.sql + ^
 %chemin_code_vue_materialise%\creation_vm_travail_voie_principale_longueur.sql + ^
 %chemin_code_vue_materialise%\creation_vm_travail_voie_secondaire_longueur.sql + ^

@@ -18,10 +18,13 @@ BEGIN
 
     IF INSERTING THEN -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le POI, présent dans TA_AGENT.
        :new.fid_pnom_saisie := v_id_agent;
+       :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
        :new.fid_pnom_modification := v_id_agent;
+       :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
     ELSE
         IF UPDATING THEN -- En cas de mise à jour on édite le champ fid_pnom_modification avec la FK du pnom de l'agent, ayant modifié le POI, présent dans TA_AGENT.
-             :new.fid_pnom_modification := v_id_agent;
+            :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
+            :new.fid_pnom_modification := v_id_agent;
         END IF;
     END IF;
 

@@ -15,7 +15,7 @@ SET /p INSTANCE_FUSION_SEUIL_P="Fusion des seuils : Veuillez saisir l'instance O
 ::SET /p MDP_FAM_LIB_D="Famille - Libelle : Veuillez saisir le mot de passe de l'utilisateur Oracle de destination : "
 ::SET /p INSTANCE_FAM_LIB_D="Famille - Libelle : Veuillez saisir l'instance Oracle de destination : "
 SET /p CHEMIN_AGENT="Veuillez saisir le chemin d'acces au fichier temp_agent : "
-SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier integration : "
+SET /p CHEMIN_INTEGRATION="Veuillez saisir le chemin d'acces au dossier import des donnees : "
 
 :: 2. se mettre dans l'environnement QGIS
 cd C:\Program Files\QGIS 3.20.3\bin
