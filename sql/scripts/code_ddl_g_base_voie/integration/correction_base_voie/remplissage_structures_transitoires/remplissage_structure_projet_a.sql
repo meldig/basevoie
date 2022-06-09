@@ -145,7 +145,7 @@ WHEN NOT MATCHED THEN
 COMMIT;
 -- Résultat : 106 lignes fusionnées.
 
--- Insertion des voies pour lesquelles un tronçon est affecté à une voie
+-- Insertion des voies uniques
 MERGE INTO G_BASE_VOIE.TEMP_A_VOIE_ADMINISTRATIVE a
     USING (
         WITH
@@ -473,7 +473,7 @@ WHERE
     b.lityvoie IS NOT NULL
     AND a.cdvalvoi = 'V'
     AND c.cvalide = 'V';
--- Résultat : 22158 voies
+-- Résultat : 22165 voies
 
 -- Décompte du nombre de libellés de voies
 SELECT
