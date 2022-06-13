@@ -6,26 +6,22 @@ La table TEMP_B_TRONCON regroupe tous les tronçons de la base voie.
 CREATE TABLE G_BASE_VOIE.TEMP_B_TRONCON(
     objectid NUMBER(38,0),
     geom SDO_GEOMETRY NULL,
-    sens CHAR(1 BYTE),
     date_saisie DATE DEFAULT sysdate NULL,
     date_modification DATE DEFAULT sysdate NULL,
     fid_pnom_saisie NUMBER(38,0) NULL,
     fid_pnom_modification NUMBER(38,0) NULL,
-    fid_voie_physique NUMBER(38,0),
-    fid_metadonnee NUMBER(38,0) NULL
+    fid_etat NUMBER(38,0) NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
 COMMENT ON TABLE G_BASE_VOIE.TEMP_B_TRONCON IS 'Table - du projet B de correction des erreurs de topologie - contenant les tronçons de la base voie. Il s''agit d''une table temporaire servant à tester la structure de la base en teant compte des latéralités de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.objectid IS 'Clé primaire de la table identifiant chaque tronçon. Cette pk est auto-incrémentée et remplace l''ancien identifiant cnumtrc.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.geom IS 'Géométrie de type ligne simple de chaque tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.sens IS 'Sense de circulation du tronçon par rapport au sens de saisie : "+" = saisie de saisie égal au sens de circulation ; "-" = sens de saisie opposé au sens de circulation.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.date_saisie IS 'date de saisie du tronçon (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.date_modification IS 'Dernière date de modification du tronçon (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.fid_pnom_saisie IS 'Clé étrangère vers la table TEMP_B_AGENT permettant de récupérer le pnom de l''agent ayant créé un tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.fid_pnom_modification IS 'Clé étrangère vers la table TEMP_B_AGENT permettant de récupérer le pnom de l''agent ayant modifié un tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.fid_voie_physique IS 'Clé étrangère vers la table TEMP_B_VOIE_PHYSIQUE, permettant d''associer un tronçon à une et une seule voie physique.';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.fid_metadonnee IS 'Clé étrangère vers la table G_GEO.TA_METADONNEE permettant de connaître la source des tronçons (MEL ou IGN).';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_B_TRONCON.fid_etat IS 'Etat d''avancement des corrections : en erreur, corrigé, correct.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TEMP_B_TRONCON 
@@ -65,14 +61,9 @@ FOREIGN KEY (fid_pnom_modification)
 REFERENCES G_BASE_VOIE.TEMP_B_AGENT(numero_agent);
 
 ALTER TABLE G_BASE_VOIE.TEMP_B_TRONCON
-ADD CONSTRAINT TEMP_B_TRONCON_FID_VOIE_PHYSIQUE_FK
-FOREIGN KEY (fid_voie_physique)
-REFERENCES G_BASE_VOIE.TEMP_B_VOIE_PHYSIQUE(objectid);
-
-ALTER TABLE G_BASE_VOIE.TEMP_B_TRONCON
-ADD CONSTRAINT TEMP_B_TRONCON_FID_METADONNEE_FK
-FOREIGN KEY (fid_metadonnee)
-REFERENCES G_GEO.TA_METADONNEE(objectid);
+ADD CONSTRAINT TEMP_B_TRONCON_FID_ETAT_FK
+FOREIGN KEY (fid_etat)
+REFERENCES G_BASE_VOIE.TEMP_B_LIBELLE(objectid);
 
 -- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TEMP_B_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TEMP_B_TRONCON(fid_pnom_saisie)
@@ -81,10 +72,7 @@ CREATE INDEX TEMP_B_TRONCON_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TEMP_B_TRONCON(fi
 CREATE INDEX TEMP_B_TRONCON_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TEMP_B_TRONCON(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TEMP_B_TRONCON_fid_voie_physique_IDX ON G_BASE_VOIE.TEMP_B_TRONCON(fid_voie_physique)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TEMP_B_TRONCON_FID_METADONNEE_IDX ON G_BASE_VOIE.TEMP_B_TRONCON(fid_metadonnee)
+CREATE INDEX TEMP_B_TRONCON_FID_ETAT_IDX ON G_BASE_VOIE.TEMP_B_TRONCON(fid_etat)
     TABLESPACE G_ADT_INDX;
 
 -- Cet index dispose d'une fonction permettant d'accélérer la récupération du code INSEE de la commune d'appartenance du tronçon. 
