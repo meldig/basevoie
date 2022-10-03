@@ -181,3 +181,17 @@ WHERE
 -- Résultat : 227 lignes supprimées
 
 COMMIT;
+
+-- Ajout d'anciennes relations voie physique / voie administrative correctes
+INSERT INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE(fid_voie_physique, fid_voie_administrative)
+SELECT DISTINCT
+    a.objectid,
+    c.objectid
+FROM
+    G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE a
+    INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE b ON b.fid_voie_physique = a.objectid
+    INNER JOIN G_BASE_VOIE.TEMP_B_VOIE_ADMINISTRATIVE c ON c.fid_voie_physique = a.objectid
+    --INNER JOIN G_BASE_VOIE.TEMP_b_RELATION_TRONCON_VOIE_PHYSIQUE c ON c.fid_voie_physique = b.fid_voie_physique
+WHERE
+    a.objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE);
+-- Résultat : 397 lignes insérées
