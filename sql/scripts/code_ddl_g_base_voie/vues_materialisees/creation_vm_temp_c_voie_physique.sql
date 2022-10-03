@@ -20,8 +20,6 @@ FROM
     G_BASE_VOIE.TEMP_C_TRONCON b
     INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE c ON c.fid_troncon = b.objectid
     INNER JOIN G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE d ON d.objectid = c.fid_voie_physique
-WHERE
-    d.objectid > 6700320
 GROUP BY
     d.objectid;
 

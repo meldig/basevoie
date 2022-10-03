@@ -26,6 +26,7 @@ copy /b %chemin_code_sequence%\creation_seq_temp_c_troncon_objectid.sql + ^
 %chemin_code_table%\creation_temp_c_troncon.sql + ^
 %chemin_code_table%\creation_temp_c_relation_troncon_voie_physique.sql + ^
 %chemin_code_table%\creation_temp_c_relation_voie_physique_administrative.sql + ^
+%chemin_code_table%\creation_temp_c_transit_troncon_voie_physique.sql + ^
 %chemin_code_trigger%\creation_b_iux_temp_c_troncon_date_pnom.sql + ^
 %chemin_code_temp%\desactivation_contraintes_index_tables_projet_c.sql ^
 %chemin_code_temp%\temp_code_ddl_schema_transitoire_projet_c.sql

@@ -34,37 +34,17 @@ WHERE
 -- Insertion des relations tronçons / voies physiques pour lesquelles un tronçon est affecté à plusieurs voies physiques
 MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE a
     USING(
-        WITH
-            C_1 AS(-- Sélection des tronçons affectés à plusieurs voies physiques
-                SELECT
-                    fid_troncon
-                FROM
-                    G_BASE_VOIE.TEMP_B_RELATION_TRONCON_VOIE_PHYSIQUE
-                GROUP BY
-                    fid_troncon
-                HAVING
-                    COUNT(fid_troncon) > 1
-            ),
-
-            C_2 AS(-- sélection des voies physiques dont, plusieurs d'entre elles, sont affectées au même tronçon
-                SELECT
-                    a.fid_voie_physique
-                FROM
-                    G_BASE_VOIE.TEMP_B_RELATION_TRONCON_VOIE_PHYSIQUE a
-                    INNER JOIN C_1 b ON b.fid_troncon = a.fid_troncon
-            )
-            
-            SELECT DISTINCT -- sélection de toutes les entités de la table TEMP_B_RELATION_TRONCON_VOIE_PHYSIQUE
-                a.*
+            SELECT
+                fid_troncon,
+                fid_voie_physique
             FROM
-                G_BASE_VOIE.TEMP_B_RELATION_TRONCON_VOIE_PHYSIQUE a
-                INNER JOIN C_2 b ON b.fid_voie_physique = a.fid_voie_physique
+                G_BASE_VOIE.TEMP_B_RELATION_TRONCON_VOIE_PHYSIQUE
     )t
 ON(a.fid_voie_physique = t.fid_voie_physique AND a.fid_troncon = t.fid_troncon)
 WHEN NOT MATCHED THEN
-    INSERT(a.fid_voie_physique, a.fid_troncon)
-    VALUES(t.fid_voie_physique, t.fid_troncon);
--- Résultat : 3 808 lignes fusionnées
+    INSERT(a.fid_voie_physique, a.fid_troncon, a.old_id_voie_physique)
+    VALUES(t.fid_voie_physique, t.fid_troncon, t.fid_voie_physique);
+-- Résultat : 51 248 lignes fusionnées
 
 -- Insertion des tronçons
 MERGE INTO G_BASE_VOIE.TEMP_C_TRONCON a
@@ -84,22 +64,21 @@ ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.geom, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification)
     VALUES(t.objectid, t.geom, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification);
--- Résultat :  2 971 lignes fusionnées.
+-- Résultat : 50 411 lignes fusionnées.
 
 -- Insertion des voies physiques
 MERGE INTO G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE a
     USING(
-        SELECT DISTINCT
-            a.objectid
-        FROM
-          G_BASE_VOIE.TEMP_B_VOIE_PHYSIQUE a
-          INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE b ON b.fid_voie_physique = a.objectid
-    )t
+            SELECT
+                a.objectid
+            FROM
+              G_BASE_VOIE.TEMP_B_VOIE_PHYSIQUE a
+        )t
 ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid)
     VALUES(t.objectid);
--- Résultat : 602  lignes fusionnées.
+-- Résultat : 22 112  lignes fusionnées.
 
 -- Insertion des relations voies physiques / voies administratives
 MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
@@ -113,9 +92,9 @@ MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
     )t
 ON(a.fid_voie_administrative = t.fid_voie_administrative AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
-    INSERT(a.fid_voie_administrative, a.fid_voie_physique)
-    VALUES(t.fid_voie_administrative, t.fid_voie_physique);
--- Résultat : 602 lignes fusionnées.
+    INSERT(a.fid_voie_administrative, a.fid_voie_physique, a.old_id_voie_physique)
+    VALUES(t.fid_voie_administrative, t.fid_voie_physique, t.fid_voie_physique);
+-- Résultat : 22 165 lignes fusionnées.
 
 -- Insertion des voies administratives
 MERGE INTO G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
@@ -141,7 +120,7 @@ WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.libelle_voie, a.complement_nom_voie, a.code_insee, a.fid_type_voie, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_lateralite)
     VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_lateralite);
 COMMIT;
--- Résultat : 602 lignes fusionnées.
+-- Résultat : 22 165 lignes fusionnées.
 
 -- Insertion des 
 
