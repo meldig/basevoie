@@ -1,7 +1,11 @@
 /*
 Création de la VM VM_TEMP_C_TRONCON_AFFECTE_PLUSIEURS_VOIES - du projet C de correction de la latéralité des voies - identifiant les tronçons affectés à plusieurs voies dans la structure de correction de la Base du voie projet C. Cette VM est uniquement à utiliser dans le cadre de la correction des tronçons affectés à plusieurs voies physiques.
 */
-
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_C_TRONCON_AFFECTE_PLUSIEURS_VOIES;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TEMP_C_TRONCON_AFFECTE_PLUSIEURS_VOIES';
+COMMIT;
+*/
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TEMP_C_TRONCON_AFFECTE_PLUSIEURS_VOIES" ("OBJECTID", "ID_TRONCON", "ID_VOIE_PHYSIQUE", "ID_VOIE_ADMINISTRATIVE", "LIBELLE_VOIE", "LATERALITE", "CODE_INSEE", "GEOM")        
 REFRESH ON DEMAND
 FORCE

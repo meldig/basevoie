@@ -1,9 +1,17 @@
 /*
-Correction des tron√ßons affect√©s √† plusieurs voies physiques :
-migration pour passer √† un tron√ßon reli√© √† une et une seule voie physique.
-*/
+Contexte :
+ Un tronÁon est, dans la structure du projet B, affectÈ ‡ deux voies physiques car il se situe en limite de commune. Il appartient donc ‡ la voie de la commune A et ‡ celle de la commune B.
+Il est donc impossible qu'un tronÁon soit affectÈ ‡ plus de deux voies physiques, sauf erreur de saisie.
 
--- Insertion dans une table transitoire des tron√ßons (affect√©s √† deux voies) et de l'identifiant minimum des voies auxquelles ils sont affect√©s
+Objectif :
+Passer d'une structure o˘ un tronÁon est affectÈs ‡ une ou plusieurs voies physiques, chacune d'elle affectÈe ‡ une et une seule voie administrative
+‡ une structure o˘ un tronÁon est affectÈ ‡ une et une seule voie physique, pouvant Ítre affectÈe ‡ une ou plusieurs voies administratives 
+*/
+  
+DELETE FROM G_BASE_VOIE.TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE;
+COMMIT;
+
+-- Insertion dans une table transitoire des tronÁons (affectÈs ‡ deux voies) et de l'identifiant minimum des voies auxquelles ils sont affectÈs
 INSERT INTO G_BASE_VOIE.TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE(id_troncon, old_id_voie_physique)
         SELECT
             a.id_troncon,
@@ -12,10 +20,10 @@ INSERT INTO G_BASE_VOIE.TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE(id_troncon, old_id_
             G_BASE_VOIE.VM_TEMP_C_TRONCON_AFFECTE_PLUSIEURS_VOIES a
         GROUP BY
             a.id_troncon;
--- R√©sultat : 837 lignes fusionn√©es.
+-- RÈsultat : 837 lignes fusionnÈes.
 
--- Cr√©ation d'un nouvel identifiant de voie physique pour chaque ancienne voie physique pr√©sente dans TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE et mise √† jour du  champ old_id_voie_physique en cons√©quence.
--- Objectif : cr√©er de nouveaux identifiants de voie
+-- CrÈation d'un nouvel identifiant de voie physique pour chaque ancienne voie physique prÈsente dans TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE et mise ‡ jour du  champ old_id_voie_physique en consÈquence.
+-- Objectif : crÈer de nouveaux identifiants de voie
 MERGE INTO G_BASE_VOIE.TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE a
     USING(
         WITH
@@ -43,7 +51,7 @@ MERGE INTO G_BASE_VOIE.TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE a
 ON(a.old_id_voie_physique = t.old_id_voie_physique)
 WHEN MATCHED THEN
     UPDATE SET a.new_id_voie_physique = t.new_id_voie_physique;
--- R√©sultat : 837 lignes fusionn√©es.
+-- RÈsultat : 837 lignes fusionnÈes.
 
 -- Insertion des nouveaux identifiants de voie physique dans la table des voies physiques
 MERGE INTO G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE a
@@ -57,9 +65,9 @@ ON(a.objectid = t.new_id_voie_physique)
 WHEN NOT MATCHED THEN
 INSERT(a.objectid)
 VALUES(t.new_id_voie_physique);
--- R√©sultat : 306 lignes fusionn√©es.
+-- RÈsultat : 306 lignes fusionnÈes.
     
--- Mise √† jour du champ new_id_voie_physique de la table TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE pour raccorder les voies administratives aux nouvelles voies physiques
+-- Mise ‡ jour du champ new_id_voie_physique de la table TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE pour raccorder les voies administratives aux nouvelles voies physiques
 MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
     USING(
         WITH
@@ -97,9 +105,9 @@ MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
 ON(a.fid_voie_physique = t.old_id_voie_physique AND a.fid_voie_administrative = t.id_voie_administrative)
 WHEN MATCHED THEN
     UPDATE SET a.new_id_voie_physique = t.new_id_voie_physique;
--- R√©sultat : 559 lignes fusionn√©es.
+-- RÈsultat : 559 lignes fusionnÈes.
 
--- Mise √† jour du champ fid_voie_physique de la table TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE pour les voies administratives compos√©es de plusieurs voies physiques
+-- Mise ‡ jour du champ fid_voie_physique de la table TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE
 MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
     USING(
         WITH
@@ -125,9 +133,9 @@ MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
 ON (a.old_id_voie_physique = t.old_id_voie_physique AND a.new_id_voie_physique = t.new_id_voie_physique)
 WHEN MATCHED THEN
     UPDATE SET a.fid_voie_physique = t.new_id_voie_physique;
--- R√©sultat : 483 lignes fusionn√©es
+-- RÈsultat : 483 lignes fusionnÈes
     
--- Mise √† jour de la table TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE
+-- Mise ‡ jour de la table TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE
 MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE a
     USING(
         SELECT DISTINCT
@@ -142,14 +150,14 @@ MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE a
 ON (a.fid_troncon = t.id_troncon AND a.old_id_voie_physique = t.old_id_voie_physique)
 WHEN MATCHED THEN
     UPDATE SET a.fid_voie_physique = t.new_id_voie_physique;
--- R√©sultat : 1¬†244 lignes fusionn√©es
+-- RÈsultat : 1†244 lignes fusionnÈes
 
--- Suppression des anciennes relations tron√ßons/voies physiques qui ont √©t√© corrig√©es 
+-- Suppression des relations tronÁons/voie physique en trop
 DELETE FROM G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE
 WHERE
     objectid IN(
         WITH
-            C_1 AS(-- S√©lection des tron√ßons pr√©sents en doublons dans la table
+            C_1 AS(
                 SELECT
                     fid_troncon
                 FROM
@@ -160,10 +168,10 @@ WHERE
                     COUNT(fid_troncon) > 1
             ),
             
-            C_2 AS(-- S√©lection de la relation quand pour un fid_voie_physique minimum au sein des doublons 
-                SELECT
-                    a.fid_troncon,
-                    MIN(a.fid_voie_physique) AS fid_voie_physique
+            C_2 AS(
+                SELECT 
+                    MAX(a.objectid) AS objectid,
+                    a.fid_troncon
                 FROM
                     G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE a
                     INNER JOIN C_1 b ON b.fid_troncon = a.fid_troncon
@@ -172,140 +180,30 @@ WHERE
             )
             
             SELECT
-                a.objectid
+                objectid
             FROM
-                G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE a
-                INNER JOIN C_2 b ON b.fid_troncon = a.fid_troncon AND b.fid_voie_physique = a.fid_voie_physique
-    )
-;
--- R√©sultat : 227 lignes supprim√©es
+                C_2
+    );
+-- RÈsultat : 837 relations supprimÈes
 
-COMMIT;
-
--- Ajout d'anciennes relations voie physique / voie administrative correctes
-INSERT INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE(fid_voie_physique, fid_voie_administrative)
-SELECT DISTINCT
-    a.objectid,
-    c.objectid
-FROM
-    G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE a
-    INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE b ON b.fid_voie_physique = a.objectid
-    INNER JOIN G_BASE_VOIE.TEMP_B_VOIE_ADMINISTRATIVE c ON c.fid_voie_physique = a.objectid
-    --INNER JOIN G_BASE_VOIE.TEMP_b_RELATION_TRONCON_VOIE_PHYSIQUE c ON c.fid_voie_physique = b.fid_voie_physique
-WHERE
-    a.objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE);
--- R√©sultat : 397 lignes ins√©r√©es
-
--- Insertion des relations tron√ßons / voies physiques manquantes
-INSERT INTO G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE(fid_troncon, fid_voie_physique)
-WITH
-    C_1 AS(
-        SELECT -- S√©lection des voies physique qui ne sont pas encore mat√©rialis√©es
-            objectid
-        FROM
-            TEMP_C_VOIE_PHYSIQUE
-        WHERE
-            objectid NOT IN(SELECT fid_voie_physique FROM TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE)
-    )
-    
-    SELECT DISTINCT
-        a.fid_troncon,
-        a.fid_voie_physique
-    FROM
-        TEMP_B_RELATION_TRONCON_VOIE_PHYSIQUE a
-    WHERE
-        a.fid_voie_physique IN(SELECT objectid FROM C_1);
-
--- Insertion des relations voies physiques / administratives
-INSERT INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE(fid_voie_physique, old_id_voie_physique, fid_voie_administrative)
-WITH
-    C_1 AS(
-        SELECT -- S√©lection des voies physique qui ne sont pas encore mat√©rialis√©es
-            objectid
-        FROM
-            TEMP_C_VOIE_PHYSIQUE
-        WHERE
-            objectid NOT IN(SELECT fid_voie_physique FROM TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE)
-    )
-    
-    SELECT
-        objectid AS fid_voie_physique,
-        objectid AS old_id_voie_physique,
-        objectid AS fid_voie_administrative
-    FROM
-        C_1;
--- R√©sultat : 164 lignes ins√©r√©es
-
-
--- Insertion de relations tron√ßons/nouvelles voies physiques manquantes
-MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE a
+-- Remise en place de relations voies physiques/administrative manquantes
+MERGE INTO G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
     USING(
-        -- S√©lection des voies administratives pr√©sentes dans le projet B, mais absentes du projet C
-        WITH
-            C_1 AS(
-                SELECT
-                    a.objectid,
-                    TRIM(TRIM(d.libelle) || ' ' || TRIM(c.libelle_voie) || ' '  || TRIM(c.complement_nom_voie)) AS libelle_voie,
-                    c.code_insee
-                FROM
-                    G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE a
-                    INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE b ON b.fid_voie_physique = a.objectid
-                    INNER JOIN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE c ON c.objectid = b.fid_voie_administrative
-                    INNER JOIN G_BASE_VOIE.TEMP_C_TYPE_VOIE d ON d.objectid = c.fid_type_voie
-                WHERE
-                    a.objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE)
-            )
-            
-            SELECT DISTINCT
-                d.id_troncon,
-                d.old_id_voie_physique,
-                d.new_id_voie_physique,
-                c.fid_voie_physique,
-                a.id_voie_administrative,
-                a.libelle_voie,
-                a.lateralite,
-                a.code_insee
-            FROM
-                G_BASE_VOIE.VM_TEMP_B_VOIE_ADMINISTRATIVE a
-                INNER JOIN G_BASE_VOIE.TEMP_B_VOIE_ADMINISTRATIVE c ON c.objectid = a.id_voie_administrative
-                INNER JOIN G_BASE_VOIE.TEMP_C_TRANSIT_TRONCON_VOIE_PHYSIQUE d ON d.old_id_voie_physique = c.fid_voie_physique
-                INNER JOIN G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE e ON e.objectid = d.new_id_voie_physique
-                INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE f ON f.fid_troncon = d.id_troncon,
-                C_1 b
-            WHERE
-                a.libelle_voie = b.libelle_voie
-                AND a.code_insee = b.code_insee
+        SELECT DISTINCT
+            c.objectid AS id_voie_physique
+        FROM
+            G_BASE_VOIE.TEMP_C_TRONCON a
+            INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE b ON b.fid_troncon = a.objectid
+            INNER JOIN G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE c ON c.objectid = b.fid_voie_physique
+        WHERE
+            c.objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE)
     )t
-ON(a.fid_troncon = t.id_troncon)
-WHEN MATCHED THEN
-UPDATE
-SET a.fid_voie_physique = t.new_id_voie_physique;
+ON(a.fid_voie_physique = t.id_voie_physique AND a.fid_voie_administrative = t.id_voie_physique)
+WHEN NOT MATCHED THEN
+    INSERT(a.fid_voie_physique, a.fid_voie_administrative)
+    VALUES(t.id_voie_physique, t.id_voie_physique);
+-- RÈsultat : 347 lignes fusionnÈes
 
-/*
-Supression des anciennes voies physiques doublonn√©es qui ont √©t√© corrgi√©es et n'ont plus de raison d'√™tre
-*/
-/*
-SELECT
-    a.objectid || ',',
-    TRIM(TRIM(d.libelle) || ' ' || TRIM(c.libelle_voie) || ' '  || TRIM(c.complement_nom_voie)) AS libelle_voie,
-    c.code_insee
-FROM
-    G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE a
-    INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE b ON b.fid_voie_physique = a.objectid
-    INNER JOIN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE c ON c.objectid = b.fid_voie_administrative
-    INNER JOIN G_BASE_VOIE.TEMP_C_TYPE_VOIE d ON d.objectid = c.fid_type_voie
-WHERE
-    a.objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE);
-    
-CREATE TABLE G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE_SAUVEGARDE AS
-SELECT *
-FROM
-    G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE;
+/
 
-DELETE FROM G_BASE_VOIE.TEMP_C_VOIE_PHYSIQUE
-WHERE objectid IN(2019005,2789008,2990595,3520406,3569026,3500705,5609999,3860510,4210720,4570050,4700160,4770340,4829020,4870165,5123480,5129143,5500145,5509037,6530082,5991410,5993550,5999062,6020260,6360277,6460260);
-    
-DELETE FROM G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE
-WHERE fid_voie_physique IN(2019005,2789008,2990595,3520406,3569026,3500705,5609999,3860510,4210720,4570050,4700160,4770340,4829020,4870165,5123480,5129143,5500145,5509037,6530082,5991410,5993550,5999062,6020260,6360277,6460260);
-*/
-COMMIT;
+
