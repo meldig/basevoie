@@ -1,4 +1,4 @@
-# Corrections de la Base Voie réalisées au 11/10/2022 et à venir
+# Corrections de la Base Voie réalisées au 12/10/2022 et à venir
 
 ## Pour Litteralis
 
@@ -37,6 +37,7 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 
 - [ ] Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
 - [ ] Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
+- [ ] Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
 - [ ] Tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
 - [ ] Voies secondaires affectées à deux voies principales (12 voies) ;
 - [ ] Voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
