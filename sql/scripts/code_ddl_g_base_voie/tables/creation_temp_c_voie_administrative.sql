@@ -10,11 +10,11 @@ CREATE TABLE G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE(
     complement_nom_voie VARCHAR2(200),
     fid_lateralite NUMBER(38,0),
     code_insee VARCHAR2(5),
+    hierarchisation VARCHAR2(50),
     date_saisie DATE,
     date_modification DATE,
     fid_pnom_saisie NUMBER(38,0),
     fid_pnom_modification NUMBER(38,0),
---    fid_voie_physique NUMBER(38,0),
     fid_type_voie NUMBER(38,0)
 );
 
@@ -25,12 +25,12 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.genre_voie IS 'Genre du
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.libelle_voie IS 'Nom de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.complement_nom_voie IS 'Complément de nom de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.code_insee IS 'Code insee de la voie "administrative".';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.hierarchisation IS 'Champ permettant de distinguer les voies principales des voies secondaires.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.date_saisie IS 'Date de création du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.date_modification IS 'Date de modification du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.fid_pnom_saisie IS 'Clé étrangère vers la table TEMP_C_AGENT indiquant le pnom de l''agent créateur du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.fid_pnom_modification IS 'Clé étrangère vers la table TEMP_C_AGENT indiquant le pnom de l''agent éditeur du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.fid_type_voie IS 'Clé étrangère vers la table TEMP_C_TYPE_VOIE permettant d''associer une voie à un type de voie.';
---COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.fid_voie_physique IS 'Clé étrangère vers la table TA_VOIE permettant d''affecter un ou plusieurs noms à une voie physique.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.fid_lateralite IS 'Clé étrangère vers la table TA_LIBELLE permettant de récupérer la latéralité de la voie. En limite de commune le côté gauche de la voie physique peut appartenir à la commune A et le côté droit à la comune B, tandis qu''au sein de la commune la voie physique appartient à une et une seule commune et est donc affectée à une et une seule voie administrative. Cette distinction se fait grâce à ce champ.';
 
 -- 3. Création de la clé primaire
@@ -44,12 +44,7 @@ ALTER TABLE G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE
 ADD CONSTRAINT TEMP_C_VOIE_ADMINISTRATIVE_FID_LATERALITE_FK
 FOREIGN KEY (fid_lateralite)
 REFERENCES G_BASE_VOIE.TEMP_B_LIBELLE(objectid);
-/*
-ALTER TABLE G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE
-ADD CONSTRAINT TEMP_C_VOIE_ADMINISTRATIVE_FID_VOIE_PHYSIQUE_FK
-FOREIGN KEY (fid_voie_physique)
-REFERENCES G_BASE_VOIE.TEMP_B_VOIE_PHYSIQUE(objectid);
-*/
+
 ALTER TABLE G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE
 ADD CONSTRAINT TEMP_C_VOIE_ADMINISTRATIVE_FID_TYPE_VOIE_FK
 FOREIGN KEY (fid_type_voie)
@@ -83,10 +78,7 @@ CREATE INDEX TEMP_C_VOIE_ADMINISTRATIVE_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TEMP_
 
 CREATE INDEX TEMP_C_VOIE_ADMINISTRATIVE_FID_PNOM_MODIFICATION_IDX ON G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE(fid_pnom_modification)
     TABLESPACE G_ADT_INDX;
-/*
-CREATE INDEX TEMP_C_VOIE_ADMINISTRATIVE_FID_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE(fid_voie_physique)
-    TABLESPACE G_ADT_INDX;
-*/
+
 CREATE INDEX TEMP_C_VOIE_ADMINISTRATIVE_FID_TYPE_VOIE_IDX ON G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE(fid_type_voie)
     TABLESPACE G_ADT_INDX;
 

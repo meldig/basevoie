@@ -252,4 +252,50 @@ WHEN NOT MATCHED THEN
     VALUES(t.fid_voie_physique, t.fid_voie_administrative);
 -- Résultat : 21 978 lignes fusionnées
 
+-- Identification des voies princiapes et des voies secondaires
+MERGE INTO G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+    USING(
+        SELECT DISTINCT
+            a.objectid AS id_voie_administrative,
+            'voie principale' AS hierarchisation
+        FROM
+            G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+            INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE b ON b.fid_voie_principale = a.objectid
+        UNION ALL
+        SELECT DISTINCT
+            a.objectid AS id_voie_administrative,
+            'voie secondaire' AS hierarchisation
+        FROM
+            G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+            INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE b ON b.fid_voie_secondaire = a.objectid
+    )t
+ON(a.objectid = t.id_voie_administrative)
+WHEN MATCHED THEN
+    UPDATE SET a.hierarchisation = t.hierarchisation;
+-- Résultat : 6 970 lignes fusionnées.
+
+-- Identification des voies administratives absentes de TA_HIERARCHISATION_VOIE en tant que voies principales
+MERGE INTO G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+    USING(
+        SELECT DISTINCT
+            a.objectid
+        FROM
+            G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+        WHERE
+            a.hierarchisation IS NULL
+            AND a.objectid NOT IN(
+                SELECT 
+                    fid_voie_principale AS objectid 
+                FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE 
+                UNION ALL
+                SELECT 
+                    fid_voie_secondaire AS objectid 
+                FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE 
+            )
+    )t
+ON(a.objectid = t.objectid)
+WHEN MATCHED THEN
+    UPDATE SET a.hierarchisation = 'voie principale';
+-- Résultat : 15 195 lignes fusionnées.
+
 /
