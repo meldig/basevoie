@@ -23,3 +23,11 @@
 1. Une voie administrative se compose d'une ou plusieurs voies physiques ;
 2. Une voie administrative appartient soit aux deux côtés des voies physiques la composant quand elles se situent à l'intérieur d'une commune, soit à l'un de leur côté en limite de commune ;
 3. Le code INSEE des voies administratives doit être inscrit en dur afin que l'on puisse déterminer sa latéralité (à gauche ou à droite de la voie physique) ;
+
+## Nomenclature des *LIBELLES* des voies administratives :
+1. Les accents seront mis sur les minuscules, comme sur les majuscules ;
+2. Tous les mots auront leur première lettre en majuscule (accentuée au besoin), sauf les articles (le, la, les, de la, de l’) et les prépositions (de, du, des) ;
+3. Les Noms propres doivent avoir leur première lettre écrite en majuscule ;
+4. Si l’article ou la préposition compose un nom propre, alors sa première lettre doit être en majuscule (Exemple : Le Vésinet) ; 
+5. Le type de voie ne doit jamais figurer dans le libellé de la voie ;
+6. Aucun commentaire, ni aucune précision ne doit figurer dans le libellé de la voie ;
