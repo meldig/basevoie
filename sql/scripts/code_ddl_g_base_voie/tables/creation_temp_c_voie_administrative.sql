@@ -11,6 +11,7 @@ CREATE TABLE G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE(
     fid_lateralite NUMBER(38,0),
     code_insee VARCHAR2(5),
     hierarchisation VARCHAR2(50),
+    commentaire VARCHAR2(4000 BYTE),
     date_saisie DATE,
     date_modification DATE,
     fid_pnom_saisie NUMBER(38,0),
@@ -26,6 +27,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.libelle_voie IS 'Nom de
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.complement_nom_voie IS 'Complément de nom de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.code_insee IS 'Code insee de la voie "administrative".';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.hierarchisation IS 'Champ permettant de distinguer les voies principales des voies secondaires.';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.commentaire IS 'Commentaire de chaque voie, à remplir si besoin, pour une précision ou pour les voies n''ayant pas encore de nom.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.date_saisie IS 'Date de création du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.date_modification IS 'Date de modification du libellé de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE.fid_pnom_saisie IS 'Clé étrangère vers la table TEMP_C_AGENT indiquant le pnom de l''agent créateur du libellé de voie.';
