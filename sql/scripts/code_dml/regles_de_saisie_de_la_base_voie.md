@@ -27,7 +27,9 @@
 ## Nomenclature des *LIBELLES* des voies administratives :
 1. Les accents seront mis sur les minuscules, comme sur les majuscules ;
 2. Tous les mots auront leur première lettre en majuscule (accentuée au besoin), sauf les articles (le, la, les, de la, de l’) et les prépositions (de, du, des) ;
-3. Les Noms propres doivent avoir leur première lettre écrite en majuscule ;
+3. Les noms propres doivent avoir leur première lettre écrite en majuscule ;
 4. Si l’article ou la préposition compose un nom propre, alors sa première lettre doit être en majuscule (Exemple : Le Vésinet) ; 
-5. Le type de voie ne doit jamais figurer dans le libellé de la voie ;
-6. Aucun commentaire, ni aucune précision ne doit figurer dans le libellé de la voie ;
+5. Il ne doit jamais y avoir d’espace derrière une apostrophe ;
+6. Si une voie n’a pas de libellé, alors il faut laisser le libellé de la voie vide ;
+7. Le type de voie ne doit jamais figurer dans le libellé de la voie ;
+8. Aucun commentaire, ni aucune précision ne doit figurer dans le libellé de la voie ;
