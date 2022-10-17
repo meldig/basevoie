@@ -36,8 +36,8 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 ### Corrections prévues :
 
 - [ ] Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
-- [x] Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
-- [ ] Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
+- [x] Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL (en cours);
+- [x] Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent (il faut par contre déterminer ce qu'on fait des noms des voies administratives : faut-il qu'ils soient identiques par voie supra-communale ?);
 - [ ] Tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
 - [ ] Voies secondaires affectées à deux voies principales (12 voies) ;
 - [ ] Voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
