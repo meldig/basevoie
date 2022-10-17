@@ -44,4 +44,4 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
 - [x] Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
 - [ ] Correction des doublons de numéro, complément et voie de certains seuils ;
-- [ ] Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été dcoupé à la limite de commune ;
+- [ ] Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
