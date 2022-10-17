@@ -36,12 +36,12 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 ### Corrections prévues :
 
 - [ ] Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
-- [ ] Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
-- [ ] Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
+- [x] Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL (en cours);
+- [x] Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent (il faut par contre déterminer ce qu'on fait des noms des voies administratives : faut-il qu'ils soient identiques par voie supra-communale ?);
 - [ ] Tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
 - [ ] Voies secondaires affectées à deux voies principales (12 voies) ;
 - [ ] Voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
-- [ ] Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
+- [x] Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
+- [x] Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
 - [ ] Correction des doublons de numéro, complément et voie de certains seuils ;
-- [ ] Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été dcoupé à la limite de commune ;
+- [ ] Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
