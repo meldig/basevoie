@@ -33,3 +33,4 @@
 6. Si une voie n’a pas de libellé, alors il faut laisser le libellé de la voie vide ;
 7. Le type de voie ne doit jamais figurer dans le libellé de la voie ;
 8. Aucun commentaire, ni aucune précision ne doit figurer dans le libellé de la voie ;
+9. Les noms composés doivent comporter leur '-' quand ils en ont (Exemple : Jean-Baptiste, Marie-Thérèse, Saint-Hubert) ;
