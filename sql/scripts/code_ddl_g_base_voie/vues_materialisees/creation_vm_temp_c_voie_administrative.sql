@@ -8,9 +8,9 @@ COMMIT;
 */
 -- 2. Création de la VM
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_TEMP_C_VOIE_ADMINISTRATIVE" ("ID_VOIE_ADMINISTRATIVE","LIBELLE_VOIE","LATERALITE", "CODE_INSEE", "GEOM")        
-REFRESH ON DEMAND
-FORCE
-DISABLE QUERY REWRITE AS
+REFRESH FORCE
+START WITH sysdate+0 NEXT (SYSDATE+6/24)
+DISABLE QUERY REWRITE AS 
 SELECT
     f.objectid AS id_voie_administrative,
     --d.objectid AS id_voie_physique,
@@ -36,7 +36,7 @@ GROUP BY
     f.code_insee;
 
 -- 3. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_C_VOIE_ADMINISTRATIVE IS 'VM - du projet C de correction de la latéralité des voies - matérialisant la géométrie des voies administratrives..';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_C_VOIE_ADMINISTRATIVE IS 'VM - du projet C de correction de la latéralité des voies - matérialisant la géométrie des voies administratrives. Cette VM est rafraîchie toutes les 06h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_C_VOIE_ADMINISTRATIVE.ID_VOIE_ADMINISTRATIVE IS 'Identifiant de la voie administrative présente dans TEMP_C_VOIE_ADMINISTRATIVE.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_C_VOIE_ADMINISTRATIVE.LIBELLE_VOIE IS 'Libelle des voies administratives présentes dans la table TEMP_C_VOIE_ADMINISTRATIVE.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_C_VOIE_ADMINISTRATIVE.LATERALITE IS 'Latéralité des voies administratives par rapport à leur voie physique.';

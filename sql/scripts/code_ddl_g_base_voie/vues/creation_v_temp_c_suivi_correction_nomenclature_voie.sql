@@ -98,6 +98,53 @@ WITH
                 WHEN UPPER(a.libelle_voie) LIKE 'BD%' THEN
                     'BD'
             END
+        UNION ALL
+        SELECT
+            'Absence de - derrière Saint pour les noms propres composés comme Saint-Hubert' AS TYPE_ERREUR,
+            CASE
+                WHEN TRIM(UPPER(a.libelle_voie)) LIKE '%SAINT %' THEN
+                    'Saint '
+            END AS description_erreur,
+            COUNT(*) AS nombre
+        FROM
+            G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+        WHERE
+            TRIM(UPPER(a.libelle_voie)) LIKE '%SAINT %'
+        GROUP BY
+            'Absence de - derrière Saint pour les noms propres composés comme Saint-Hubert',
+            CASE
+                WHEN TRIM(UPPER(a.libelle_voie)) LIKE '%SAINT %' THEN
+                    'Saint '
+            END
+        UNION ALL
+        SELECT
+            'Caractère spécial présent dans le nom' AS TYPE_ERREUR,
+            CASE
+                WHEN a.libelle_voie LIKE '%"%' THEN
+                    '%"%'
+                WHEN a.libelle_voie LIKE '% ''%' THEN
+                    '% ''%'
+                WHEN a.libelle_voie LIKE '%'' %' THEN
+                    '%'' %'
+            END AS description_erreur,
+            COUNT(*) AS nombre
+        FROM
+            G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
+        WHERE
+            a.libelle_voie LIKE '%"%'
+            OR a.libelle_voie LIKE '% ''%'
+            OR a.libelle_voie LIKE '%'' %'
+        GROUP BY
+            'Caractère spécial présent dans le nom',
+            CASE
+                WHEN a.libelle_voie LIKE '%"%' THEN
+                    '%"%'
+                WHEN a.libelle_voie LIKE '% ''%' THEN
+                    '% ''%'
+                WHEN a.libelle_voie LIKE '%'' %' THEN
+                    '%'' %'
+            END
+
     ),
     
     C_2 AS( -- Sélection des voies administratives reliées à des voies supra-communales
