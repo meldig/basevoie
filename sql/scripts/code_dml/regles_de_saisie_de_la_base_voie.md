@@ -37,3 +37,4 @@
 10. L'abbréviation "St" pour "Saint" ne doit jamais apparaître dans les libellés de voie. Le mot "Saint" doit toujours être écrit en toutes lettres ;
 11. Il ne doit jamais y avoir de guillemets dans le libellé ;
 12. Les apostrophes ne doivent jamais encadrer un nom, qu'il soit celui d'un lieux-dit ou non ;
+
