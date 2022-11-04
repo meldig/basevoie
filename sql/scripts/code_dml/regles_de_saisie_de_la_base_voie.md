@@ -34,3 +34,7 @@
 7. Le type de voie ne doit jamais figurer dans le libellé de la voie ;
 8. Aucun commentaire, ni aucune précision ne doit figurer dans le libellé de la voie ;
 9. Les noms composés doivent comporter leur '-' quand ils en ont (Exemple : Jean-Baptiste, Marie-Thérèse, Saint-Hubert) ;
+10. L'abbréviation "St" pour "Saint" ne doit jamais apparaître dans les libellés de voie. Le mot "Saint" doit toujours être écrit en toutes lettres ;
+11. Il ne doit jamais y avoir de guillemets dans le libellé ;
+12. Les apostrophes ne doivent jamais encadrer un nom, qu'il soit celui d'un lieux-dit ou non ;
+
