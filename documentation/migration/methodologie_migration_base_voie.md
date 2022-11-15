@@ -33,7 +33,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * ![lanceur_suppression_tables_d_import_temporaires.bat](../../sql/scripts/code_ddl_g_base_voie/integration/suppression_objets_schema/lanceur_suppression_tables_d_import_temporaires.bat) => fichier permettant de supprimer toutes les tables temporaires ayant servies à l'import des données d'Oracle 11G ;
 
 ### Les fichiers sql
-* ![ajout_temp_code_fantoir_a_temp_voievoi.sql](../../sql/scripts/code_ddl_g_base_voie/integration/creation_tables_finales/ajout_temp_code_fantoir_a_temp_voievoi.sql) => fichier permettant de créer un champ temproaire dans la table TEMP_VOIEVOI, nécessaire à l'import dans la nouvelle structure de données ;
+* ![ajout_temp_code_fantoir_a_temp_voievoi.sql](../../sql/scripts/code_ddl_g_base_voie/integration/creation_tables_finales/ajout_temp_code_fantoir_a_temp_voievoi.sql) => fichier permettant de créer un champ temporaire dans la table TEMP_VOIEVOI, nécessaire à l'import dans la nouvelle structure de données ;
 
 * ![insertion_famille_libelle_tables_finales.sql](../../sql/scripts/code_ddl_g_base_voie/integration/remplissage_tables_finales/insertion_famille_libelle_tables_finales.sql) => fichier permettant d'insérer les familles et libellés utilisés par la base voie dans les tables correspondantes du schéma G_GEO ;
 
@@ -41,7 +41,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 
 * ![verification_nombre_de_donnees_base_originelle.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_base_originelle.sql) => fichier décomptant le nombre d'entités par table dans la base voie d'oracle 11g ;
 
-* ![verification_nombre_de_donnees_importees.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_importees.sql) => fichier décomptant le nombre d'entités importées par table temporaires dans oracle 12c ;
+* ![verification_nombre_de_donnees_importees.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_importees.sql) => fichier décomptant le nombre d'entités importées par table temporaire dans oracle 12c ;
 
 * ![verification_nombre_de_donnees_base_finale.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_base_finale.sql) => fichier décomptant le nombre d'entités importées dans les tables finales d'oracle 12c ;
 
@@ -50,7 +50,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * ![suppression_tables_declencheurs_fonctions_MTD_index_contraintes.sql](../../sql/scripts/code_ddl_g_base_voie/integration/suppression_objets_schema/suppression_tables_declencheurs_fonctions_MTD_index_contraintes.sql) => fichier permettant de supprimer tous les objets de la base voie finale sur oracle 12c ;
 
 ### les fichiers csv
-* ![TEMP_CODE_FANTOIR.csv](../../sql/scripts/code_ddl_g_base_voie/integration/import_des_donnees/TEMP_CODE_FANTOIR.csv) => fichier contenant les codes fantoir de toutes les voies de la MEL, récupérés auprès de ![collectivites-locales.gouv.fr.csv](https://www.collectivites-locales.gouv.fr), permettant de télécharger les codes au niveau régional et non pas uniquement au niveau national. Le fichier est ensuite mis en forme en local par le gestionnaire de données : fantoir (3 caractères pour la direction départementale + 3 caractères du code commune + les 4 caractères du code rivoli) ; rivoli (sur 4 caractères maximum) ; clé de contrôle (1 lettre(la dernière du code fantoir));
+* ![TEMP_CODE_FANTOIR.csv](../../sql/scripts/code_ddl_g_base_voie/integration/import_des_donnees/TEMP_CODE_FANTOIR.csv) => fichier contenant les codes fantoir de toutes les voies de la MEL, récupérés auprès de ![collectivites-locales.gouv.fr.csv](https://www.collectivites-locales.gouv.fr), permettant de télécharger les codes au niveau régional et non pas uniquement au niveau national. Le fichier est ensuite mis en forme en local par le gestionnaire de données : fantoir (3 caractères pour la direction départementale + 3 caractères du code commune + les 4 caractères du code rivoli) ; rivoli (sur 4 caractères maximum) ; clé de contrôle (1 lettre(la dernière du code fantoir)). Les codes fantoirs sont en cours d'abandon.;
 
 * ![TEMP_FAMILLE.csv](../../sql/scripts/code_ddl_g_base_voie/integration/import_des_donnees/TEMP_FAMILLE.csv) => fichier contenant toutes les familles nécessaires à la base voie ;
 
