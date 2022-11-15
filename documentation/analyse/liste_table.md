@@ -4,11 +4,11 @@
 
 ### ILTASEU
 
-Table contenant les seuils (numéro de voiri) de la MEL.
+Table contenant les seuils (numéro de voirie) de la MEL.
 
 ### ILTASIT
 
-Table des relations entre la table ILTASEU (seuils) et ILTATRC (tronçons). Afin d'associer un seuil à un tronçon d'une rue.
+Table des relations entre la table ILTASEU (seuils) et ILTATRC (tronçons). Afin d'associer un seuil à un tronçon d'une voie.
 
 ### ILTATRC
 
@@ -16,11 +16,11 @@ Table contenant les tronçons de la MEL. Un tronçon est un linéaire entre deux
 
 ### ILTAFILIA
 
-Peut-être table de sauvegarde. Garde une trace du tronçon père si celui-ci est coupé, détruit ou M.
+Table de sauvegarde gardant une trace du tronçon père si celui-ci est coupé ou détruit.
 
 ### ILTAPTZ
 
-Table contenant les noeuds de chaque tronçon. Chaque tronçons a deux noeuds. Un noeud de début et de fin. Un noeud peut être un carrefour entre deux voies ou une fin de voie ou une impasse.
+Table contenant les noeuds de chaque tronçon. Chaque tronçon a deux noeuds. Un noeud de début et de fin. Un noeud peut être un carrefour entre deux voies, une fin de voie ou une impasse.
 
 ### ILTADTN
 
@@ -28,11 +28,11 @@ Table des relations entre ILTAPTZ (noeuds) et ITLATRC (tronçons).
 
 ### VOIECVT
 
-Table des relations entre VOIEVOI (voies) et ILTATRC (tronçons). Une voie est composée d'un groupe de tronçons.
+Table des relations entre VOIEVOI (voies) et ILTATRC (tronçons). Une voie est composée d'un ou plusieurs tronçons.
 
 ### VOIEVOI
 
-Table contenant les voies de la MEL. La voie est un sous-élément de la rue. Une voie est composée d'un groupe de tronçons.
+Table contenant les voies de la MEL. La voie est un sous-élément de la rue. Une voie est composée d'un ou plusieurs de tronçons.
 
 ### TYPEVOIE
 
@@ -40,7 +40,7 @@ Table contenant les types de voie possibles: rue, avenue, route...
 
 ### TA_RUE
 
-Table contenant les rues de la MEL. La rue c'est la notion
+Table contenant les rues de la MEL. La rue c'est la notion. Cette table avait été faite afin de comparer les voies de la mairie de de Lille et celles de la MEL.
 
 ### TA_RUEVOIE
 
@@ -74,11 +74,11 @@ Table indiquant les informations générales des tables de la base voie, c'est-�
 
 ### ADMIN_COL_TABLES_VOIES
 
-Cette table propose un résumé succinte des champs des tables de la base voie. Elle donne aussi des informations sur les tables jointes, leur schéma d'appartenance, leur type de donnée et leur nom, mais sans leur commentaire ainsi que des informations sur les champs de jointure entre les tables de la base voie. Néanmoins il faut préciser qu'il n'y a pas de contrainte de jointure entre les tables.
+Cette table propose un résumé succint des champs des tables de la base voie. Elle donne aussi des informations sur les tables jointes, leur schéma d'appartenance, leur type de donnée et leur nom, mais sans leur commentaire ainsi que des informations sur les champs de jointure entre les tables de la base voie. Néanmoins il faut préciser qu'il n'y a pas de contrainte de jointure entre les tables.
 
 ### ADMIN_CONFIG_GESTION_VOIES
 
-Table contenant les paramètres configurables de l’application. Plus précisément le rayon de recherche en mètre permettant l'accrochage d'un noeud dans DynMap, lors de la saisie/modification de tronçons.
+Table contenant les paramètres configurables de l’application. Plus précisément le rayon de recherche en mètre permettant l'accrochage d'un noeud dans DynMap, lors de la saisie/modification de tronçons. **Mais la fonction d'accrochage dans DynMap n'a jamais marché !!!**
 
 ### ADMIN_USERS_GESTION_VOIES
 
