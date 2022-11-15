@@ -8,9 +8,9 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 - Améliorer la qualité de la donnée en supprimant les voies et les tronçons n'étant plus utilisés tels que les rivières ou en supprimant les seuils qui intersectent les tronçons ou qui se situent à plus d'1km de leur tronçon d'affectation ;
 
 ## Etapes :
-1. Import des données d'Oracle 11G vers Oracle 12C dans des tables temporaires ;
-	1.1. Import des données ;
-	1.2. Vérification du bon déroulé de l'import ;
+1. Import des données d'Oracle 11G vers Oracle 12C dans des tables temporaires ;  
+	1.1. Import des données ;  
+	1.2. Vérification du bon déroulé de l'import ;  
 2. Création de la nouvelle structure de données dans Oracle 12C ;
 3. Migration et correction des données des tables temporaires vers les tables finales ;
 4. Création d'une hiérarchisation voies principales / voies secondaires ;
