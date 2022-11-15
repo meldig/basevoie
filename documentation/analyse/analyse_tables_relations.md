@@ -39,9 +39,9 @@ La table G_SIDU.ITACOM n'est pas présente dans le schéma G_SIDU en PRODUCTION
 
 ## Analyse des tables.
 
-Requêtes réalisées le 15/03/2021 sur le schéma G_SIDU en PRODUCTION. Cette analyse sert à vérifiée la cohérence des éléments entre les tables de relation et les tables des objets. Normalement un élément présent dans une table de relation doit également être présent dans la table des objets qui sont mise ne relation par la table de relation. L'absence de contraintes de clé étrangère nous oblige à vérifier si cela est réellement le cas.
+Requêtes réalisées le 15/03/2021 sur le schéma G_SIDU en PRODUCTION. Cette analyse sert à vérifiée la cohérence des éléments entre les tables de relation et les tables des objets. Normalement un élément présent dans une table de relation doit également être présent dans la table parente ou enfant. L'absence de contraintes de clé étrangère nous oblige à vérifier si cela est réellement le cas.
 
-### Verification de la relation entre les tables G_SIDU.ILTASIT (table fille) et G_SIDU.ILTASEU (table parente)
+### Vérification de la relation entre les tables G_SIDU.ILTASIT (table fille) et G_SIDU.ILTASEU (table parente)
 
 ```SQL
 SELECT
@@ -49,12 +49,11 @@ SELECT
 FROM
     G_SIDU.ILTASIT a
 WHERE
-    a.idseui NOT IN (SELECT b.idseui FROM G_SIDU.ILTASEU b WHERE b.idseui IS NOT NULL)
-;
--- 7029 seuils présents dans ILTASIT, mais absents de ILTASEU.
+    a.idseui NOT IN (SELECT b.idseui FROM G_SIDU.ILTASEU b WHERE b.idseui IS NOT NULL);
+-- 7244 seuils présents dans ILTASIT, mais absents de ILTASEU.
 ```
 
-### Verification de la relation entre les tables G_SIDU.ILTASIT (table fille) et G_SIDU.ILTATRC (table parente)
+### Vérification de la relation entre les tables G_SIDU.ILTASIT (table fille) et G_SIDU.ILTATRC (table parente)
 
 ```SQL
 -- Tronçons présents dans ILTASIT mais absents de ILTATRC
@@ -63,33 +62,20 @@ SELECT
 FROM
     G_SIDU.ILTASIT
 WHERE
-    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
-;
--- 3
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL);
+-- 7
 
 -- Tronçons présents dans ILTASIT mais invalides dans ILTATRC
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.cnumtrc
-        FROM
-            G_SIDU.ILTASIT a
-        WHERE
-            a.cnumtrc NOT IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'V')
-    )
-    
-    SELECT
-        COUNT(DISTINCT a.cnumtrc)
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.ILTATRC b ON b.cnumtrc = a.cnumtrc
-    WHERE
-        b.cdvaltro = 'F';
-;
--- 109
+SELECT 
+    COUNT(DISTINCT a.cnumtrc)
+FROM
+    G_SIDU.ILTASIT a
+WHERE
+    a.cnumtrc IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'F');
+-- 155
 ```
 
-### Verification de la relation entre les tables G_SIDU.ILTADTN (table fille) et G_SIDU.ILTATRC (table parente)
+### Vérification de la relation entre les tables G_SIDU.ILTADTN (table fille) et G_SIDU.ILTATRC (table parente)
 
 ```SQL
 -- Tronçons présents dans ILTADTN mais absents de ILTATRC
@@ -98,32 +84,20 @@ SELECT
 FROM
     G_SIDU.ILTADTN
 WHERE
-    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
-;
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL);
 -- 0
 
 -- Tronçons présents dans ILTADTN mais invalides dans ILTATRC
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.cnumtrc
-        FROM
-            G_SIDU.ILTADTN a
-        WHERE
-            a.cnumtrc NOT IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'V')
-    )
-    
-    SELECT
-        COUNT(DISTINCT a.cnumtrc)
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.ILTATRC b ON b.cnumtrc = a.cnumtrc
-    WHERE
-        b.cdvaltro = 'F';
--- 7521
+SELECT 
+    COUNT(DISTINCT a.cnumtrc)
+FROM
+    G_SIDU.ILTADTN a
+WHERE
+    a.cnumtrc IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'F');
+-- 7898
 ```
 
-### Verification de la relation entre les tables G_SIDU.ILTADTN (table fille) et G_SIDU.ILTAPTZ (table parente)
+### Vérification de la relation entre les tables G_SIDU.ILTADTN (table fille) et G_SIDU.ILTAPTZ (table parente)
 
 ```SQL
 -- Noeuds présents dans ILTADTN mais absents de ILTAPTZ
@@ -132,32 +106,20 @@ SELECT
 FROM
     G_SIDU.ILTADTN
 WHERE
-    cnumptz NOT IN (SELECT cnumptz FROM G_SIDU.ILTAPTZ WHERE cnumptz IS NOT NULL)
-;
+    cnumptz NOT IN (SELECT cnumptz FROM G_SIDU.ILTAPTZ WHERE cnumptz IS NOT NULL);
 -- 0
 
 -- Noeuds présents dans ILTADTN mais invalides dans ILTAPTZ
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.cnumptz
-        FROM
-            G_SIDU.ILTADTN a
-        WHERE
-            a.cnumptz NOT IN (SELECT b.cnumptz FROM G_SIDU.ILTAPTZ b WHERE b.cnumptz IS NOT NULL AND b.cdvalptz = 'V')
-    )
-    
-    SELECT
-        COUNT(DISTINCT a.cnumptz)
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.ILTAPTZ b ON b.cnumptz = a.cnumptz
-    WHERE
-        b.cdvalptz = 'F';
--- 1927
+SELECT 
+    COUNT(DISTINCT a.cnumptz)
+FROM
+    G_SIDU.ILTADTN a
+WHERE
+    a.cnumptz IN (SELECT b.cnumptz FROM G_SIDU.ILTAPTZ b WHERE b.cnumptz IS NOT NULL AND b.cdvalptz = 'F');
+-- 1988
 ```
 
-### Verification de la relation entre les tables G_SIDU.VOIECVT (table fille) et G_SIDU.ILTATRC (table parente)
+### Vérification de la relation entre les tables G_SIDU.VOIECVT (table fille) et G_SIDU.ILTATRC (table parente)
 
 ```SQL
 -- Tronçons présents dans VOIECVT mais absents de ILTATRC
@@ -166,33 +128,20 @@ SELECT
 FROM
     G_SIDU.VOIECVT
 WHERE
-    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
-;
--- 0
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL);
+-- 1
 
 -- Tronçons présents dans VOIECVT mais invalides dans ILTATRC
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.cnumtrc,
-            a.cvalide
-        FROM
-            G_SIDU.VOIECVT a
-        WHERE
-            a.cnumtrc NOT IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'V')
-    )
-    
-    SELECT DISTINCT
-        COUNT(DISTINCT b.cnumtrc)
-    FROM
-        G_SIDU.ILTATRC a
-        INNER JOIN C_1 b ON b.cnumtrc = a.cnumtrc
-    WHERE
-        a.cdvaltro = 'F';
--- 7507
+SELECT 
+    COUNT(DISTINCT a.cnumtrc)
+FROM
+    G_SIDU.VOIECVT a
+WHERE
+    a.cnumtrc IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'F');
+-- 7882
 ```
 
-### Verification de la relation entre les tables G_SIDU.ILTAFILIA (table fille) et G_SIDU.ILTATRC (table parente)
+### Vérification de la relation entre les tables G_SIDU.ILTAFILIA (table fille) et G_SIDU.ILTATRC (table parente)
 
 ```SQL
 -- Tronçons présents dans VOIECVT mais absents de ILTATRC
@@ -201,33 +150,20 @@ SELECT
 FROM
     G_SIDU.ILTAFILIA
 WHERE
-    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL)
-;
+    cnumtrc NOT IN (SELECT cnumtrc FROM G_SIDU.ILTATRC WHERE cnumtrc IS NOT NULL);
 -- 1
 
 -- Tronçons présents dans ILTAFILIA mais invalides dans ILTATRC
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.cnumtrc
-        FROM
-            G_SIDU.ILTAFILIA a
-        WHERE
-            a.cnumtrc NOT IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'V')
-    )
-    
-    SELECT DISTINCT
-        a.cnumtrc
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.ILTATRC b ON b.cnumtrc = b.cnumtrc
-    WHERE
-        b.cdvaltro = 'F'
-;
--- 641
+SELECT 
+    COUNT(DISTINCT a.cnumtrc)
+FROM
+    G_SIDU.ILTAFILIA a
+WHERE
+    a.cnumtrc IN (SELECT b.cnumtrc FROM G_SIDU.ILTATRC b WHERE b.cnumtrc IS NOT NULL AND b.cdvaltro = 'F');
+-- 721
 ```
 
-### Verification de la relation entre les tables G_SIDU.VOIEVOI (table fille) et G_SIDU.TYPEVOIE (table parente)
+### Vérification de la relation entre les tables G_SIDU.VOIEVOI (table fille) et G_SIDU.TYPEVOIE (table parente)
 
 ```SQL
 -- Voies présentes dans VOIEVOI mais absentes de TYPEVOIE
@@ -236,12 +172,11 @@ SELECT
 FROM
     G_SIDU.VOIEVOI
 WHERE
-    ccodtvo NOT IN (SELECT ccodtvo FROM G_SIDU.TYPEVOIE WHERE ccodtvo IS NOT NULL)
-;
+    ccodtvo NOT IN (SELECT ccodtvo FROM G_SIDU.TYPEVOIE WHERE ccodtvo IS NOT NULL);
 -- 3
 ```
 
-### Verification de la relation entre les tables G_SIDU.VOIECVT (table fille) et G_SIDU.VOIEVOI (table parente)
+### Vérification de la relation entre les tables G_SIDU.VOIECVT (table fille) et G_SIDU.VOIEVOI (table parente)
 
 ```SQL
 -- Voies présentes dans VOIECVT mais absentes de VOIEVOI
@@ -250,32 +185,20 @@ SELECT
 FROM
     G_SIDU.VOIECVT
 WHERE
-    ccomvoi NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL)
-;
+    ccomvoi NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL);
 -- 0
 
 -- Voies présentes dans VOIECVT mais invalides dans VOIEVOI
-WITH
-    C_1 AS(
-    SELECT DISTINCT
-        a.ccomvoi
-    FROM
-        G_SIDU.VOIECVT a
-    WHERE
-        a.ccomvoi NOT IN (SELECT b.ccomvoi FROM G_SIDU.VOIEVOI b WHERE b.ccomvoi IS NOT NULL AND b.CDVALVOI = 'V')
-    )
-    
-    SELECT
-        COUNT(DISTINCT a.ccomvoi)
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.VOIEVOI b ON b.ccomvoi = a.ccomvoi
-    WHERE
-        b.CDVALVOI = 'I';
--- 1021
+SELECT 
+    COUNT(DISTINCT a.ccomvoi)
+FROM
+    G_SIDU.VOIECVT a
+WHERE
+    a.ccomvoi IN (SELECT b.ccomvoi FROM G_SIDU.VOIEVOI b WHERE b.ccomvoi IS NOT NULL AND b.CDVALVOI = 'I');
+-- 1053
 ```
 
-### Verification de la relation entre les tables G_SIDU.TA_RUEVOIE (table fille) et G_SIDU.VOIEVOI (table parente)
+### Vérification de la relation entre les tables G_SIDU.TA_RUEVOIE (table fille) et G_SIDU.VOIEVOI (table parente)
 
 ```SQL
 -- Voies présentes dans TA_RUEVOIE mais absentes de VOIEVOI
@@ -284,32 +207,20 @@ SELECT
 FROM
     G_SIDU.TA_RUEVOIE
 WHERE
-    ccomvoie NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL)
-;
+    ccomvoie NOT IN (SELECT ccomvoi FROM G_SIDU.VOIEVOI WHERE ccomvoi IS NOT NULL);
 -- 7
 
 -- Voies présentes dans TA_RUEVOIE mais invalides dans VOIEVOI
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.ccomvoie
-        FROM
-            G_SIDU.TA_RUEVOIE a
-        WHERE
-            a.ccomvoie NOT IN (SELECT b.ccomvoi FROM G_SIDU.VOIEVOI b WHERE b.ccomvoi IS NOT NULL AND b.CDVALVOI = 'V')
-    )
-
-    SELECT
-        COUNT(DISTINCT a.ccomvoie)
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.VOIEVOI b ON b.ccomvoi = a.ccomvoie
-    WHERE
-        b.CDVALVOI = 'I';
--- 486
+SELECT 
+    COUNT(DISTINCT a.ccomvoie)
+FROM
+    G_SIDU.TA_RUEVOIE a
+WHERE
+    a.ccomvoie IN (SELECT b.ccomvoi FROM G_SIDU.VOIEVOI b WHERE b.ccomvoi IS NOT NULL AND b.CDVALVOI = 'I');
+-- 520
 ```
 
-### Verification de la relation entre les tables G_SIDU.TA_RUEVOIE (table fille) et G_SIDU.TA_RUE (table parente)
+### Vérification de la relation entre les tables G_SIDU.TA_RUEVOIE (table fille) et G_SIDU.TA_RUE (table parente)
 
 ```SQL
 -- Fantoirs présents dans TA_RUEVOIE mais absents de TA_RUE
@@ -318,12 +229,11 @@ SELECT
 FROM
     G_SIDU.TA_RUEVOIE
 WHERE
-    fantoir NOT IN (SELECT fantoir FROM G_SIDU.TA_RUE WHERE fantoir IS NOT NULL)
-;
--- 19
+    fantoir NOT IN (SELECT fantoir FROM G_SIDU.TA_RUE WHERE fantoir IS NOT NULL);
+-- 21
 ```
 
-### Verification de la relation entre les tables G_SIDU.TA_RUELPU (table fille) et G_SIDU.TA_RUE (table parente)
+### Vérification de la relation entre les tables G_SIDU.TA_RUELPU (table fille) et G_SIDU.TA_RUE (table parente)
 
 ```SQL
 SELECT
@@ -331,12 +241,11 @@ SELECT
 FROM
     G_SIDU.TA_RUELPU
 WHERE
-    ccomrue NOT IN (SELECT fantoir FROM G_SIDU.TA_RUE WHERE fantoir IS NOT NULL)
-;
+    ccomrue NOT IN (SELECT fantoir FROM G_SIDU.TA_RUE WHERE fantoir IS NOT NULL);
 -- 28
 ```
 
-### Verification de la relation entre les tables G_SIDU.TA_RUELPU (table fille) et G_SIDU.ILTALPU (table parente)
+### Vérification de la relation entre les tables G_SIDU.TA_RUELPU (table fille) et G_SIDU.ILTALPU (table parente)
 
 ```SQL
 SELECT
@@ -344,29 +253,16 @@ SELECT
 FROM
     G_SIDU.TA_RUELPU
 WHERE
-    cnumlpu NOT IN (SELECT cnumlpu FROM G_SIDU.ILTALPU WHERE cnumlpu IS NOT NULL)
-;
+    cnumlpu NOT IN (SELECT cnumlpu FROM G_SIDU.ILTALPU WHERE cnumlpu IS NOT NULL);
 -- 0
 
 -- Points d'intérêts présents dans TA_RUELPU mais invalides dans ILTALPU
-WITH
-    C_1 AS(
-        SELECT DISTINCT
-            a.cnumlpu
-        FROM
-            G_SIDU.TA_RUELPU a
-        WHERE
-            a.cnumlpu NOT IN (SELECT b.cnumlpu FROM G_SIDU.ILTALPU b WHERE b.cnumlpu IS NOT NULL AND b.CDVALLPU = 'V')
-    )
-    
-    SELECT
-        COUNT(DISTINCT a.cnumlpu)
-    FROM
-        C_1 a
-        INNER JOIN G_SIDU.ILTALPU b ON b.cnumlpu = a.cnumlpu
-    WHERE
-        b.CDVALLPU = 'I'
-    ;
+SELECT 
+    COUNT(DISTINCT a.cnumlpu)
+FROM
+    G_SIDU.TA_RUELPU a
+WHERE
+    a.cnumlpu IN (SELECT b.cnumlpu FROM G_SIDU.ILTALPU b WHERE b.cnumlpu IS NOT NULL AND b.CDVALLPU = 'I');
 -- 7
 ```
 
@@ -440,26 +336,26 @@ AND a.INDEX_TYPE = 'DOMAIN';
 
 |TYPE DE GEOMETRIE|NOMBRE D'OBJET|TABLE|
 |:----------------|:-------------|:----|
-|NULL			  |0	         |ILTALPU|
-|2001	 		  |10696		 |ILTALPU|
+|NULL			  |1	         |ILTALPU|
+|2001	 		  |10799		 |ILTALPU|
 
 #### Analyse du type de géométrie présente dans la table ILTASEU.
 
 |TYPE DE GEOMETRIE|NOMBRE D'OBJET|TABLE|
 |:----------------|:-------------|:----|
-|2001			  |350429		 |ILTASEU
+|2001			  |354887		 |ILTASEU
 
 #### Analyse du type de géométrie présente dans la table ILTATRC.
 
 |TYPE DE GEOMETRIE|NOMBRE D'OBJET|TABLE|
 |:----------------|:-------------|:----|
-|2002			  |56436		 |ILTATRC
+|2002			  |57620		 |ILTATRC
 
 #### Analyse du type de géométrie présente dans la table ILTAPTZ.
 
 |TYPE DE GEOMETRIE|NOMBRE D'OBJET|TABLE|
 |:----------------|:-------------|:----|
-|2001			  |40205		 |ILTAPTZ
+|2001			  |41003		 |ILTAPTZ
 
 #### Analyse du type de géométrie présente dans la table REMARQUES_THEMATIQUES_VOIES.
 
@@ -490,7 +386,7 @@ Pas d'erreur présente dans la table
 
 |ERREUR|NOMBRE D'OBJET|TABLE|
 |:-----|:-------------|:----|
-|13356			  |6			 |ILTATRC|
+|13356			  |10			 |ILTATRC|
 
 Les géométries de la tables peuvent être corrigées avec la fonction __SDO_UTIL.RECTIFY_GEOMETRY__
 
