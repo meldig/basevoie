@@ -78,7 +78,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 
 * **En cas de problème :**
 1. Supprimez toutes les tables d'import via le fichier ![lanceur_suppression_tables_d_import_temporaires.bat](../../sql/scripts/code_ddl_g_base_voie/integration/suppression_objets_schema/lanceur_suppression_tables_d_import_temporaires.bat) et de réimportez les tables une par une en mettant les autres en commentaires (parfois cela peut régler le problème) ;
-2. Si le problème concerne des tables géométriques, décomptez le nombre de géométries valides dans la table de prod d'oracle 11g et  vérifiez sil correspond au nombre d'entités importées. Si c'est le cas, cela signifie que vous avez des erreurs de géométrie dans les tables de prod originelles qu'Ogr2ogr n'arrive pas à importer. Pour ce cas, il faut créer une table temporaire dans oracle 11g (TEMP_ + nom de la table) dans laquelle importer toutes les données de la table en question, corriger les erreurs, supprimer les tables temporaires dans oracle 12c et retenter l'import. **N'oubliez pas de mettre un commentaire pour la table temporaire dans Oracle 11g.**
+2. Si le problème concerne des tables géométriques, décomptez le nombre de géométries valides dans la table de prod d'oracle 11g et  vérifiez s'il correspond au nombre d'entités importées. Si c'est le cas, cela signifie que vous avez des erreurs de géométrie dans les tables de prod originelles qu'Ogr2ogr n'arrive pas à importer. Pour ce cas, il faut créer une table temporaire dans oracle 11g (TEMP_ + nom de la table) dans laquelle importer toutes les données de la table en question, corriger les erreurs, supprimer les tables temporaires dans oracle 12c et retenter l'import. **N'oubliez pas de mettre un commentaire pour la table temporaire dans Oracle 11g.**
 
 ## 2. Création de la nouvelle structure de données dans Oracle 12C
 
@@ -87,7 +87,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * **Méthode :** 
 1. Vérifier que le fichier *temp_code_ddl_schema.sql* ne se trouve pas dans le dossier integration, sinon supprimez-le ;
 2. Double-cliquez sur le fichier ![lanceur_code_ddl_schema.bat](../../sql/scripts/code_ddl_g_base_voie/integration/creation_tables_finales/lanceur_code_ddl_schema.bat) et renseignez les informations demandées ;
-3. Dans Sql/Developper, lancez le code du fichier ![creation_vm_temp_doublon_seuil_g_sidu.sql](../../sql/scripts/code_ddl_g_base_voie/vues_materialisees/creation_vm_temp_doublon_seuil_g_sidu.sql). Ce fichier peut pas être lancé via SqlPlus en raison de la présence de CTE qui provoquent des erreurs ;
+3. Dans Sql/Developper, lancez le code du fichier ![creation_vm_temp_doublon_seuil_g_sidu.sql](../../sql/scripts/code_ddl_g_base_voie/vues_materialisees/creation_vm_temp_doublon_seuil_g_sidu.sql). Ce fichier ne peut pas être lancé via SqlPlus en raison de la présence de CTE qui provoquent des erreurs ;
 
 * **Information complémentaire :**
 Le fichier *lanceur_code_ddl_schema.bat* fait la compilation de tous les codes DDL des tables, vues, déclencheurs et fonctions présents dans le dossier *code_ddl_g_base_voie* dans le fichier *temp_code_ddl_schema.sql* qu'il lance ensuite dans oracle pour créer la structure du schéma en base.  
