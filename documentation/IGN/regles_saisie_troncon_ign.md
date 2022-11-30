@@ -22,6 +22,8 @@ sont dédoublées, même si la longueur du séparateur est inférieure à 400 m 
 15. Les pistes cyclables sont numérisées si leur longueur est supérieure à 200m, si elles longent une route en site propre, si elles sont séparées de la chaussée principale par une séparation physique de 5m minimum par rapport à l'axe (central) de la route ;
 16. L'écart entre deux voies cyclables parallèles et longeant une route doit être de 10m minimum ;
 17. Ne sont pas numérisées les pistes cyclables dont la longueur est inférieure à 200m, les pistes cyclables situées sur le même revêtement que la route (même protégées par des barrières), les pistes cyclables situées sur les trottoirs ou non séparées de la chaussée principale par une séparation physique, ou si l'axe de la piste est situé à moins de 5m de l'axe de la route ;
+18. Lorsque le réseau routier croise le réseau ferroviaire ou hydrographique, les tronçons ne sont pas découpés aux points de jonctions, mais ils prennent la longueur des ouvrages sur lesquels ils passent (pont, viaduc, tunnel, etc) ;
+19. Le passage d'une route sous un bâtiment n'est pas considéré comme souterrain, il ne faut donc pas découper le tronçon selon la longueur du bâtiment mais faire un seul et même tronçon ;
 
 ## Attributs des tronçons :
 En dehors de la géométrie, chaque tronçon dispose de champ attributaire permettant de le catégoriser :
