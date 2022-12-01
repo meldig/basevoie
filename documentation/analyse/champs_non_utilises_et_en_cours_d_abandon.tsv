@@ -36,7 +36,6 @@ VOIECVT	CMUTFIN	plus utilisé mais rempli	non utilisé
 VOIECVT	CDCOTE	code coté (en rapport avec la commune)	non utilisé.
 VOIECVT	CDTDCVT	date début validité.	Champ inutilisable.
 VOIECVT	CDTFCVT	date de fin de validite.	Champ inutilisable.
-VOIECVT	CNUMCOM	Code commune issu du code INSEE	Champ remplacé par une requête spatiale au besoin
 VOIECVT	CVALIDE	Champ de validité de l'objet.	"Inutile car toutes les entités de la table TA_RELATION_TRONCON_VOIE seront valides. 
 Les invalides seront présentes dans la table TA_RELATION_TRONCON_VOIE_LOG."
 ILTADTN	CANGTRC	angle de troncon (trigo)	non utilisé par SIREO.

@@ -8,9 +8,9 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 - Améliorer la qualité de la donnée en supprimant les voies et les tronçons n'étant plus utilisés tels que les rivières ou en supprimant les seuils qui intersectent les tronçons ou qui se situent à plus d'1km de leur tronçon d'affectation ;
 
 ## Etapes :
-1. Import des données d'Oracle 11G vers Oracle 12C dans des tables temporaires ;
-	1.1. Import des données ;
-	1.2. Vérification du bon déroulé de l'import ;
+1. Import des données d'Oracle 11G vers Oracle 12C dans des tables temporaires ;  
+	1.1. Import des données ;  
+	1.2. Vérification du bon déroulé de l'import ;  
 2. Création de la nouvelle structure de données dans Oracle 12C ;
 3. Migration et correction des données des tables temporaires vers les tables finales ;
 4. Création d'une hiérarchisation voies principales / voies secondaires ;
@@ -33,7 +33,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * ![lanceur_suppression_tables_d_import_temporaires.bat](../../sql/scripts/code_ddl_g_base_voie/integration/suppression_objets_schema/lanceur_suppression_tables_d_import_temporaires.bat) => fichier permettant de supprimer toutes les tables temporaires ayant servies à l'import des données d'Oracle 11G ;
 
 ### Les fichiers sql
-* ![ajout_temp_code_fantoir_a_temp_voievoi.sql](../../sql/scripts/code_ddl_g_base_voie/integration/creation_tables_finales/ajout_temp_code_fantoir_a_temp_voievoi.sql) => fichier permettant de créer un champ temproaire dans la table TEMP_VOIEVOI, nécessaire à l'import dans la nouvelle structure de données ;
+* ![ajout_temp_code_fantoir_a_temp_voievoi.sql](../../sql/scripts/code_ddl_g_base_voie/integration/creation_tables_finales/ajout_temp_code_fantoir_a_temp_voievoi.sql) => fichier permettant de créer un champ temporaire dans la table TEMP_VOIEVOI, nécessaire à l'import dans la nouvelle structure de données ;
 
 * ![insertion_famille_libelle_tables_finales.sql](../../sql/scripts/code_ddl_g_base_voie/integration/remplissage_tables_finales/insertion_famille_libelle_tables_finales.sql) => fichier permettant d'insérer les familles et libellés utilisés par la base voie dans les tables correspondantes du schéma G_GEO ;
 
@@ -41,7 +41,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 
 * ![verification_nombre_de_donnees_base_originelle.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_base_originelle.sql) => fichier décomptant le nombre d'entités par table dans la base voie d'oracle 11g ;
 
-* ![verification_nombre_de_donnees_importees.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_importees.sql) => fichier décomptant le nombre d'entités importées par table temporaires dans oracle 12c ;
+* ![verification_nombre_de_donnees_importees.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_importees.sql) => fichier décomptant le nombre d'entités importées par table temporaire dans oracle 12c ;
 
 * ![verification_nombre_de_donnees_base_finale.sql](../../sql/scripts/code_ddl_g_base_voie/integration/verification_des_donnees/verification_nombre_de_donnees_base_finale.sql) => fichier décomptant le nombre d'entités importées dans les tables finales d'oracle 12c ;
 
@@ -50,7 +50,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * ![suppression_tables_declencheurs_fonctions_MTD_index_contraintes.sql](../../sql/scripts/code_ddl_g_base_voie/integration/suppression_objets_schema/suppression_tables_declencheurs_fonctions_MTD_index_contraintes.sql) => fichier permettant de supprimer tous les objets de la base voie finale sur oracle 12c ;
 
 ### les fichiers csv
-* ![TEMP_CODE_FANTOIR.csv](../../sql/scripts/code_ddl_g_base_voie/integration/import_des_donnees/TEMP_CODE_FANTOIR.csv) => fichier contenant les codes fantoir de toutes les voies de la MEL, récupérés auprès de ![collectivites-locales.gouv.fr.csv](https://www.collectivites-locales.gouv.fr), permettant de télécharger les codes au niveau régional et non pas uniquement au niveau national. Le fichier est ensuite mis en forme en local par le gestionnaire de données : fantoir (3 caractères pour la direction départementale + 3 caractères du code commune + les 4 caractères du code rivoli) ; rivoli (sur 4 caractères maximum) ; clé de contrôle (1 lettre(la dernière du code fantoir));
+* ![TEMP_CODE_FANTOIR.csv](../../sql/scripts/code_ddl_g_base_voie/integration/import_des_donnees/TEMP_CODE_FANTOIR.csv) => fichier contenant les codes fantoir de toutes les voies de la MEL, récupérés auprès de ![collectivites-locales.gouv.fr.csv](https://www.collectivites-locales.gouv.fr), permettant de télécharger les codes au niveau régional et non pas uniquement au niveau national. Le fichier est ensuite mis en forme en local par le gestionnaire de données : fantoir (3 caractères pour la direction départementale + 3 caractères du code commune + les 4 caractères du code rivoli) ; rivoli (sur 4 caractères maximum) ; clé de contrôle (1 lettre(la dernière du code fantoir)). Les codes fantoirs sont en cours d'abandon.;
 
 * ![TEMP_FAMILLE.csv](../../sql/scripts/code_ddl_g_base_voie/integration/import_des_donnees/TEMP_FAMILLE.csv) => fichier contenant toutes les familles nécessaires à la base voie ;
 
@@ -78,7 +78,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 
 * **En cas de problème :**
 1. Supprimez toutes les tables d'import via le fichier ![lanceur_suppression_tables_d_import_temporaires.bat](../../sql/scripts/code_ddl_g_base_voie/integration/suppression_objets_schema/lanceur_suppression_tables_d_import_temporaires.bat) et de réimportez les tables une par une en mettant les autres en commentaires (parfois cela peut régler le problème) ;
-2. Si le problème concerne des tables géométriques, décomptez le nombre de géométries valides dans la table de prod d'oracle 11g et  vérifiez sil correspond au nombre d'entités importées. Si c'est le cas, cela signifie que vous avez des erreurs de géométrie dans les tables de prod originelles qu'Ogr2ogr n'arrive pas à importer. Pour ce cas, il faut créer une table temporaire dans oracle 11g (TEMP_ + nom de la table) dans laquelle importer toutes les données de la table en question, corriger les erreurs, supprimer les tables temporaires dans oracle 12c et retenter l'import. **N'oubliez pas de mettre un commentaire pour la table temporaire dans Oracle 11g.**
+2. Si le problème concerne des tables géométriques, décomptez le nombre de géométries valides dans la table de prod d'oracle 11g et  vérifiez s'il correspond au nombre d'entités importées. Si c'est le cas, cela signifie que vous avez des erreurs de géométrie dans les tables de prod originelles qu'Ogr2ogr n'arrive pas à importer. Pour ce cas, il faut créer une table temporaire dans oracle 11g (TEMP_ + nom de la table) dans laquelle importer toutes les données de la table en question, corriger les erreurs, supprimer les tables temporaires dans oracle 12c et retenter l'import. **N'oubliez pas de mettre un commentaire pour la table temporaire dans Oracle 11g.**
 
 ## 2. Création de la nouvelle structure de données dans Oracle 12C
 
@@ -87,7 +87,7 @@ Dans le cadre de l'obsolescence de la technologie Flash utilisée par la platefo
 * **Méthode :** 
 1. Vérifier que le fichier *temp_code_ddl_schema.sql* ne se trouve pas dans le dossier integration, sinon supprimez-le ;
 2. Double-cliquez sur le fichier ![lanceur_code_ddl_schema.bat](../../sql/scripts/code_ddl_g_base_voie/integration/creation_tables_finales/lanceur_code_ddl_schema.bat) et renseignez les informations demandées ;
-3. Dans Sql/Developper, lancez le code du fichier ![creation_vm_temp_doublon_seuil_g_sidu.sql](../../sql/scripts/code_ddl_g_base_voie/vues_materialisees/creation_vm_temp_doublon_seuil_g_sidu.sql). Ce fichier peut pas être lancé via SqlPlus en raison de la présence de CTE qui provoquent des erreurs ;
+3. Dans Sql/Developper, lancez le code du fichier ![creation_vm_temp_doublon_seuil_g_sidu.sql](../../sql/scripts/code_ddl_g_base_voie/vues_materialisees/creation_vm_temp_doublon_seuil_g_sidu.sql). Ce fichier ne peut pas être lancé via SqlPlus en raison de la présence de CTE qui provoquent des erreurs ;
 
 * **Information complémentaire :**
 Le fichier *lanceur_code_ddl_schema.bat* fait la compilation de tous les codes DDL des tables, vues, déclencheurs et fonctions présents dans le dossier *code_ddl_g_base_voie* dans le fichier *temp_code_ddl_schema.sql* qu'il lance ensuite dans oracle pour créer la structure du schéma en base.  

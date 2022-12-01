@@ -24,24 +24,26 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 
 ### Corrections réalisées
 
-- [x] Suppression des voies de type ruisseau, rivière, canal, car absents de la table G_SIDU.TYPEVOIE dû à un changement de méthode de saisie non finalisé ;
-- [x] Suppression des relations de tronçons invalides à certaines voies valides et inversement ;
-- [x] Suppression des types de voies dont le libellé est null ;
-- [x] Pour les voies physiques en doublon de géométrie situées en limite de commune, on garde une seule voie physique que l'on rattache à deux voies administratives dont on a corrigé le code INSEE ;
-- [x] Corrections topologiques des tronçons :
-  - [x] Tronçon qui se croisent en-dehors des ouvrages d'art et en-dehors de leur point de départ et d'arrivée => l'un des tronçons est divisé en deux et leur point de connexion permet de rattacher le second ;
-  - [x] Tronçons mal connectés (tous les types de tronçons sont connectés, peu importe leur type de circulation) ;
-- [x] Passage d'un tronçon affecté à plusieurs voies physiques affectées à une et une seule voie administrative à un tronçon affecté à une et une seule voie physique affectée à une ou plusieurs voies administratives (en cours de finalisation) ;
+- [x] 1. Suppression des voies de type ruisseau, rivière, canal, car absents de la table G_SIDU.TYPEVOIE dû à un changement de méthode de saisie non finalisé ;
+- [x] 2. Suppression des relations de tronçons invalides à certaines voies valides et inversement ;
+- [x] 3. Suppression des types de voies dont le libellé est null ;
+- [x] 4. Pour les voies physiques en doublon de géométrie situées en limite de commune, on garde une seule voie physique que l'on rattache à deux voies administratives dont on a corrigé le code INSEE ;
+- [x] 5. Corrections topologiques des tronçons :
+  - [x] 6. Tronçon qui se croisent en-dehors des ouvrages d'art et en-dehors de leur point de départ et d'arrivée => l'un des tronçons est divisé en deux et leur point de connexion permet de rattacher le second ;
+  - [x] 7. Tronçons mal connectés (tous les types de tronçons sont connectés, peu importe leur type de circulation) ;
+- [x] 8. Passage d'un tronçon affecté à plusieurs voies physiques affectées à une et une seule voie administrative à un tronçon affecté à une et une seule voie physique affectée à une ou plusieurs voies administratives (en cours de finalisation) ;
+- [x] 9. Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
+- [x] 10. Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
+- [x] 11. Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
+- [x] 12. Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
 
 ### Corrections prévues :
 
-- [ ] Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
-- [x] Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL (en cours);
-- [x] Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent (il faut par contre déterminer ce qu'on fait des noms des voies administratives : faut-il qu'ils soient identiques par voie supra-communale ?);
-- [ ] Tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
-- [ ] Voies secondaires affectées à deux voies principales (12 voies) ;
-- [ ] Voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [x] Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
-- [x] Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
-- [ ] Correction des doublons de numéro, complément et voie de certains seuils ;
-- [ ] Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 13. Correction des giratoires, ronds-points et raquettes uni-tronçon (en cours);
+- [ ] 14. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
+- [ ] 15. Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
+- [ ] 16. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
+- [ ] 17. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
+- [ ] 18. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 19. Correction des doublons de numéro, complément et voie de certains seuils ;
+- [ ] 20. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;

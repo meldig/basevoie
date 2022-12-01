@@ -52,8 +52,8 @@ Ensuite, même si les utilisateurs sont guidés par des formulaires lors de la s
 
 Ainsi, on retrouve :  
 
-* 7034 identifiants de seuil (*IDSEUI*) dans la table *G_SIDU.ILTASIT* qui sont pourtant absents de la table parente *G_SIDU.ILTASEU* ;
-* 3 identifiants de tronçons (*CNUMTRC*) dans la table *G_SIDU.ILTASIT* qui sont pourtant absents de la table parente *G_SIDU.ILTATRC* ;
+* 7244 identifiants de seuil (*IDSEUI*) dans la table *G_SIDU.ILTASIT* qui sont pourtant absents de la table parente *G_SIDU.ILTASEU* ;
+* 7 identifiants de tronçons (*CNUMTRC*) dans la table *G_SIDU.ILTASIT* qui sont pourtant absents de la table parente *G_SIDU.ILTATRC* ;
 
 ### 1.2 Absences de clés primaires
 
@@ -106,7 +106,7 @@ En vérifiant l'intégrité des données, nous nous sommes aperçus que de nombr
 ![relation_ILTASIT_ILTATRC.PNG](/documentation/analyse/images_base_voie/relation_ILTASIT_ILTATRC.png)
 
 Comme on peut le voir dans la figure ci-dessus, *ILTASIT* est la table fille de la table parente *ILTATRC*.  
-Cependant, on note 112 tronçons présents dans la table fille, mais absents des tronçons valides de la table parente. Il se trouve que 109 tronçons présents dans *ILTASIT* sont invalides dans *ILTATRC* et 3 tronçons présents dans *ILTASIT* sont carrément absents de la table *ILTATRC*. L'intégrité des données n'est donc pas respectée entre les deux tables et il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
+Cependant, on note 162 tronçons présents dans la table fille, mais absents des tronçons valides de la table parente. Il se trouve que 155 tronçons présents dans *ILTASIT* sont invalides dans *ILTATRC* et 7 tronçons présents dans *ILTASIT* sont carrément absents de la table *ILTATRC*. L'intégrité des données n'est donc pas respectée entre les deux tables et il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.
 
 #### Relation *ILTADTN* / *ILTATRC*
@@ -116,7 +116,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ![relation_ILTASIT_ILTATRC.PNG](/documentation/analyse/images_base_voie/relation_ILTADTN_ILTATRC.png)
 
 Comme on peut le voir dans la figure ci-dessus, *ILTADTN* est la table fille de la table parente *ILTATRC*.  
-Cependant, 7521 tronçons présents dans la table fille (*ILTADTN*) sont invalides dans la table parente (*ILTATRC*). Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
+Cependant, 7898 tronçons présents dans la table fille (*ILTADTN*) sont invalides dans la table parente (*ILTATRC*). Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.
 
 #### Relation *VOIECVT* / *ILTATRC*
@@ -126,7 +126,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ![relation_VOIECVT_ILTATRC.PNG](/documentation/analyse/images_base_voie/relation_VOIECVT_ILTATRC.png)
 
 Comme on peut le voir dans la figure ci-dessus, *VOIECVT* est la table fille de la table parente *ILTATRC*.  
-Cependant, 7507 tronçons présents dans la table fille (*VOIECVT*) sont invalides dans la table parente (*ILTATRC*). Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
+Cependant, 7882 tronçons présents dans la table fille (*VOIECVT*) sont invalides dans la table parente (*ILTATRC*) et 1 tronçon est carrément absent de la table parente. Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.
 
 #### Relation *ILTAFILIA* / *ILTATRC*
@@ -136,7 +136,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ![relation_ILTAFILIA_ILTATRC.PNG](/documentation/analyse/images_base_voie/relation_ILTAFILIA_ILTATRC.png)
 
 Comme on peut le voir dans la figure ci-dessus, *ILTAFILIA* est la table fille de la table parente *ILTATRC*. 
-Cependant, on note que 641 tronçons présents dans *ILTAFILIA* sont invalides dans la table parente *ILTATRC*. Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
+Cependant, on note que 721 tronçons présents dans *ILTAFILIA* sont invalides dans la table parente *ILTATRC* et 1 tronçon est carrément absent de la table parente. Il n'y a manifestement pas de mise à jour automatique des données de la table fille en fonction de la validité des données de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.
 
 ### 2.2 Les voies
@@ -157,7 +157,7 @@ Cependant, 3 voies présentes dans la table fille *VOIEVOI* sont absentes dans l
 ![relation_VOIECVT_VOIEVOI.PNG](/documentation/analyse/images_base_voie/relation_VOIECVT_VOIEVOI.png)
 
 Comme on peut le voir dans la figure ci-dessus, *VOIECVT* est la table fille de la table parente *VOIEVOI*.
-Cependant, 1021 voies présentes dans la table fille *VOIECVT* sont invalides dans la table parente *VOIEVOI*, il n'y a donc aucune mise à jour de la table fille en fonction de la validité de la donnée de la table parente.  
+Cependant, 1053 voies présentes dans la table fille *VOIECVT* sont invalides dans la table parente *VOIEVOI*, il n'y a donc aucune mise à jour de la table fille en fonction de la validité de la donnée de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.
 
 #### Relation *TA_RUEVOIE* / *VOIEVOI*
@@ -167,7 +167,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ![relation_TA_RUEVOIE_VOIEVOI.PNG](/documentation/analyse/images_base_voie/relation_TA_RUEVOIE_VOIEVOI.png)
 
 Comme on peut le voir dans la figure ci-dessus, *TA_RUEVOIE* est la table fille de la table parente *VOIEVOI*.
-Cependant, 486 voies présentes dans la table fille *TA_RUEVOIE* sont invalides dans la table parente *VOIEVOI*, il n'y a donc aucune mise à jour de la table fille en fonction de la validité de la donnée de la table parente.  
+Cependant, 520 voies présentes dans la table fille *TA_RUEVOIE* sont invalides dans la table parente *VOIEVOI* et 7 voies sont absentes de la table parente, il n'y a donc aucune mise à jour de la table fille en fonction de la validité de la donnée de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.
 
 ### 2.3 Les seuils
@@ -179,7 +179,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ![relation_ILTASIT_ILTASEU.PNG](/documentation/analyse/images_base_voie/relation_ILTASIT_ILTASEU.PNG)
 
 Comme on peut le voir dans la figure ci-dessus, *ILTASIT* est la table fille de la table parente *ILTASEU*.
-Cependant, 7029 seuils présents dans la table fille *ILTASIT* sont absents dans la table parente *ILTASEU*.  
+Cependant, 7244 seuils présents dans la table fille *ILTASIT* sont absents dans la table parente *ILTASEU*.  
 De plus, ni la table fille ni la table parente ne disposent de champ discriminant la validité de la donnée.
 
 ### 2.4 Les noeuds
@@ -191,7 +191,7 @@ De plus, ni la table fille ni la table parente ne disposent de champ discriminan
 ![relation_ILTADTN_ILTATRC.PNG](/documentation/analyse/images_base_voie/relation_ILTADTN_ILTAPTZ.png)
 
 Comme on peut le voir dans la figure ci-dessus, *ILTADTN* est la table fille de la table parente *ILTAPTZ*.
-Cependant, 1927 noeuds présents dans la table fille *ILTADTN* sont invalides dans la table parente *ILTAPTZ*, il n'y a donc aucune mise à jour de la table fille en fonction de la validité de la donnée de la table parente.  
+Cependant, 1988 noeuds présents dans la table fille *ILTADTN* sont invalides dans la table parente *ILTAPTZ*, il n'y a donc aucune mise à jour de la table fille en fonction de la validité de la donnée de la table parente.  
 De plus, la table fille ne dispose d'aucun champ discriminant la validité de la donnée.  
 
 ### 2.5 Les rues et les fantoirs
@@ -203,7 +203,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 ![relation_TA_RUEVOIE_TA_RUE.PNG](/documentation/analyse/images_base_voie/relation_TA_RUEVOIE_TA_RUE.PNG)
 
 Comme on peut le voir dans la figure ci-dessus, *TA_RUEVOIE* est la table fille de la table parente *TA_RUE*.
-Cependant, 19 fantoirs présents dans la table fille *TA_RUEVOIE* sont absents dans la table parente *TA_RUE*, ce qui résulte de l'absence de contrainte d'intégrité.  
+Cependant, 21 fantoirs présents dans la table fille *TA_RUEVOIE* sont absents dans la table parente *TA_RUE*, ce qui résulte de l'absence de contrainte d'intégrité.  
 
 #### Relation *TA_RUELPU* / *TA_RUE*
 
@@ -232,7 +232,7 @@ De plus, la table fille ne dispose d'aucun champ discriminant la validité de la
 
 Les index spatiaux dans oracle permettent de limiter les types de géométries enregistrés dans la table, de spécifier le tablespace et le worktablespace utilisés pour traiter les géométries. La présence d'index spatiaux permet aussi d'accélérer les traitements géométriques.
 
-Cependant comme on peut le voir dans la figure n°4, certaines tables disposant d'un champ géométrique n'ont pas d'index spatial. Cela est d'autant plus problématique qu'il s'agit des tables de lignes, de noeuds et de seuils de la base voie, qui sont fréquemment mis à jour. Les utilisateurs et les applications peuvent donc en théorie enregistrer n'importe quelle type de géométrie dans ces bases. En outre, puisqu'aucun tablespace ni worktablespace n'est spécifié, nous supposons que tablespaces et workspaces par défaut sont utilisés, ce qui ne correspond pas aux tables normalement utilisées pour les index spatiaux.
+Cependant comme on peut le voir dans la figure n°4, certaines tables disposant d'un champ géométrique n'ont pas d'index spatial. Cela est d'autant plus problématique qu'il s'agit des tables de lignes, de noeuds et de seuils de la base voie, qui sont fréquemment mis à jour. Les utilisateurs et les applications peuvent donc en théorie enregistrer n'importe quel type de géométrie dans ces bases. En outre, puisqu'aucun tablespace ni worktablespace n'est spécifié, nous supposons que les tablespaces et workspaces par défaut sont utilisés, ce qui ne correspond pas à ceux normalement utilisées pour les index spatiaux. Quel est donc le risque en cas de suppression/modification du tablespace par défaut ?
 
 ###### figure n°16 : Les index spatiaux en base
 
@@ -255,13 +255,13 @@ Pour rappel certaines applications, comme QGIS, ne reconnaissent une table en ta
 
 ### 3.2 Les erreurs de géométries
 
-On dénombre en tout 21 erreurs de géométrie dans les tables de la base voie sur des objets tagués en *valides*, ce qui est certes peu, mais indique qu'il n'y a pas de vérification de la validité des géométries et que dans les applications utilisées ces objets peuvent ne pas apparaître. Il serait donc bon de faire des triggers de vérification et de correction des géométries pour tables spatiales de la base.
+On dénombre en tout 8 erreurs de géométrie dans les tables de la base voie sur des objets tagués en *valides*, ce qui est certes peu, mais indique qu'il n'y a pas de vérification de la validité des géométries et que dans les applications utilisées ces objets peuvent ne pas apparaître. Il serait donc bon de faire des triggers de vérification et de correction des géométries pour tables spatiales de la base.
 
 À titre d'exemple, nous avons rencontré ce problème lors de la création de dossiers dans *GEO.TA_GG_GEO* : parfois la saisie du périmètre d'un dossier de récolement dans DynMap provoque l'erreur 13028, ce qui l'empêche d'apparaître dans qgis alors que la donnée apparaît en base. Le problème a été réglé par un trigger qui corrige l'erreur 13028 avant l'insertion de la géométrie en base.
 
 ## 4. Les tablespaces
 
-Toutes les tables de la base voie utilisent encore le tablespace *DATA_G_SIDU*, comme au moment où l'on distinguait les tablespaces utilisés soit pour les index spatiaux, soit pour les autres index. Or nous sommes passés, depuis un certain temps déjà, sur un tablespace préfixé par "INDX_" pour TOUS les index.
+Toutes les tables de la base voie utilisent encore le tablespace *DATA_G_SIDU*, comme au moment où l'on distinguait les tablespaces utilisés soit pour les index spatiaux, soit pour les autres index. Or nous sommes passés, depuis un certain temps déjà, sur un tablespace préfixé par "INDX_" pour **TOUS** les index.
 
 Le souci est que cette utilisation des tablespace ne suit pas la méthode actuelle, donc si certains tablespaces sont supprimés car non utilisé en théorie, certaines tables se retrouveront sans index, ce qui posera un problème. A voir également l'impact que cela aura sur la donnée même.
 
