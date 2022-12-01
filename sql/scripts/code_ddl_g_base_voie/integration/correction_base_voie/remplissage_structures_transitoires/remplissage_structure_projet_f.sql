@@ -29,6 +29,13 @@ FROM
     G_BASE_VOIE.TEMP_C_LIBELLE
 WHERE
     libelle_court IN('droit', 'gauche', 'les deux côtés');
+
+INSERT INTO G_BASE_VOIE.TEMP_F_LIBELLE(libelle_court, libelle_long)
+VALUES('nouvelle entité', 'nouvelle entité créée lors de la correction des giratoires, ronds-points et raquettes');
+
+INSERT INTO G_BASE_VOIE.TEMP_F_LIBELLE(libelle_court, libelle_long)
+VALUES('entité corrigée', 'entité corrigée lors de la correction des giratoires, ronds-points et raquettes');
+
 -- Résultat : 3 lignes fusionnées
 
 -- Insertion des tronçons
@@ -50,7 +57,7 @@ ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.geom, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_voie_physique)
     VALUES(t.objectid, t.geom, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_voie_physique);
--- Résultat : 50 411 lignes fusionnées.
+-- Résultat : 50 428 lignes fusionnées.
 
 -- Insertion des voies physiques
 MERGE INTO G_BASE_VOIE.TEMP_F_VOIE_PHYSIQUE a
@@ -64,7 +71,7 @@ ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid)
     VALUES(t.objectid);
--- Résultat : 22 112  lignes fusionnées.
+-- Résultat : 22 939  lignes fusionnées.
 
 -- Insertion des relations voies physiques / voies administratives
 MERGE INTO G_BASE_VOIE.TEMP_F_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
@@ -73,13 +80,13 @@ MERGE INTO G_BASE_VOIE.TEMP_F_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
             a.fid_voie_administrative,
             a.fid_voie_physique
         FROM
-            G_BASE_VOIE.TEMP_F_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
+            G_BASE_VOIE.TEMP_C_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
     )t
 ON(a.fid_voie_administrative = t.fid_voie_administrative AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
     INSERT(a.fid_voie_administrative, a.fid_voie_physique)
     VALUES(t.fid_voie_administrative, t.fid_voie_physique);
--- Résultat : 22 165 lignes fusionnées.
+-- Résultat : 23 651 lignes fusionnées.
 
 -- Insertion des voies administratives
 MERGE INTO G_BASE_VOIE.TEMP_F_VOIE_ADMINISTRATIVE a
@@ -98,7 +105,6 @@ MERGE INTO G_BASE_VOIE.TEMP_F_VOIE_ADMINISTRATIVE a
             a.FID_TYPE_VOIE
         FROM
             G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE a
-            INNER JOIN G_BASE_VOIE.TEMP_F_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE b ON b.fid_voie_administrative = a.objectid
     )t
 ON(a.objectid = t.objectid AND a.fid_type_voie = t.fid_type_voie)
 WHEN NOT MATCHED THEN
@@ -106,8 +112,6 @@ WHEN NOT MATCHED THEN
     VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_lateralite);
 COMMIT;
 -- Résultat : 22 165 lignes fusionnées.
-
--- Insertion des 
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
