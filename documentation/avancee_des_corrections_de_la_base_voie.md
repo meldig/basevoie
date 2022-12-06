@@ -36,14 +36,15 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 10. Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
 - [x] 11. Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
 - [x] 12. Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
+- [x] 13. Correction des voies physique affectées à plusieurs voies administratives situées dans des communes très éloignées (nous avions parfois au sein d'un commune 3 voies administratives se superposant à l'endroit d'une voie physique) ;
 
 ### Corrections prévues :
 
-- [ ] 13. Correction des giratoires, ronds-points et raquettes uni-tronçon (en cours);
-- [ ] 14. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
-- [ ] 15. Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
-- [ ] 16. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
-- [ ] 17. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
-- [ ] 18. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 19. Correction des doublons de numéro, complément et voie de certains seuils ;
-- [ ] 20. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 14. Correction des giratoires, ronds-points et raquettes uni-tronçon (en cours);
+- [ ] 15. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
+- [ ] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
+- [ ] 17. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
+- [ ] 18. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
+- [ ] 19. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 20. Correction des doublons de numéro, complément et voie de certains seuils ;
+- [ ] 21. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
