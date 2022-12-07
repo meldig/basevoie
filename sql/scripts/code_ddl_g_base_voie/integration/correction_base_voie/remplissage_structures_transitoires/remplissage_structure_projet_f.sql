@@ -46,29 +46,6 @@ INSERT INTO G_BASE_VOIE.TEMP_F_LIBELLE(libelle_court, libelle_long)
 VALUES('entité corrigée', 'entité corrigée lors de la correction des giratoires, ronds-points et raquettes');
 
 -- Résultat : 2 lignes fusionnées
-WITH
-    C_1 AS(
-        SELECT
-            a.objectid, 
-            a.geom, 
-            a.date_saisie, 
-            a.date_modification, 
-            a.fid_pnom_saisie, 
-            a.fid_pnom_modification,
-            b.fid_voie_physique
-        FROM
-          G_BASE_VOIE.TEMP_C_TRONCON a
-          INNER JOIN G_BASE_VOIE.TEMP_C_RELATION_TRONCON_VOIE_PHYSIQUE b ON b.fid_troncon = a.objectid
-    )
-    
-    SELECT
-        objectid
-    FROM
-        C_1
-    GROUP BY
-        objectid
-    HAVING
-        COUNT(objectid)>1;
 
 -- Insertion des tronçons
 MERGE INTO G_BASE_VOIE.TEMP_F_TRONCON a
