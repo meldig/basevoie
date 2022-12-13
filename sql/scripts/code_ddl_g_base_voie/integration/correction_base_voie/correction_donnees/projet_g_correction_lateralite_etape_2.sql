@@ -137,13 +137,16 @@ MERGE INTO G_BASE_VOIE.TEMP_G_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
                 
                 C_4 AS(
                     SELECT
-                        id_voie_administrative
+                        --id_voie_administrative
+                        id_voie_physique
                     FROM
                         C_3
                     GROUP BY
-                        id_voie_administrative
+                        --id_voie_administrative
+                        id_voie_physique
                     HAVING
-                        COUNT(id_voie_administrative) = 1
+                        --COUNT(id_voie_administrative) = 1
+                        COUNT(id_voie_physique) = 1
                 )
                 
                 SELECT
@@ -152,8 +155,16 @@ MERGE INTO G_BASE_VOIE.TEMP_G_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
                     a.fid_lateralite
                 FROM
                     C_3 a
-                    INNER JOIN C_4 b ON b.id_voie_administrative = a.id_voie_administrative
+                    --INNER JOIN C_4 b ON b.id_voie_administrative = a.id_voie_administrative
+                    INNER JOIN C_4 b ON b.id_voie_physique = a.id_voie_physique
     )t
 ON(a.fid_foie_physique = t.id_voie_physique AND a.fid_voie_administrative = t.id_voie_administrative)
 WHEN MATCHED THEN
     UPDATE SET a.fid_lateralite = t.fid_lateralite;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+Projet G - Correction de la latéralité des voies administratives - étape 2
+3. 
+*/
