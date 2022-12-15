@@ -64,7 +64,7 @@ MERGE INTO G_BASE_VOIE.TEMP_G_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
                     id_voie_administrative
             ),
             
-            C_6 AS(-- Sélection de la latéralité majoritaire par voie administrative et voie jointive
+            C_6 AS(-- Sélection de la latéralité majoritaire par voie administrative et voie jointive en faisant attentation à ce que cette majorité soit supérieure à 2 afin de sélectionner les voies administratives composées de plus de 2 voies physiques
                 SELECT
                     a.id_voies_jointives,
                     a.id_voie_administrative,
@@ -73,7 +73,7 @@ MERGE INTO G_BASE_VOIE.TEMP_G_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
                     C_4 a
                     INNER JOIN C_5 b ON b.id_voies_jointives = a.id_voies_jointives AND b.id_voie_administrative = a.id_voie_administrative AND b.lateralite_maj = a.nbr_lateralite
                 WHERE
-                    b.lateralite_maj > 1
+                    b.lateralite_maj > 2
             )
             
             SELECT -- On affecte à tous les couples voie physique / voie administrative la latéralité majoritaire de la voie administrative dont les voies physiques sont jointives
