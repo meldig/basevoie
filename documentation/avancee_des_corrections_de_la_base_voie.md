@@ -29,8 +29,8 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 3. Suppression des types de voies dont le libellé est null ;
 - [x] 4. Pour les voies physiques en doublon de géométrie situées en limite de commune, on garde une seule voie physique que l'on rattache à deux voies administratives dont on a corrigé le code INSEE ;
 - [x] 5. Corrections topologiques des tronçons :
-  - [x] 6. Tronçon qui se croisent en-dehors des ouvrages d'art et en-dehors de leur point de départ et d'arrivée => l'un des tronçons est divisé en deux et leur point de connexion permet de rattacher le second ;
-  - [x] 7. Tronçons mal connectés (tous les types de tronçons sont connectés, peu importe leur type de circulation) ;
+ - [x] 6. Tronçon qui se croisent en-dehors des ouvrages d'art et en-dehors de leur point de départ et d'arrivée => l'un des tronçons est divisé en deux et leur point de connexion permet de rattacher le second ;
+ - [x] 7. Tronçons mal connectés (tous les types de tronçons sont connectés, peu importe leur type de circulation) ;
 - [x] 8. Passage d'un tronçon affecté à plusieurs voies physiques affectées à une et une seule voie administrative à un tronçon affecté à une et une seule voie physique affectée à une ou plusieurs voies administratives (en cours de finalisation) ;
 - [x] 9. Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
 - [x] 10. Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
