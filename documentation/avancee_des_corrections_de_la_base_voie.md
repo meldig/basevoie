@@ -42,7 +42,7 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 
 - [ ] 14. Correction des giratoires, ronds-points et raquettes uni-tronçon (en cours);
 - [ ] 15. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
-- [ ] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune (en cours de préparation);
+- [ ] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune (à venir, le projet QGIS est fait et fonctionnel) ;
 - [ ] 17. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
 - [ ] 18. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
 - [ ] 19. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
