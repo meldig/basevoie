@@ -1,4 +1,4 @@
-# Corrections de la Base Voie réalisées au 12/10/2022 et à venir
+# Corrections de la Base Voie
 
 ## Pour Litteralis
 
