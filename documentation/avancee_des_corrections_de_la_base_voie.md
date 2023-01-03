@@ -45,7 +45,9 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 ### Corrections prévues :
 
 - [ ] 18. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
-- [ ] 19. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
-- [ ] 20. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
-- [ ] 22. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 19. Affecter le nom des voies principales corrigées à leur voies secondaires ;
+- [ ] 20. Vérifier / mettre à jour les relations seuils / tronçons suite aux corrections topologiques ;
+- [ ] 21. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
+- [ ] 22. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 23. Correction des doublons de numéro, complément et voie de certains seuils ;
+- [ ] 24. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
