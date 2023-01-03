@@ -38,13 +38,13 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 12. Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
 - [x] 13. Correction des voies physique affectées à plusieurs voies administratives situées dans des communes très éloignées (nous avions parfois au sein d'un commune 3 voies administratives se superposant à l'endroit d'une voie physique) ;
 - [x] 14. Merge des types de voie de l'IGN dans notre base afin d'être iso ;
+- [x] 15. Correction des giratoires, ronds-points et raquettes uni-tronçon ;
+- [x] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune ;
+- [x] 17. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
 
 ### Corrections prévues :
 
-- [ ] 15. Correction des giratoires, ronds-points et raquettes uni-tronçon (en cours);
-- [ ] 16. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
-- [ ] 17. Affectation de leur latéralité aux voies administratives situées en limite de commune (à venir, le projet QGIS est fait et fonctionnel) ;
-- [ ] 18. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
+- [ ] 18. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
 - [ ] 19. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
 - [ ] 20. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
 - [ ] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
