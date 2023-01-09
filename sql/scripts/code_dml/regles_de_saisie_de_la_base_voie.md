@@ -38,3 +38,4 @@
 11. Le mot "Saint" doit toujours être suivi d'un tiret "-" sans espace avant ni après. Exemple : Saint-Hubert, Saint-Jacques, Saint-Jean-Baptiste, Sainte-Brigitte de Suède ;
 12. Il ne doit jamais y avoir de guillemets dans le libellé ;
 13. Les apostrophes ne doivent jamais encadrer un nom, qu'il soit celui d'un lieux-dit ou non ;
+14. Le nom des autoroutes doit toujours suivre la nomenclature suivante : LIBELLE "numéro d'autoroute-numéro européen" ; COMPLEMENT_NOM_VOIE "Départ-Destination" (Exemple : A27-E42 ; Lille-Bruxelle) ;
