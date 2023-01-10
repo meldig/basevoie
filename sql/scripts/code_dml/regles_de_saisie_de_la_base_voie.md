@@ -38,3 +38,9 @@
 11. Le mot "Saint" doit toujours être suivi d'un tiret "-" sans espace avant ni après. Exemple : Saint-Hubert, Saint-Jacques, Saint-Jean-Baptiste, Sainte-Brigitte de Suède ;
 12. Il ne doit jamais y avoir de guillemets dans le libellé ;
 13. Les apostrophes ne doivent jamais encadrer un nom, qu'il soit celui d'un lieux-dit ou non ;
+14. Le nom des autoroutes doit toujours suivre la nomenclature suivante : LIBELLE "numéro d'autoroute-numéro européen" ; le COMPLEMENT_NOM_VOIE doit être vide ;
+15. Le libellé ne doit pas contenir "métropolitaine", veuillez utiliser le type de voie "ROUTE MÉTROPOLITAINE" ;
+16. Le Complément de nom de voie ne doit pas contenir la modalité de déplacement (donc ne pas mettre piéton, cycliste, etc) ;
+17. Dans les zones industrielles portuaires, veuillez mettre uniquement "Zone Industrielle Portuaire" dans le complément de nom ;
+18. Un libellé ne peut pas être "d'Exploitation". Si son type de voie est aussi "CHEMIN", alors veuillez utiliser le type "CHEMIN D'EXPLOITATION" ;
+19. le complément de nom de voie ne doit pas contenir le sens de la voie (Exemple : Lille-Hellemes), ni la rue de connexion (Exemple : TYPE : chemin d'exploitation; LIBELLE : ; COMPLEMENT_NOM_VOIE : 16 rue de la Liberté => il faut supprimer le complément) ;
