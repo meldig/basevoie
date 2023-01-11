@@ -151,153 +151,227 @@ WHEN NOT MATCHED THEN
     VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification);
 -- Résultat : 22 165 lignes fusionnées.
 
--- Insertion des seuils
-MERGE INTO G_BASE_VOIE.TEMP_H_SEUIL a
+-- Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TEMP_H_SEUIL
+INSERT INTO G_BASE_VOIE.TEMP_H_SEUIL(geom, fid_pnom_saisie, date_saisie, fid_pnom_modification, date_modification)
+    SELECT
+        a.ora_geometry,
+        b.numero_agent AS fid_pnom_saisie,
+        TO_DATE(sysdate, 'dd/mm/yy') AS date_saisie,
+        b.numero_agent AS fid_pnom_modification,
+        TO_DATE(sysdate, 'dd/mm/yy') AS date_modification
+    FROM
+        G_BASE_VOIE.TEMP_FUSION_SEUIL_2023 a,
+        G_BASE_VOIE.TEMP_H_AGENT b
+    WHERE
+        b.pnom =  sys_context('USERENV','OS_USER');
+        
+--------------------------------------------------
+-- Insertion des infos des seuils dans la table TEMP_H_INFOS_SEUIL
+    INSERT INTO G_BASE_VOIE.TEMP_H_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification)
+    SELECT
+        a.idseui,
+        a.nuseui,
+        CASE
+            WHEN a.nparcelle IS NOT NULL THEN a.nparcelle
+            WHEN a.nparcelle IS NULL THEN 'NR'
+        END AS numero_parcelle,
+        a.nsseui,
+        b.objectid,
+        a.cdtsseuil,
+        a.cdtmseuil,
+        c.numero_agent AS fid_pnom_saisie,
+        c.numero_agent AS fid_pnom_modification
+    FROM
+        G_BASE_VOIE.TEMP_ILTASEU_2023 a,
+        G_BASE_VOIE.TEMP_H_SEUIL b,
+        G_BASE_VOIE.TEMP_H_AGENT c
+    WHERE
+        SDO_WITHIN_DISTANCE(b.geom, a.ora_geometry, 'DISTANCE=0.50') = 'TRUE'
+        AND c.pnom = 'import_donnees';
+
+-- Insertion des autres points géométriques des seuils dans TEMP_H_SEUIL  
+    MERGE INTO G_BASE_VOIE.TEMP_H_SEUIL a
     USING(
         SELECT
-            a.objectid,
-            a.geom,
-            a.cote_troncon,
-            a.date_saisie,
-            a.date_modification,
-            a.fid_pnom_saisie,
-            a.fid_pnom_modification,
-            b.fid_troncon
+            a.idseui,
+            a.ora_geometry,
+            a.cdtsseuil,
+            a.cdtmseuil,
+            b.numero_agent AS fid_pnom_saisie,
+            b.numero_agent AS fid_pnom_modification,
+            c.cdcote,
+            d.objectid
         FROM
-            G_BASE_VOIE.TA_SEUIL a
-            INNER JOIN G_BASE_VOIE.TA_RELATION_TRONCON_SEUIL b ON b.fid_seuil = a.objectid
+            G_BASE_VOIE.TEMP_ILTASEU_2023 a
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT_2023 c ON c.idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON d ON d.objectid = c.cnumtrc,
+            G_BASE_VOIE.TEMP_H_AGENT b
+        WHERE
+            a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TEMP_H_INFOS_SEUIL)
+            AND b.pnom = 'import_donnees'                
     )t
-ON(a.objectid = t.objectid AND a.fid_troncon = t.fid_troncon)
-WHEN NOT MATCHED THEN
-    INSERT(a.objectid, a.geom, a.cote_troncon, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_troncon)
-    VALUES(t.objectid, t.geom, t.cote_troncon, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_troncon);
--- Résultat : 
+    ON (a.temp_idseui = t.idseui)
+    WHEN NOT MATCHED THEN
+        INSERT(a.geom, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.temp_idseui, a.cote_troncon, a.fid_troncon)
+        VALUES(t.ora_geometry, t.cdtsseuil, t.cdtmseuil, t.fid_pnom_saisie, t.fid_pnom_modification, t.idseui, t.cdcote, t.objectid);
+-- Résultat : 351 449 lignes fusionnées
 
--- Insertion des informations des seuils
+-- Import des infos des seuils dans TEMP_H_INFOS_SEUIL pour les seuils non-concernés par la fusion               
+        INSERT INTO G_BASE_VOIE.TEMP_H_INFOS_SEUIL(objectid, numero_seuil, numero_parcelle, complement_numero_seuil, fid_seuil, date_saisie, date_modification, fid_pnom_saisie, fid_pnom_modification)
+        SELECT DISTINCT
+            a.idseui,
+            a.nuseui,
+            CASE
+                WHEN a.nparcelle IS NOT NULL THEN a.nparcelle
+                WHEN a.nparcelle IS NULL THEN 'NR'
+            END AS numero_parcelle,
+            a.nsseui,
+            b.objectid,
+            a.cdtsseuil,
+            a.cdtmseuil,
+            c.numero_agent AS fid_pnom_saisie,
+            c.numero_agent AS fid_pnom_modification
+        FROM
+            G_BASE_VOIE.TEMP_ILTASEU_2023 a
+            INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL b ON b.temp_idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT_2023 d ON d.idseui = b.objectid
+            INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON e ON e.objectid = d.cnumtrc,
+            G_BASE_VOIE.TEMP_H_AGENT c
+        WHERE
+            c.pnom = 'import_donnees';
+-- Résultat : 303 321 lignes fusionnées
+
+-- Insertion des infos des seuils restantes
 MERGE INTO G_BASE_VOIE.TEMP_H_INFOS_SEUIL a
     USING(
-        SELECT
-            a.objectid,
-            a.numero_seuil,
-            a.numero_parcelle,
-            a.complement_numero_seuil,
-            a.date_saisie,
-            a.date_modification,
-            a.fid_seuil,
-            a.fid_pnom_saisie,
-            a.fid_pnom_modification
+        SELECT DISTINCT
+            a.idseui AS objectid,
+            a.nuseui AS numero_seuil,
+            CASE
+                WHEN a.nparcelle IS NOT NULL THEN a.nparcelle
+                WHEN a.nparcelle IS NULL THEN 'NR'
+            END AS numero_parcelle,
+            a.nsseui AS complement_numero_seuil,
+            d.objectid AS fid_seuil,
+            a.cdtsseuil AS date_saisie,
+            a.cdtmseuil AS date_modification,
+            e.numero_agent AS fid_pnom_saisie,
+            e.numero_agent AS fid_pnom_modification
         FROM
-            G_BASE_VOIE.TA_INFOS_SEUIL a
+            G_BASE_VOIE.TEMP_ILTASEU_2023 a
+            INNER JOIN G_BASE_VOIE.TEMP_ILTASIT_2023 b ON b.idseui = a.idseui
+            INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON c ON c.objectid = b.cnumtrc
+            INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL d ON d.temp_idseui = a.idseui,
+            G_BASE_VOIE.TEMP_H_AGENT e
+        WHERE
+            a.idseui NOT IN(SELECT objectid FROM G_BASE_VOIE.TEMP_H_INFOS_SEUIL)
+            AND e.pnom = 'import_donnees'
     )t
-ON(a.objectid = t.objectid AND a.fid_type_voie = t.fid_type_voie)
+ON(a.objectid = t.objectid AND a.fid_seuil = t.fid_seuil)
 WHEN NOT MATCHED THEN
-    INSERT(a.objectid, a.numero_seuil, a.numero_parcelle, a.complement_numero_seuil, a.date_saisie, a.date_modification, a.fid_seuil, a.fid_pnom_saisie, a.fid_pnom_modification)
-    VALUES(t.objectid, t.numero_seuil, t.numero_parcelle, t.complement_numero_seuil, t.date_saisie, t.date_modification, t.fid_seuil, t.fid_pnom_saisie, t.fid_pnom_modification);
+    INSERT(a.objectid, a.numero_seuil, a.numero_parcelle, a.complement_numero_seuil, a.fid_seuil, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification)
+    VALUES(t.objectid, t.numero_seuil, t.numero_parcelle, t.complement_numero_seuil, t.fid_seuil, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification);
+-- Résultat : 48 128 lignes fusionnées.
 COMMIT;
--- Résultat : 
 
-------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------- Vérification import des données -------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 /*
--- Comparaison nombre de voies physiques dans la nouvelle structure et dans l'ancienne
+-- Décompte des voies physiques dans la structure d'import
+SELECT
+    COUNT(objectid)
+FROM
+    G_BASE_VOIE.TEMP_G_VOIE_PHYSIQUE;
+-- 22944
+
+-- Décompte des voies physiques dans la structure cible
 SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TEMP_H_VOIE_PHYSIQUE;
--- 22112
+-- 22944
+
 -- Sélection du nombre de tronçons valides dans l'ancienne structure
 SELECT 
-    COUNT(DISTINCT a.cnumtrc)
+    COUNT(DISTINCT objectid)
 FROM
-    G_BASE_VOIE.TEMP_ILTATRC a
-    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc
-    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI c ON c.ccomvoi = b.ccomvoi
-    INNER JOIN G_BASE_VOIE.TEMP_TYPEVOIE d ON d.ccodtvo = c.ccodtvo
-WHERE
-    a.cdvaltro = 'V'
-    AND b.cvalide = 'V'
-    AND c.cdvalvoi = 'V'
-    AND d.lityvoie IS NOT NULL;
--- 49713
+    G_BASE_VOIE.TEMP_F_TRONCON;
+-- 50631
+
 -- Sélection du nombre de tronçons dans TEMP_H_TRONCON
 SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TEMP_H_TRONCON;
--- 49721 tronçons
--- Sélection des tronçons valides de la nouvelle structure, mais absents de l'ancienne
-SELECT
-    objectid || ','
-FROM
-    G_BASE_VOIE.TEMP_H_TRONCON
-WHERE
-    objectid NOT IN(
-        SELECT DISTINCT 
-            CAST(a.cnumtrc AS NUMBER(38,0))
-        FROM
-            G_BASE_VOIE.TEMP_ILTATRC a
-            INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc
-            INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI c ON c.ccomvoi = b.ccomvoi
-            INNER JOIN G_BASE_VOIE.TEMP_TYPEVOIE d ON d.ccodtvo = c.ccodtvo
-        WHERE
-            a.cdvaltro = 'V'
-            AND b.cvalide = 'V'
-            AND c.cdvalvoi = 'V'
-            AND d.lityvoie IS NOT NULL
-    );
--- Sélection des tronçons de l'ancienne structure absents de la nouvelle structure
--- Sélection des tronçons valides de la nouvelle structure, mais absents de l'ancienne
-SELECT DISTINCT 
-    CAST(a.cnumtrc AS NUMBER(38,0))
-FROM
-    G_BASE_VOIE.TEMP_ILTATRC a
-    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT b ON b.cnumtrc = a.cnumtrc
-    INNER JOIN G_BASE_VOIE.TEMP_VOIEVOI c ON c.ccomvoi = b.ccomvoi
-    INNER JOIN G_BASE_VOIE.TEMP_TYPEVOIE d ON d.ccodtvo = c.ccodtvo
-WHERE
-    a.cdvaltro = 'V'
-    AND b.cvalide = 'V'
-    AND c.cdvalvoi = 'V'
-    AND d.lityvoie IS NOT NULL
-    AND CAST(a.cnumtrc AS NUMBER(38,0)) NOT IN(
-        SELECT
-            objectid
-        FROM
-            G_BASE_VOIE.TEMP_H_TRONCON            
-    );
--- Résultat : 0
+-- 50631 tronçons
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Décompte du nombre de voies présentes dans la structure d'import
 SELECT
-    COUNT(DISTINCT a.ccomvoi)
+    COUNT(objectid)
 FROM
-    TEMP_VOIEVOI a
-    INNER JOIN TEMP_TYPEVOIE b ON b.ccodtvo = a.ccodtvo
-    INNER JOIN TEMP_VOIECVT c ON c.ccomvoi = a.ccomvoi
-WHERE
-    b.lityvoie IS NOT NULL
-    AND a.cdvalvoi = 'V'
-    AND c.cvalide = 'V';
+    G_BASE_VOIE.TEMP_G_VOIE_ADMINISTRATIVE;
 -- Résultat : 22165 voies
--- Décompte du nombre de libellés de voies
+
+-- Décompte du nombre de voies présentes dans la structure cible
 SELECT
     COUNT(objectid)
 FROM
-    TEMP_H_VOIE_ADMINISTRATIVE;
+    G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE;
 -- Résultat : 22165 libellés de voies
-       
-SELECT
-    COUNT(DISTINCT a.ccomvoi)
+    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Décompte des seuils dans la table d'import et les tables d'export
+SELECT 
+    'TEMP_ILTASEU_2023' AS source,
+    COUNT(*) AS nbr
 FROM
-    TEMP_VOIEVOI a
-    INNER JOIN TEMP_TYPEVOIE b ON b.ccodtvo = a.ccodtvo
-    INNER JOIN TEMP_VOIECVT c ON c.ccomvoi = a.ccomvoi
+    TEMP_ILTASEU_2023
+GROUP BY
+    'TEMP_ILTASEU_2023' -- 352046
+UNION ALL
+SELECT 
+    'TEMP_H_INFOS_SEUIL'  AS source,
+    COUNT(*) AS nbr
+FROM
+    TEMP_H_INFOS_SEUIL
+GROUP BY
+    'TEMP_H_INFOS_SEUIL'-- 351468
+UNION ALL
+SELECT 
+    'TEMP_H_SEUIL'  AS source,
+    COUNT(*) AS nbr
+FROM
+    TEMP_H_SEUIL
+GROUP BY
+    'TEMP_H_SEUIL';-- 351459
+
+-- Vérification que la géométrie des seuils correspond à leur identifiant entre les tables source et cible
+-- méthode 1 :
+SELECT
+    a.idseui,
+    b.objectid,
+    b.temp_idseui
+FROM
+    G_BASE_VOIE.TEMP_ILTASEU_2023 a
+    INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL b ON b.temp_idseui = a.idseui
 WHERE
-    b.lityvoie IS NOT NULL
-    AND a.cdvalvoi = 'V'
-    AND c.cvalide = 'V'
-    AND CAST(a.ccomvoi AS NUMBER(38,0))  NOT IN(SELECT objectid FROM G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE);
+    SDO_EQUAL(a.ora_geometry, b.geom) <> 'TRUE';
+
+-- méthode 2
+SELECT
+    a.idseui,
+    b.objectid,
+    b.temp_idseui
+FROM
+    G_BASE_VOIE.TEMP_ILTASEU_2023 a
+    INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL b ON b.temp_idseui = a.idseui
+WHERE
+    a.ora_geometry.sdo_point.x <> b.geom.sdo_point.x
+    AND a.ora_geometry.sdo_point.y <> b.geom.sdo_point.y;
+-- Résultat : tout est bon
 */
+
