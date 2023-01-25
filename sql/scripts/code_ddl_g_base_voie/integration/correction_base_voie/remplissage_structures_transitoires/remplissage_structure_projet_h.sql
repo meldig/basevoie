@@ -126,7 +126,7 @@ ON(a.fid_voie_administrative = t.fid_voie_administrative AND a.fid_voie_physique
 WHEN NOT MATCHED THEN
     INSERT(a.fid_voie_administrative, a.fid_voie_physique, a.fid_lateralite)
     VALUES(t.fid_voie_administrative, t.fid_voie_physique, t.fid_lateralite);
--- Résultat : 23 643 lignes fusionnées.
+-- Résultat : 23 655 lignes fusionnées.
 
 -- Insertion des voies administratives
 MERGE INTO G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE a
@@ -150,6 +150,54 @@ WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.libelle_voie, a.complement_nom_voie, a.code_insee, a.fid_type_voie, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification)
     VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification);
 -- Résultat : 22 165 lignes fusionnées.
+
+-- Mise à jour des noms de voies avec les corrections du projet C de correction de la nomenclature des voies 
+MERGE INTO G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE a
+    USING(
+        SELECT
+            b.objectid,
+            a.fid_type_voie,
+            a.nom_voie,
+            a.complement_nom_voie,
+            a.commentaire
+        FROM
+            G_BASE_VOIE.TEMP_C_VOIE_ADMINISTRATIVE_PRINCIPALE_MATERIALISE a
+            INNER JOIN G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE b ON b.objectid = a.id_voie_administrative
+    )t
+ON(a.objectid = t.objectid)
+WHEN MATCHED THEN
+    UPDATE SET a.libelle_voie = t.nom_voie, 
+    a.complement_nom_voie = t.complement_nom_voie, 
+    a.commentaire = t.commentaire;
+-- Résultat : 17 834 lignes fusionnées.
+
+-- Import des relations voies principales / secondaires
+INSERT INTO G_BASE_VOIE.TEMP_H_HIERARCHISATION_VOIE(fid_voie_principale, fid_voie_secondaire)
+        SELECT
+            fid_voie_principale,
+            fid_voie_secondaire
+        FROM
+            G_BASE_VOIE.TA_HIERARCHISATION_VOIE;
+-- Résultat : 4 330 lignes insérées.
+
+-- Remplacement du libelle des voies secondaires par celui de la voie principale à laquelle elles sont associées
+MERGE INTO G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE a
+    USING(
+        SELECT
+            a.objectid AS id_voie_1,
+            c.objectid AS id_voie_2,
+            a.libelle_voie AS libelle_voie_1,
+            'AVANT MAJ NOM VOIE SECONDAIRE : ' || c.libelle_voie AS commentaire
+        FROM
+            G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE a
+            INNER JOIN G_BASE_VOIE.TEMP_H_HIERARCHISATION_VOIE b ON b.fid_voie_principale = a.objectid
+            INNER JOIN G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE c ON c.objectid = b.fid_voie_secondaire
+    )t
+ON(a.objectid = t.id_voie_2)
+WHEN MATCHED THEN 
+    UPDATE SET a.libelle_voie = t.libelle_voie_1,
+                        a.commentaire = t.commentaire;
+-- Résultat : 4 330 lignes fusionnées.
 
 -- Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TEMP_H_SEUIL
 INSERT INTO G_BASE_VOIE.TEMP_H_SEUIL(geom, fid_pnom_saisie, date_saisie, fid_pnom_modification, date_modification)
@@ -272,6 +320,137 @@ WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.numero_seuil, a.numero_parcelle, a.complement_numero_seuil, a.fid_seuil, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification)
     VALUES(t.objectid, t.numero_seuil, t.numero_parcelle, t.complement_numero_seuil, t.fid_seuil, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification);
 -- Résultat : 48 128 lignes fusionnées.
+COMMIT;
+
+-- Mise à jour du champ FID_VOIE_ADMINISTRATIVE dans la table TEMP_H_INFOS_SEUIL pour faire le lien seuil/voie administrative
+MERGE INTO G_BASE_VOIE.TEMP_H_INFOS_SEUIL a
+    USING(
+        WITH
+            C_1 AS(
+                SELECT DISTINCT
+                    a.objectid,
+                    e.objectid AS fid_voie_administrative
+                FROM
+                    G_BASE_VOIE.TEMP_H_INFOS_SEUIL a
+                    INNER JOIN G_BASE_VOIE.TEMP_ILTASIT_2023 b ON b.idseui = a.objectid
+                    INNER JOIN G_BASE_VOIE.TEMP_ILTATRC c ON c.cnumtrc = b.cnumtrc
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.cnumtrc
+                    INNER JOIN G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE e ON e.objectid = d.ccomvoi
+                WHERE
+                    c.cdvaltro = 'V'
+                    AND d.cvalide = 'V' 
+            ),
+            
+            C_2 AS(-- Sélection des seuils affectés à une et une seule voie (et donc tronçon)
+                SELECT
+                    a.objectid
+                FROM
+                    C_1 a
+                GROUP BY
+                    a.objectid
+                HAVING
+                    COUNT(a.objectid) = 1
+            )
+            
+            SELECT
+                a.objectid,
+                a.fid_voie_administrative
+            FROM
+                C_1 a
+                INNER JOIN C_2 b ON b.objectid = a.objectid
+    )t
+ON(a.objectid = t.objectid)
+WHEN MATCHED THEN
+    UPDATE SET a.fid_voie_administrative = t.fid_voie_administrative;
+-- Résultat : 345 382 lignes fusionnées.
+
+-- Mise à jour des latéralités dans les relations voies physiques / administratives pour les voies en limite de commune
+MERGE INTO G_BASE_VOIE.TEMP_H_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
+    USING(
+        SELECT
+            id_voie_physique,
+            id_voie_administrative,
+            fid_lateralite
+        FROM
+            G_BASE_VOIE.TEMP_G_VOIE_LATERALITE
+    )t
+ON(a.fid_voie_physique = t.id_voie_physique AND a.fid_voie_administrative = t.id_voie_administrative)
+WHEN MATCHED THEN
+    UPDATE SET a.fid_lateralite = t.fid_lateralite;
+-- 1 770 lignes fusionnées
+
+-- Mise à jour du champ FID_VOIE_ADMINISTRATIVE dans la table TEMP_H_INFOS_SEUIL pour faire le lien seuil/voie administrative pour les seuils rattachés à des voies situées à l'intérieur d'une commune
+MERGE INTO G_BASE_VOIE.TEMP_H_INFOS_SEUIL a
+    USING(
+        WITH
+            C_1 AS(
+                SELECT DISTINCT
+                    a.objectid,
+                    e.objectid AS fid_voie_administrative
+                FROM
+                    G_BASE_VOIE.TEMP_H_INFOS_SEUIL a
+                    INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL g ON g.objectid = a.fid_seuil
+                    INNER JOIN G_BASE_VOIE.TEMP_ILTASIT_2023 b ON b.idseui = a.objectid
+                    INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON c ON c.old_objectid = b.cnumtrc
+                    INNER JOIN G_BASE_VOIE.TEMP_VOIECVT d ON d.cnumtrc = c.old_objectid 
+                    INNER JOIN G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE e ON e.objectid = d.ccomvoi AND e.code_insee = GET_CODE_INSEE_97_COMMUNES_CONTAIN_POINT('TEMP_H_SEUIL', g.GEOM)
+                WHERE
+                    d.cvalide = 'V' 
+                    AND a.fid_voie_administrative IS NULL
+            ),
+            
+            C_2 AS(-- Sélection des seuils affectés à une et une seule voie (et donc tronçon)
+                SELECT
+                    a.objectid
+                FROM
+                    C_1 a
+                GROUP BY
+                    a.objectid
+                HAVING
+                    COUNT(a.objectid) = 1
+            )
+            
+            SELECT
+                a.objectid,
+                a.fid_voie_administrative
+            FROM
+                C_1 a
+                INNER JOIN C_2 b ON b.objectid = a.objectid
+    )t
+ON(a.objectid = t.objectid)
+WHEN MATCHED THEN
+    UPDATE SET a.fid_voie_administrative = t.fid_voie_administrative;
+-- Résultat : 345 382 lignes fusionnées.
+
+-- Mise à jour du champ FID_VOIE_ADMINISTRATIVE dans la table TEMP_H_INFOS_SEUIL pour faire le lien seuil/voie administrative pour les seuils rattachés à une et une seule voie située en limite de commune
+MERGE INTO G_BASE_VOIE.TEMP_H_INFOS_SEUIL a
+    USING(
+        WITH
+            C_1 AS(
+                SELECT
+                    id_seuil
+                FROM
+                    G_BASE_VOIE.VM_CORRECTION_RELATION_SEUIL_VOIE
+                GROUP BY
+                    id_seuil
+                HAVING
+                    COUNT(id_seuil) = 1
+            )
+        
+            SELECT
+                a.id_seuil,
+                a.id_voie_administrative
+            FROM
+                G_BASE_VOIE.VM_CORRECTION_RELATION_SEUIL_VOIE a
+                INNER JOIN C_1 b ON b.id_seuil = a.id_seuil
+                INNER JOIN G_BASE_VOIE.TEMP_H_INFOS_SEUIL c ON c.objectid = a.id_seuil
+            WHERE
+                c.fid_voie_administrative IS NULL
+    )t
+ON(a.objectid = t.id_seuil)
+WHEN MATCHED THEN
+    UPDATE SET a.fid_voie_administrative = t.id_voie_administrative;
+-- Résultat : 4 309 lignes fusionnées.
 COMMIT;
 
 -----------------------------------------------------------------------------------------------------------------------

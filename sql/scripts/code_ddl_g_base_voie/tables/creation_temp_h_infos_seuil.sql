@@ -11,6 +11,7 @@ CREATE TABLE G_BASE_VOIE.TEMP_H_INFOS_SEUIL(
     date_saisie DATE DEFAULT sysdate NOT NULL,
     date_modification DATE DEFAULT sysdate NOT NULL,
     fid_seuil NUMBER(38,0) NOT NULL,
+    fid_voie_administrative NUMBER(38,0)
     fid_pnom_saisie NUMBER(38,0),
     fid_pnom_modification NUMBER(38,0)
 );
@@ -24,6 +25,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.complement_numero_seuil IS 'Com
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.date_saisie IS 'Date de saisie des informations du seuil (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.date_modification IS 'Date de modification des informations du seuil (par défaut la date du jour).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.fid_seuil IS 'Clé étrangère vers la table TEMP_H_SEUIL, permettant d''affecter une géométrie à un ou plusieurs seuils, dans le cas où plusieurs se superposent sur le même point.';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.fid_voie_administrative IS 'Clé étrangère vers la table TEMP_H_VOIE_ADMINISTRATIVE permettant d''associer un seuil à une voie administrative qui, elle-même, détient l''information de sa latéralité par rapport à la voie physique, nous permettant de dire si le seuil se trouve à gauche ou à droite de la voie physique.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers la table TEMP_H_AGENT permettant de récupérer le pnom de l''agent ayant créé les informations d''un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_INFOS_SEUIL.fid_pnom_modification IS 'Clé étrangère vers la table TEMP_H_AGENT permettant de récupérer le pnom de l''agent ayant modifié les informations d''un seuil.';
 
@@ -40,6 +42,11 @@ FOREIGN KEY (fid_seuil)
 REFERENCES G_BASE_VOIE.TEMP_H_SEUIL(objectid);
 
 ALTER TABLE G_BASE_VOIE.TEMP_H_INFOS_SEUIL
+ADD CONSTRAINT TEMP_H_INFOS_SEUIL_FID_VOIE_ADMINISTRATIVE_FK
+FOREIGN KEY (fid_voie_administrative)
+REFERENCES G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE(objectid);
+
+ALTER TABLE G_BASE_VOIE.TEMP_H_INFOS_SEUIL
 ADD CONSTRAINT TEMP_H_INFOS_SEUIL_FID_PNOM_SAISIE_FK 
 FOREIGN KEY (fid_pnom_saisie)
 REFERENCES G_BASE_VOIE.TEMP_H_AGENT(numero_agent);
@@ -51,6 +58,9 @@ REFERENCES G_BASE_VOIE.TEMP_H_AGENT(numero_agent);
 
 -- 5. Création des index sur les clés étrangères et autres champs
 CREATE INDEX TEMP_H_INFOS_SEUIL_FID_SEUIL_IDX ON G_BASE_VOIE.TEMP_H_INFOS_SEUIL(fid_seuil)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TEMP_H_INFOS_SEUIL_FID_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.TEMP_H_INFOS_SEUIL(fid_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TEMP_H_INFOS_SEUIL_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TEMP_H_INFOS_SEUIL(fid_pnom_saisie)
