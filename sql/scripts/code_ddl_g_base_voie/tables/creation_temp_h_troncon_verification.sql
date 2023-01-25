@@ -99,5 +99,16 @@ CREATE INDEX TEMP_H_TRONCON_VERIFICATION_OLD_OBJECTID_IDX ON G_BASE_VOIE.TEMP_H_
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TEMP_H_TRONCON_VERIFICATION TO G_ADMIN_SIG;
 
+-- 9. Ajout d'un nouveau champ
+ALTER TABLE G_BASE_VOIE.TEMP_H_TRONCON_VERIFICATION
+ADD verif_relation_seuil_troncon NUMBER(38,0);
+
+-- 10. Création d'un commentaire pour le nouveau champ
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_TRONCON_VERIFICATION.verif_relation_seuil_troncon IS 'Champ permettant de savoir si le tronçon a été modifié dans les étapes précédentes et donc s''il est concerné par la vérification seuils/tronçons du projet H.';
+
+-- 11. Création de l'index du nouveau champ
+CREATE INDEX TEMP_H_SEUIL_VERIFICATION_PNOM_ETAT_VERIFICATION_IDX ON G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION(fid_etat_verification, fid_agent_verification)
+    TABLESPACE G_ADT_INDX;
+
 /
 
