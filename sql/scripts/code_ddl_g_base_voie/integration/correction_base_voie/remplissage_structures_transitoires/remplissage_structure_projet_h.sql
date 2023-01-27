@@ -31,6 +31,22 @@ WHERE
     libelle_court IN('droit', 'gauche', 'les deux côtés');
 -- Résultat : 3 lignes fusionnées.
 
+-- Insertion des codes RIVOLI
+MERGE INTO G_BASE_VOIE.TEMP_H_RIVOLI a
+    USING(
+        SELECT
+            objectid,
+            code_rivoli,
+            cle_controle
+        FROM
+            G_BASE_VOIE.TA_RIVOLI
+    )t
+ON(a.objectid = t.objectid)
+WHEN NOT MATCHED THEN
+    INSERT(a.objectid, a.code_rivoli, a.cle_controle)
+    VALUES(t.objectid, t.code_rivoli, t.cle_controle);
+-- Résultat : 11 235 lignes fusionnées.
+
 -- Insertion des tronçons
 MERGE INTO G_BASE_VOIE.TEMP_H_TRONCON a
     USING(
@@ -198,6 +214,20 @@ WHEN MATCHED THEN
     UPDATE SET a.libelle_voie = t.libelle_voie_1,
                         a.commentaire = t.commentaire;
 -- Résultat : 4 330 lignes fusionnées.
+
+-- Mise à jour du fid_rivoli des voies administratives
+MERGE INTO G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE a
+    USING(
+        SELECT
+            objectid,
+            fid_rivoli
+        FROM
+            G_BASE_VOIE.TA_VOIE
+    )t
+ON(a.objectid = t.objectid)
+WHEN MATCHED THEN
+    UPDATE SET a.fid_rivoli = t.fid_rivoli;
+-- Résultat : 22 157 lignes fusionnées.
 
 -- Insertion d'un seul point géométrique par groupe de seuils dans un rayon de 50cm max dans la table TEMP_H_SEUIL
 INSERT INTO G_BASE_VOIE.TEMP_H_SEUIL(geom, fid_pnom_saisie, date_saisie, fid_pnom_modification, date_modification)
