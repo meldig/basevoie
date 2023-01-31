@@ -22,8 +22,6 @@ AS
                 G_BASE_VOIE.VM_TRONCON_LITTERALIS_2023
             WHERE
                 classement NOT IN('RN', 'RD', 'A', 'VC', 'VF', 'CR', 'VP')
-            GROUP BY
-                'Classement inconnu'
             UNION ALL
             -- Identification des codes INSEE absents de la MEL
             SELECT
@@ -40,8 +38,6 @@ AS
                         code_insee_g NOT IN('59355', '59298')
                         OR code_insee_d NOT IN('59355', '59298')
                     )
-            GROUP BY
-                'Code INSEE absent du fichier des communes de la MEL 95'
             UNION ALL
             -- Identification des codes INSEE des communes associées dans les champs code_insee_g et code_insee_d
             SELECT
@@ -52,34 +48,6 @@ AS
             WHERE
                 a.code_insee_g = '59355'
                 OR a.code_insee_d = '59298'
-            GROUP BY
-                'Présence du code INSEE d''une commune associée'
-            /*UNION ALL
-            -- Identification des noms de voie ne disposant pas du suffixe (Lomme) ou (Hellemmes-Lille) alors qu'elles appartiennent à l'une de ces communes associées
-            SELECT
-                'Absence du nom de la commune associée en suffixe du nom de voie' AS type_erreur,
-                COUNT(a.objectid) AS nombre
-            FROM
-                G_BASE_VOIE.VM_TRONCON_LITTERALIS_2023 a
-                INNER JOIN G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE b ON b.objectid = TO_NUMBER(a.code_rue_g)
-                INNER JOIN G_BASE_VOIE.TEMP_H_VOIE_ADMINISTRATIVE c ON c.objectid = TO_NUMBER(a.code_rue_d)
-            WHERE
-                (
-                    a.code_insee_g = '59350'
-                    OR a.code_insee_d = '59350'
-                )
-                AND (
-                        TRIM(b.code_insee) IN('59355', '59298')
-                        OR TRIM(c.code_insee) IN('59355', '59298')
-                    )
-                AND (
-                        a.nom_rue_g LIKE '%(Lomme)'
-                        OR a.nom_rue_g LIKE '%(Hellemmes-Lille)'
-                        OR a.nom_rue_d LIKE '%(Lomme)'
-                        OR a.nom_rue_d LIKE '%(Hellemmes-Lille)'
-                    )
-            GROUP BY
-                'Absence du nom de la commune associée en suffixe du nom de voie'*/
         )
         
         SELECT

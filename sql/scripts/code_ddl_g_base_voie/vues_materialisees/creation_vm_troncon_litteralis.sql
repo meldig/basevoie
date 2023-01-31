@@ -13,7 +13,7 @@ REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS 
 WITH
-    C_1 AS(
+    C_1 AS(-- Sélection des tronçons composés de plusieurs sous-tronçons de domanialités différentes
         SELECT
             cnumtrc
         FROM
@@ -24,7 +24,7 @@ WITH
             COUNT(DISTINCT domania) > 1
     ),
     
-    C_2 AS(
+    C_2 AS(-- Mise en concordance des domanialités de la DEPV et des classements de LITTERALIS
         SELECT
             a.cnumtrc,
             CASE 
@@ -44,7 +44,7 @@ WITH
             INNER JOIN C_1 b ON b.cnumtrc = a.cnumtrc
     ),
     
-    C_3 AS(
+    C_3 AS(-- Si un tronçon se compose de plusieurs sous-tronçons de domanialités différentes, alors on utilise le système de priorité de la DEPV pour déterminer une domanialité pour le tronçon
         SELECT
             a.cnumtrc,
             CASE
