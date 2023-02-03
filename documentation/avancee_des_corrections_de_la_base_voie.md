@@ -41,11 +41,12 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 15. Correction des giratoires, ronds-points et raquettes uni-tronçon ;
 - [x] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune ;
 - [x] 17. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
+- [x] 18. Vérification de la bonne exécution de l'homogénéisation des noms de voies ;
+- [x] 19. Affecter le nom des voies principales corrigées à leur voies secondaires ;
+- [x] 20. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
+- [x] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
 
 ### Corrections prévues :
-
-- [ ] 18. Vérification de la bonne exécution de l'homogénéisation des noms de voies (en cours) ;
-- [ ] 19. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
-- [ ] 20. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
-- [ ] 22. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 22. Vérifier / mettre à jour les relations seuils / tronçons suite aux corrections topologiques (en cours);
+- [ ] 23. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 24. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
