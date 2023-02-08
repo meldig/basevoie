@@ -1,5 +1,5 @@
 /*
-Table de sauvegarde des seuils - du projet H de correction des relations tronçons/seuils - contenant les seuils de la Base Voie. Cette table est une sauvegarde de la table TEMP_H_SEUIL_VERIFICATION avant la vérification des relations tronçons/seuils par les photo-interprètes.
+Table - du projet H de correction des relations tronçons/seuils - permettant aux photo-interprètes de vérifier/corriger les relations seuils/tronçons pour tous les tronçons ayant été modifié durant l'étape de correction topologique des tronçons.
 */
 /*
 DROP TABLE G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION CASCADE CONSTRAINTS;
