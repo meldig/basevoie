@@ -34,7 +34,7 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 8. Passage d'un tronçon affecté à plusieurs voies physiques affectées à une et une seule voie administrative à un tronçon affecté à une et une seule voie physique affectée à une ou plusieurs voies administratives (en cours de finalisation) ;
 - [x] 9. Correction des seuils situés à plus d'1km de leur tronçon d'affectation (correction déjà faite par Marie-Hélène apparemment) ;
 - [x] 10. Ajout d'une nouvelle relation supra-communale pour permettre de ne pas découper les voies métropolitaines/autoroutes par les communes qu'elles traversent ;
-- [x] 11. Création d'une hiérarchie voies secondaires/principales (le code est déjà prêt car la manipulation a été faite pour Litteralis) ;
+- [x] 11. Création d'une hiérarchie voies secondaires/principales ;
 - [x] 12. Homogénéisation de la nomenclature des noms de voie en suivant la règle de la BAL ;
 - [x] 13. Correction des voies physique affectées à plusieurs voies administratives situées dans des communes très éloignées (nous avions parfois au sein d'un commune 3 voies administratives se superposant à l'endroit d'une voie physique) ;
 - [x] 14. Merge des types de voie de l'IGN dans notre base afin d'être iso ;
@@ -46,7 +46,15 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 20. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
 - [x] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
 
+### Corrections en cours :
+- [ ] 22. Correction des relations seuils / tronçons suite aux corrections topologiques ;
+- [ ] 23. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (notre base ne gèrant pas actuellement les lieux-dits) ;
+
 ### Corrections prévues :
-- [ ] 22. Vérifier / mettre à jour les relations seuils / tronçons suite aux corrections topologiques (en cours);
-- [ ] 23. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 24. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 24. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
+- [ ] 25. Correction des doublons de numéros de seuil par voie administrative ;
+- [ ] 26. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 27. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 28. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
+- [ ] 29. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l'entrée principale du bâtiment) ;
+- [ ] 30. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
