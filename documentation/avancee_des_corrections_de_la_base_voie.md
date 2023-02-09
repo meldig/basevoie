@@ -58,3 +58,6 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [ ] 28. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
 - [ ] 29. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l'entrée principale du bâtiment) ;
 - [ ] 30. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
+- [ ] 31. Etude visant à déterminer comment gérer la multi-modalité ;
+- [ ] 32. Etude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
+- [ ] 33. Mise en place d'une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie ;
