@@ -76,11 +76,15 @@ ADD doute NUMBER(1,0) DEFAULT 0;
 ALTER TABLE G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION
 ADD commentaire VARCHAR2(4000 BYTE);
 
+ALTER TABLE G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION
+ADD voie_sans_nom NUMBER(1,0) DEFAULT 0;
+
 -- 9. Création des compentaires des champs complémentaires
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.fid_etat_verification IS 'Clé étrangère vers la table TEMP_H_LIBELLE permettant de savoir si le seuil a été vérifié ou non (vérification seuil/tronçon).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.fid_agent_verification IS 'Clé étrangère vers la table TEMP_H_AGENT permettant de diviser les seuils à vérifier entre photo-interprètes.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.doute IS 'Champ permettant d''indiquer au photo-interprète s''il y a une question, une doute sur un seuil (valeur 0 : aucun doute ; valeur 0 : doute).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.commentaire IS 'Champ permettant au photo-interprète d''indiquer son doute ou sa question sur le seuil, justifiant le changement de la valeur du champ doute.';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.voie_sans_nom IS 'Champ numérique booléen permettant d''indiquer si un seuil est affecté à une voie sans nom (seul le type de voie est présent dans son nom). 0 : voie avec nom ; 1 : voie sans nom';
 
 -- 10 Création des contraintes sur les champs complémentaires
 ALTER TABLE G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION
@@ -104,6 +108,9 @@ CREATE INDEX TEMP_H_SEUIL_VERIFICATION_AVANCEE_VERIFICATION_IDX ON G_BASE_VOIE.T
     TABLESPACE G_ADT_INDX;
     
 CREATE INDEX TEMP_H_SEUIL_VERIFICATION_AVANCEE_VERIFICATION_AGENT_IDX ON G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION(fid_etat_verification, doute, fid_agent_verification)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TEMP_H_SEUIL_VERIFICATION_VOIE_SANS_NOM_IDX ON G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION(voie_sans_nom)
     TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
