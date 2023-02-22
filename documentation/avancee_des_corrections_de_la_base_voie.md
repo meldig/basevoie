@@ -45,14 +45,14 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 19. Affecter le nom des voies principales corrigées à leur voies secondaires ;
 - [x] 20. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
 - [x] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
+- [x] 22. Correction des relations seuils / tronçons suite aux corrections topologiques ;
+- [x] 23. Correction des doublons de numéros de seuil par voie administrative ;
 
 ### Corrections en cours :
-- [ ] 22. Correction des relations seuils / tronçons suite aux corrections topologiques ;
-- [ ] 23. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (notre base ne gèrant pas actuellement les lieux-dits) ;
+- [x] 24. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (erreurs avant noter correction, durant l'étape 22 et notre base ne gèrant pas actuellement les lieux-dits certains seuils n'était jamais corrects) ;
 
 ### Corrections prévues :
-- [ ] 24. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
-- [ ] 25. Correction des doublons de numéros de seuil par voie administrative ;
+- [ ] 25. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
 - [ ] 26. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
 - [ ] 27. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
 - [ ] 28. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
