@@ -45,10 +45,10 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 19. Affecter le nom des voies principales corrigées à leur voies secondaires ;
 - [x] 20. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
 - [x] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
-- [x] 22. Correction des relations seuils / tronçons suite aux corrections topologiques ;
-- [x] 23. Correction des doublons de numéros de seuil par voie administrative ;
+- [x] 22. Correction des doublons de numéros de seuil par voie administrative ;
 
 ### Corrections en cours :
+- [x] 23. Correction des relations seuils / tronçons suite aux corrections topologiques ;
 - [x] 24. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (erreurs avant noter correction, durant l'étape 22 et notre base ne gèrant pas actuellement les lieux-dits certains seuils n'était jamais corrects) ;
 
 ### Corrections prévues :
