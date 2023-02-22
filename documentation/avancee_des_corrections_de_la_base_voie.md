@@ -39,7 +39,7 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 13. Correction des voies physique affectées à plusieurs voies administratives situées dans des communes très éloignées (nous avions parfois au sein d'un commune 3 voies administratives se superposant à l'endroit d'une voie physique) ;
 - [x] 14. Merge des types de voie de l'IGN dans notre base afin d'être iso ;
 - [x] 15. Correction des giratoires, ronds-points et raquettes uni-tronçon ;
-- [x] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune ;
+- [x] 16. Affectation de leur latéralité aux voies administratives situées en limite de commune (étape 1);
 - [x] 17. Correction des tronçons affectés à une voie administrative située à plusieurs centaines de mètres ;
 - [x] 18. Vérification de la bonne exécution de l'homogénéisation des noms de voies ;
 - [x] 19. Affecter le nom des voies principales corrigées à leur voies secondaires ;
@@ -52,13 +52,14 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 24. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (erreurs avant noter correction, durant l'étape 22 et notre base ne gèrant pas actuellement les lieux-dits certains seuils n'était jamais corrects) ;
 
 ### Corrections prévues :
-- [ ] 25. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
-- [ ] 26. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 27. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
-- [ ] 28. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
-- [ ] 29. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l'entrée principale du bâtiment) ;
-- [ ] 30. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
-- [ ] 31. Etude visant à déterminer comment gérer la multi-modalité ;
-- [ ] 32. Etude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
-- [ ] 33. Mise en place d'une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie ;
+- [ ] 25. Homogénéisation des latéralités par voie administrative en limite de commune (étape 2) ;
+- [ ] 26. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
+- [ ] 27. Correction des voies en doubles filaires à l'intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 28. Correction des voies administratives ne s'arrêtant pas aux limites de communes, car leur tronçon d'affectation n'a pas été découpé à la limite de commune ;
+- [ ] 29. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
+- [ ] 30. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l'entrée principale du bâtiment) ;
+- [ ] 31. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
+- [ ] 32. Etude visant à déterminer comment gérer la multi-modalité ;
+- [ ] 33. Etude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
+- [ ] 34. Mise en place d'une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie ;
 
