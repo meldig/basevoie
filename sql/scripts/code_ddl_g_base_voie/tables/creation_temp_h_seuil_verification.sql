@@ -84,7 +84,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.fid_etat_verification IS
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.fid_agent_verification IS 'Clé étrangère vers la table TEMP_H_AGENT permettant de diviser les seuils à vérifier entre photo-interprètes.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.doute IS 'Champ permettant d''indiquer au photo-interprète s''il y a une question, une doute sur un seuil (valeur 0 : aucun doute ; valeur 0 : doute).';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.commentaire IS 'Champ permettant au photo-interprète d''indiquer son doute ou sa question sur le seuil, justifiant le changement de la valeur du champ doute.';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.voie_sans_nom IS 'Champ numérique booléen permettant d''indiquer si un seuil est affecté à une voie sans nom (seul le type de voie est présent dans son nom). 0 : voie avec nom ; 1 : voie sans nom';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION.voie_sans_nom IS 'Champ numérique permettant d''indiquer si un seuil est affecté à une voie sans nom (seul le type de voie est présent dans son nom). NULL : seuil non concerné ; 0 : voie avec nom ; 1 : voie sans nom.';
 
 -- 10 Création des contraintes sur les champs complémentaires
 ALTER TABLE G_BASE_VOIE.TEMP_H_SEUIL_VERIFICATION
