@@ -1,0 +1,242 @@
+/*
+Création de la table TA_TAMPON_LITTERALIS_ADRESSE - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des seuils au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire.
+*/
+/*
+DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE CASCADE CONSTRAINTS;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TA_TAMPON_LITTERALIS_ADRESSE';
+*/
+-- 1. Création de la table dans laquelle insérer les seuils affecter à un tronçon disposant d'une seule domanialité et affecté à une seule voie
+CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(
+	OBJECTID NUMBER(38,0),
+	CODE_VOIE VARCHAR2(254), 
+	CODE_POINT VARCHAR2(254), 
+	NATURE VARCHAR2(254), 
+	LIBELLE VARCHAR2(254), 
+	NUMERO NUMBER(8,0), 
+	REPETITION VARCHAR2(10), 
+	COTE VARCHAR2(254), 
+	GEOMETRY SDO_GEOMETRY
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE IS 'Table tampon du projet LITTERALIS - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des seuils au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.OBJECTID IS 'Clé primaire de la table correspondant aux identifiants de la table TA_INFOS_SEUIL.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.CODE_VOIE IS 'Identifiant de la voie associée au seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.CODE_POINT IS 'Identifiant du seuil présent dans TA_INFOS_SEUIL.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.NATURE IS 'Nature du point. Toutes les valeurs sont ''ADR''.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.LIBELLE IS 'Libelle de chaque seuil tel qu''il sera affiché dans les arrêtés : concaténation du numéro de seuil et du complément de numéro de seuil (quand il y en a un) présents dans TA_INFOS_SEUIL.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.NUMERO IS 'Numéro du seuil/adresse (différent de son identifiant) présent dans TA_INFOS_SEUIL.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.REPETITION IS 'Complément du numéro de seuil présent dans TA_INFOS_SEUIL.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.COTE IS 'Côté de la voie où se situe le seuil : Impair ou pair en limite de commune, LesDeuxCotes à l''intérieur d''une commune.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.GEOMETRY IS 'Géométrie de chaque seuil de type point.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE
+ADD CONSTRAINTS TA_TAMPON_LITTERALIS_ADRESSE_PK
+PRIMARY KEY(OBJECTID)
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'TA_TAMPON_LITTERALIS_ADRESSE',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Création de l'index spatial sur le champ geom
+CREATE INDEX TA_TAMPON_LITTERALIS_ADRESSE_SIDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(GEOMETRY)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
+PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ADRESSE_CODE_VOIE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(CODE_VOIE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ADRESSE_LIBELLE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(LIBELLE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ADRESSE_NUMERO_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(NUMERO)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ADRESSE_REPETITION_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(REPETITION)
+TABLESPACE G_ADT_INDX;
+
+-- 6. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE TO G_ADMIN_SIG;
+
+/
+
+/*
+Création de la table TA_TAMPON_LITTERALIS_TRONCON - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des tronçons au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire.
+*/
+/*
+DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON CASCADE CONSTRAINTS;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TA_TAMPON_LITTERALIS_TRONCON';
+*/
+-- 1. Création de la table
+CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(
+	Objectid NUMBER(38,0),
+	CODE_TRONC VARCHAR2(254 BYTE),
+	CLASSEMENT VARCHAR2(254 BYTE),
+	CODE_RUE_G VARCHAR2(254 BYTE),
+	NOM_RUE_G VARCHAR2(254 BYTE),
+	INSEE_G VARCHAR2(254 BYTE),
+	CODE_RUE_D VARCHAR2(254 BYTE),
+	NOM_RUE_D VARCHAR2(254 BYTE),
+	INSEE_D VARCHAR2(254 BYTE),
+	LARGEUR NUMBER(8,0),
+	GEOMETRY SDO_GEOMETRY
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON IS 'Table tampon du projet LITTERALIS - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des tronçons au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.OBJECTID IS 'Clé primaire de la table correspondant aux identifiants des tronçons de la table TA_TRONCON.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CODE_TRONC IS 'Identifiant du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CLASSEMENT IS 'Domanialité de chaque voie respectant les règles de priorité de la DEPV (TYPOVOIE.COD_DOMANIALITE).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CODE_RUE_G IS 'Identifiant de la voie de gauche du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.NOM_RUE_G IS 'Nom de la voie de gauche du tronçon - composition : Libelle de voie + complément nom voie issus de TA_VOIE_ADMINISTRAITVE + Annexe 1, 2, 3, etc pour les voies secondaires.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.INSEE_G IS 'Code INSEE de la voie de gauche du tronçon (récupéré et écrit en dur dans TA_VOIE_ADMINISTRATIVE).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CODE_RUE_D IS 'Identifiant de la voie de droite du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.NOM_RUE_D IS 'Nom de la voie de droite du tronçon - composition : Libelle de voie + complément nom voie issus de TA_VOIE_ADMINISTRAITVE + Annexe 1, 2, 3, etc pour les voies secondaires.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.INSEE_D IS 'Code INSEE de la voie de droite du tronçon (récupéré et écrit en dur dans TA_VOIE_ADMINISTRATIVE).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.LARGEUR IS 'Largeur du tronçon de type NUMBER, c-à-d NULL pour nous car nous n''avons pas cette information.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.GEOMETRY IS 'Géométrie de chaque tronçon de type multiligne.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
+ADD CONSTRAINTS TA_TAMPON_LITTERALIS_TRONCON_PK
+PRIMARY KEY(OBJECTID)
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'TA_TAMPON_LITTERALIS_TRONCON',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Création des index
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_SIDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(GEOMETRY)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX
+PARAMETERS('sdo_indx_dims=2, layer_gtype=MULTILINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_CODE_TRONCON_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(CODE_TRONC)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_VOIE_GAUCHE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(INSEE_G, CODE_RUE_G, NOM_RUE_G)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_VOIE_DROITE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(INSEE_D, CODE_RUE_D, NOM_RUE_D)
+TABLESPACE G_ADT_INDX;
+
+-- 6. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON TO G_ADMIN_SIG;
+
+/
+
+/*
+Création de la table TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des zones particulières au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire. Les zones particulières sont des voies ou parties de voies en/hors aglomération.
+*/
+/*
+DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE CASCADE CONSTRAINTS;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE';
+*/
+-- 1. Création de la table dans laquelle insérer les seuils affecter à un tronçon disposant d'une seule domanialité et affecté à une seule voie
+CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(
+	OBJECTID NUMBER(38,0) GENERATED BY DEFAULT AS IDENTITY(START WITH 1 INCREMENT BY 1),
+	TYPE_ZONE VARCHAR2(254 BYTE),
+	ID_VOIE NUMBER(38,0),
+	CODE_VOIE VARCHAR2(254 BYTE),
+	COTE_VOIE VARCHAR2(254 BYTE),
+	CODE_INSEE VARCHAR2(254 BYTE),
+	CATEGORIE NUMBER(8,0),
+	GEOMETRY SDO_GEOMETRY
+);
+
+-- 2. Création des commentaires sur la table et les champs
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE IS 'Table tampon du projet LITTERALIS - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des zones particulières au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire. Les zones particulières sont des voies ou parties de voies en/hors aglomération.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.OBJECTID IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.ID_VOIE IS 'Identifiant de la voie - de type numérique - présent dans la table TA_VOIE_ADMINISTRATIVE. Ce champ permet de faciliter les relations aux autres tables tampon du projet mais ne fait pas partie de l''export.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.TYPE_ZONE IS 'Type de zone dans laquelle se trouve la voie ou partie de voie : Agglomeration ou InteretCommunautaire.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.CODE_VOIE IS 'Identifiant de la voie présent dans la table TA_VOIE_ADMINISTRATIVE.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.COTE_VOIE IS 'Côté de la voie/partie de voie administrative par rapport à sa voie physique : Gauche, Droite, LesDeuxCotes.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.CODE_INSEE IS 'Code INSEE de la voie/partie de voie administrative inscrit en dur dans TA_VOIE_ADMINISTRATIVE.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.CATEGORIE IS 'Catégorie de la voie/partie de voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.GEOMETRY IS 'Géométrie de chaque voie/partie de voie administrative.';
+
+-- 3. Création de la clé primaire
+ALTER TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE
+ADD CONSTRAINTS TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_PK
+PRIMARY KEY(OBJECTID)
+USING INDEX TABLESPACE "G_ADT_INDX";
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Création de l'index spatial sur le champ geom
+CREATE INDEX TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_SIDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(GEOMETRY)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
+PARAMETERS('sdo_indx_dims=2, layer_gtype=MULTILINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_TYPE_ZONE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(TYPE_ZONE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_ID_VOIE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(ID_VOIE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_COTE_VOIE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(COTE_VOIE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_CODE_INSEE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(CODE_INSEE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE_CATEGORIE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(CATEGORIE)
+TABLESPACE G_ADT_INDX;
+
+-- 6. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE TO G_ADMIN_SIG;
+
+/
+

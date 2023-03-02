@@ -43,7 +43,7 @@ COMMENT ON COLUMN "G_BASE_VOIE"."VM_REGROUPEMENT_LITTERALIS"."NOM" IS 'Nom du re
 COMMENT ON COLUMN "G_BASE_VOIE"."VM_REGROUPEMENT_LITTERALIS"."CODE_REGR" IS 'Identificateur unique et immuable du regroupement partagé entre Littéralis Expert et le SIG.';
 COMMENT ON COLUMN "G_BASE_VOIE"."VM_REGROUPEMENT_LITTERALIS"."CODE_INSEE" IS 'Code INSEE de la commune. Etant donné que les secteurs (regoupements à partir desquels tous les autres sont construits) peuvent recouvrir une partie de commune (Lille) il a été décidé avec le prestataire de ne mettre aucun code INSEE.';
 COMMENT ON COLUMN "G_BASE_VOIE"."VM_REGROUPEMENT_LITTERALIS"."GEOMETRY" IS 'Géométries de type surfacique.';
-COMMENT ON TABLE "G_BASE_VOIE"."VM_REGROUPEMENT_LITTERALIS"  IS 'Vue des regroupements administratifs territoriaux pour le projet LITTERALIS du service voirie.';
+COMMENT ON TABLE "G_BASE_VOIE"."VM_REGROUPEMENT_LITTERALIS"  IS 'Vue matérialisée des regroupements administratifs territoriaux pour le projet LITTERALIS du service voirie.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.VM_REGROUPEMENT_LITTERALIS 
