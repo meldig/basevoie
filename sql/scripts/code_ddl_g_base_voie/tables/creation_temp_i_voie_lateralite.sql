@@ -18,7 +18,8 @@ CREATE TABLE G_BASE_VOIE.TEMP_I_VOIE_LATERALITE(
     code_insee VARCHAR2(5 BYTE),
     nom_voie VARCHAR2(4000 BYTE),
     fid_lateralite NUMBER(38,0),
-    fid_etat NUMBER(38,0)
+    fid_etat NUMBER(38,0),
+    fid_action NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -31,6 +32,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_VOIE_LATERALITE.code_insee IS 'Code INSEE d
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_VOIE_LATERALITE.nom_voie IS 'Nom de la voie administrative - type_voie + libelle_voie + complement_nom_voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_VOIE_LATERALITE.fid_lateralite IS 'Clé étrangère vers la table TEMP_I_LIBELLE permettant d''affecter une latéralité à une voie en limite de commune (droite/gauche). Cette latéralité pourra être changé durant le projet.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_VOIE_LATERALITE.fid_etat IS 'Clé étrangère vers la table TEMP_I_LIBELLE permettant de savoir si l''entité a été traitée ou non.';
+COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_VOIE_LATERALITE.fid_action IS 'Champ permettant de savoir s''il faut inverser le sens géométrique de la voie physique ou non.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TEMP_I_VOIE_LATERALITE 
@@ -93,6 +95,9 @@ CREATE INDEX TEMP_I_VOIE_LATERALITE_FID_LATERALITE_IDX ON G_BASE_VOIE.TEMP_I_VOI
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TEMP_I_VOIE_LATERALITE_FID_ETAT_IDX ON G_BASE_VOIE.TEMP_I_VOIE_LATERALITE(fid_etat)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TEMP_I_VOIE_LATERALITE_FID_ACTION_IDX ON G_BASE_VOIE.TEMP_I_VOIE_LATERALITE(fid_action)
     TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs

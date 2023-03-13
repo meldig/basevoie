@@ -12,8 +12,7 @@ CREATE TABLE G_BASE_VOIE.TEMP_I_TRONCON(
     fid_pnom_saisie NUMBER(38,0) NULL,
     fid_pnom_modification NUMBER(38,0) NULL,
     fid_etat NUMBER(38,0) NULL,
-    fid_voie_physique NUMBER(38,0) NOT NULL,
-    fid_action NUMBER(38,0)
+    fid_voie_physique NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -27,7 +26,6 @@ COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_TRONCON.fid_pnom_saisie IS 'Clé étrangèr
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_TRONCON.fid_pnom_modification IS 'Clé étrangère vers la table TEMP_I_AGENT permettant de récupérer le pnom de l''agent ayant modifié un tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_TRONCON.fid_etat IS 'Etat d''avancement des vérification : non-vérifié, vérifié.';
 COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_TRONCON.fid_voie_physique IS 'Clé étrangère permettant d''associer un ou plusieurs tronçons à une et une seule voie physique.';
-COMMENT ON COLUMN G_BASE_VOIE.TEMP_I_TRONCON.fid_action IS 'Clé étrangère vers la table TEMP_I_LIBELLE permettant à l''utilisateur d''indiquer l''action à faire sur ce tronçon.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TEMP_I_TRONCON 
@@ -76,11 +74,6 @@ ADD CONSTRAINT TEMP_I_TRONCON_FID_VOIE_PHYSIQUE_FK
 FOREIGN KEY (fid_voie_physique)
 REFERENCES G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE(objectid);
 
-ALTER TABLE G_BASE_VOIE.TEMP_I_TRONCON
-ADD CONSTRAINT TEMP_I_TRONCON_FID_ACTION_FK
-FOREIGN KEY (fid_action)
-REFERENCES G_BASE_VOIE.TEMP_I_LIBELLE(objectid);
-
 -- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TEMP_I_TRONCON_OLD_OBJECTID_IDX ON G_BASE_VOIE.TEMP_I_TRONCON(old_objectid)
     TABLESPACE G_ADT_INDX;
@@ -95,9 +88,6 @@ CREATE INDEX TEMP_I_TRONCON_FID_ETAT_IDX ON G_BASE_VOIE.TEMP_I_TRONCON(fid_etat)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TEMP_I_TRONCON_FID_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.TEMP_I_TRONCON(fid_voie_physique)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TEMP_I_TRONCON_FID_ACTION_IDX ON G_BASE_VOIE.TEMP_I_TRONCON(fid_action)
     TABLESPACE G_ADT_INDX;
 
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
