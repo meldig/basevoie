@@ -1,5 +1,5 @@
 /*
-Création de la table TA_TAMPON_LITTERALIS_SECTEUR - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - contenant les secteurs du service voirie qui ont été modifiés pour être topologiques entre eux et par rapport aux communes du référentiel communal de la MEL présent sur G_REFERENTIEL.
+Création de la table TA_TAMPON_LITTERALIS_SECTEUR - de la structure tampon du projet LITTERALIS - contenant les secteurs du service voirie qui ont été modifiés pour être topologiques entre eux et par rapport aux communes du référentiel communal de la MEL présent sur G_REFERENTIEL.
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR CASCADE CONSTRAINTS;
@@ -14,7 +14,7 @@ CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR IS 'Table tampon - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - contenant les secteurs du service voirie qui ont été modifiés pour être topologiques entre eux et par rapport aux communes du référentiel communal de la MEL présent sur G_REFERENTIEL.';
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR IS 'Table tampon - de la structure tampon du projet LITTERALIS - contenant les secteurs du service voirie qui ont été modifiés pour être topologiques entre eux et par rapport aux communes du référentiel communal de la MEL présent sur G_REFERENTIEL.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR.GEOMETRY IS 'Géométrie de type multipolygone.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR.OBJECTID IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR.NOM IS 'Nom de chaque secteur.';

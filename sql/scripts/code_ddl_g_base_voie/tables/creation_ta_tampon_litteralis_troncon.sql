@@ -1,5 +1,5 @@
 /*
-Création de la table TA_TAMPON_LITTERALIS_TRONCON - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant les tronçons de la table TA_TRONCON avec leur classement au format LITTERALIS.
+Création de la table TA_TAMPON_LITTERALIS_TRONCON - de la structure tampon du projet LITTERALIS - regroupant les tronçons de la table TA_TRONCON les informations nécessaires à l''export LITTERALIS.
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON CASCADE CONSTRAINTS;
@@ -7,18 +7,30 @@ DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TA_TAMPON_LITTERALIS_TRON
 */
 -- 1. Création de la table
 CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(
-	GEOMETRY SDO_GEOMETRY NOT NULL,
-	OBJECTID NUMBER(38,0),
-	CODE_TRONC VARCHAR2(254 BYTE) NOT NULL,
-	CLASSEMENT VARCHAR2(254 BYTE) NOT NULL
+    GEOMETRY SDO_GEOMETRY NOT NULL,
+    OBJECTID NUMBER(38,0),
+    CODE_TRONC VARCHAR2(254 BYTE) NOT NULL,
+    CLASSEMENT VARCHAR2(254 BYTE) NOT NULL,
+    ID_VOIE_DROITE VARCHAR2(254 BYTE) NOT NULL,
+    ID_VOIE_GAUCHE  VARCHAR2(254 BYTE) NOT NULL,
+    CODE_INSEE_VOIE_DROITE VARCHAR2(254 BYTE) NOT NULL,
+    CODE_INSEE_VOIE_GAUCHE VARCHAR2(254 BYTE) NOT NULL,
+    NOM_VOIE_DROITE VARCHAR2(254 BYTE) NOT NULL,
+    NOM_VOIE_GAUCHE VARCHAR2(254 BYTE) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON IS 'Table tampon - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant les tronçons de la table TA_TRONCON avec leur classement au format LITTERALIS.';
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON IS 'Table - de la structure tampon du projet LITTERALIS - regroupant les tronçons de la table TA_TRONCON les informations nécessaires à l''export LITTERALIS.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.GEOMETRY IS 'Géométrie des tronçons de ligne simple.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.OBJECTID IS 'Clé primaire de la table correspondant aux identifiants des tronçons de la table TA_TRONCON.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CODE_TRONC IS 'Identifiant du tronçon au format LITTERALIS.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CLASSEMENT IS 'Domanialité de chaque voie respectant les règles de priorité de la DEPV (TYPOVOIE.COD_DOMANIALITE).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.ID_VOIE_DROITE IS 'Identifiant de la voie administrative associée au tronçon et située à droite de la voie physique à laquelle il est associé.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.ID_VOIE_GAUCHE IS 'Identifiant de la voie administrative associée au tronçon et située à gauche de la voie physique à laquelle il est associé.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CODE_INSEE_VOIE_DROITE IS 'Code INSEE de la voie administrative associée au tronçon et située à droite de la voie physique à laquelle il est associé.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.CODE_INSEE_VOIE_GAUCHE IS 'Code INSEE de la voie administrative associée au tronçon et située à gauche de la voie physique à laquelle il est associé.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.NOM_VOIE_DROITE IS 'Nom de la voie administrative (type + nom + complément de nom + Annexe 1,2,3,etc pour les voies secondaires) associée au tronçon et située à droite de la voie physique à laquelle il est associé.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON.NOM_VOIE_GAUCHE IS 'Nom de la voie administrative (type + nom + complément de nom + Annexe 1,2,3,etc pour les voies secondaires) associée au tronçon et située à gauche de la voie physique à laquelle il est associé.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
@@ -53,6 +65,30 @@ TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_CLASSEMENT_IDX
 ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(CLASSEMENT)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_ID_VOIE_DROITE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(ID_VOIE_DROITE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_ID_VOIE_GAUCHE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(ID_VOIE_GAUCHE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_CODE_INSEE_VOIE_DROITE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(CODE_INSEE_VOIE_DROITE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_CODE_INSEE_VOIE_GAUCHE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(CODE_INSEE_VOIE_GAUCHE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_NOM_VOIE_DROITE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(NOM_VOIE_DROITE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_TRONCON_NOM_VOIE_GAUCHE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON(NOM_VOIE_GAUCHE)
 TABLESPACE G_ADT_INDX;
 
 -- 6. Affection des droits

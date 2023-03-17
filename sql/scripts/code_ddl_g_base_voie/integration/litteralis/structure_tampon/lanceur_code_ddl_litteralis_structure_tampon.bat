@@ -15,6 +15,7 @@ copy /b %chemin_code_table%\creation_ta_tampon_litteralis_correspondance_domania
 %chemin_code_table%\creation_ta_tampon_litteralis_troncon.sql + ^
 %chemin_code_table%\creation_ta_tampon_litteralis_voie.sql + ^
 %chemin_code_table%\creation_ta_tampon_litteralis_adresse.sql + ^
+%chemin_code_table%\creation_ta_tampon_litteralis_zone_particuliere.sql + ^
 %chemin_code_table%\creation_ta_tampon_litteralis_secteur.sql + ^
 %chemin_code_table%\creation_ta_tampon_litteralis_territoire.sql + ^
 %chemin_code_table%\creation_ta_tampon_litteralis_unite_territoriale.sql ^

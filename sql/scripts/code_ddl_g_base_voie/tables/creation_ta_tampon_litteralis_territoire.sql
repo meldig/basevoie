@@ -1,5 +1,5 @@
 /*
-Création de la table TA_TAMPON_LITTERALIS_TERRITOIRE - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - contenant les territoires du service voirie aggrégés à partir des entités de la table TA_TAMPON_LITTERALIS_SECTEUR.
+Création de la table TA_TAMPON_LITTERALIS_TERRITOIRE - de la structure tampon du projet LITTERALIS - contenant les territoires du service voirie aggrégés à partir des entités de la table TA_TAMPON_LITTERALIS_SECTEUR.
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE CASCADE CONSTRAINTS;
@@ -13,7 +13,7 @@ CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE IS 'Table tampon - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - contenant les territoires du service voirie aggrégés à partir des entités de la table TA_TAMPON_LITTERALIS_SECTEUR.';
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE IS 'Table tampon - de la structure tampon du projet LITTERALIS - contenant les territoires du service voirie aggrégés à partir des entités de la table TA_TAMPON_LITTERALIS_SECTEUR.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE.GEOMETRY IS 'Géométrie de type multipolygone.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE.OBJECTID IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TERRITOIRE.NOM IS 'Nom de chaque territoire.';

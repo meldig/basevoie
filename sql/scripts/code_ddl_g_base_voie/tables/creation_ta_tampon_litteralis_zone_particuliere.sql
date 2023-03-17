@@ -1,5 +1,5 @@
 /*
-Création de la table TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant les voies ou parties de voie par zone d''agglomération ou hors agglomération.
+Création de la table TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE - de la structure tampon du projet LITTERALIS - regroupant les voies ou parties de voie par zone d''agglomération ou hors agglomération.
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE CASCADE CONSTRAINTS;
@@ -14,11 +14,11 @@ CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(
 	TYPE_ZONE VARCHAR2(254 BYTE) NOT NULL,
 	COTE_VOIE VARCHAR2(254 BYTE) NOT NULL,
 	CODE_INSEE VARCHAR2(254 BYTE) NOT NULL,
-	FID_VOIE NUMBER(38,0) NOT NULL,
+	FID_VOIE NUMBER(38,0) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE IS 'Table tampon - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant les voies ou parties de voie par zone d''agglomération ou hors agglomération.';
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE IS 'Table tampon - de la structure tampon du projet LITTERALIS - regroupant les voies ou parties de voie par zone d''agglomération ou hors agglomération.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.GEOMETRY IS 'Géométrie de type multiligne.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.OBJECTID IS 'Clé primaire auto-incrémentée de la table.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE.CODE_VOIE IS 'Code voie issu de la table TA_TAMPON_LITTERALIS_VOIE.';

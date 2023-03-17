@@ -1,5 +1,5 @@
 /*
-Création de la table TA_TAMPON_LITTERALIS_ADRESSE - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant les données des seuils des tables TA_INFOS_SEUIL et TA_SEUIL.
+Création de la table TA_TAMPON_LITTERALIS_ADRESSE - de la structure tampon du projet LITTERALIS - regroupant les données des seuils des tables TA_INFOS_SEUIL et TA_SEUIL.
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE CASCADE CONSTRAINTS;
@@ -20,7 +20,7 @@ CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE IS 'Table tampon - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant les données des seuils des tables TA_INFOS_SEUIL et TA_SEUIL.';
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE IS 'Table tampon - de la structure tampon du projet LITTERALIS - regroupant les données des seuils des tables TA_INFOS_SEUIL et TA_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.GEOMETRY IS 'Géométrie du seuil de type point.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.OBJECTID IS 'Clé primaire de la table correspondant aux identifiants des seuils de la table TA_INFOS_SEUIL.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.CODE_POINT IS 'Identifiant des seuils au format LITTERALIS.';

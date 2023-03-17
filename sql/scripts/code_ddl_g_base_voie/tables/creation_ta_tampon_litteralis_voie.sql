@@ -1,5 +1,5 @@
 /*
-Création de la table TA_TAMPON_LITTERALIS_VOIE - de la structure intermédiaire entre les tables sources et les vues matérialisées d''export du jeu de données - regroupant toutes les données des tronçons au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire.
+Création de la table TA_TAMPON_LITTERALIS_VOIE - de la structure tampon du projet LITTERALIS - regroupant toutes les données des tronçons au format LITTERALIS (cf. les spécifications LITTERALIS), sauf la clé primaire.
 */
 /*
 DROP TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE CASCADE CONSTRAINTS;
@@ -7,20 +7,24 @@ DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'TA_TAMPON_LITTERALIS_VOIE
 */
 -- 1. Création de la table
 CREATE TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE(
-	geometry SDO_GEOMETRY NOT NULL,
-    objectid NUMBER(38,0),
-	code_voie VARCHAR2(254 BYTE) NOT NULL,
+    geometry SDO_GEOMETRY NOT NULL,
+    objectid NUMBER(38,0) GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
+    id_voie NUMBER(38,0) NOT NULL,
+    code_voie VARCHAR2(254 BYTE) NOT NULL,
     nom_voie VARCHAR2(4000 BYTE) NOT NULL,
-	code_insee VARCHAR2(5 BYTE) NOT NULL
+    code_insee VARCHAR2(5 BYTE) NOT NULL,
+    cote_voie VARCHAR2(254 BYTE) NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE IS 'Table tampon - du projet LITTERALIS et de la structure intermédiaire entre les tables sources et les vues d''export du jeu de données - regroupant toutes les données des voies administratives (dont leur géométrie) nécessaires à l''export LITTERALIS';
+COMMENT ON TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE IS 'Table tampon - de la structure tampon du projet LITTERALIS - regroupant toutes les données par voies administratives (dont leur géométrie) et latéralité nécessaires à l''export LITTERALIS';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.geometry IS 'Géométrie de type multiligne des voies administratives.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.objectid IS 'Clé primaire de la table correspondant aux identifiants des voies administratives de la table TA_VOIE_ADMINISTRATIVE.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.objectid IS 'Clé primaire auto-incrémentée de la table.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.id_voie IS 'Identifiant des voies administratives.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.code_voie IS 'Identifiant des voies administratives au format LITTERALIS.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.nom_voie IS 'Nom de la voie : type de voie + libelle_voie + complement_nom_voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.code_insee IS 'Code INSEE de la voie principale présente dans TA_VOIE_ADMINISTRATIVE, au format LITTERALIS.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.COTE_VOIE IS 'Latéralité de la voie : droit, gauche, LesDeuxCotes';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE
@@ -59,6 +63,14 @@ TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_TAMPON_LITTERALIS_VOIE_CODE_INSEE_IDX
 ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE(CODE_INSEE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_VOIE_ID_VOIE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE(ID_VOIE)
+TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_TAMPON_LITTERALIS_VOIE_COTE_VOIE_IDX
+ON G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE(COTE_VOIE)
 TABLESPACE G_ADT_INDX;
 
 -- 7. Affection des droits
