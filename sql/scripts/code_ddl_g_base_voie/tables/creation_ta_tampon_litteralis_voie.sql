@@ -24,7 +24,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.id_voie IS 'Identifiant 
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.code_voie IS 'Identifiant des voies administratives au format LITTERALIS.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.nom_voie IS 'Nom de la voie : type de voie + libelle_voie + complement_nom_voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.code_insee IS 'Code INSEE de la voie principale présente dans TA_VOIE_ADMINISTRATIVE, au format LITTERALIS.';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.COTE_VOIE IS 'Latéralité de la voie : droit, gauche, LesDeuxCotes';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE.cote_voie IS 'Latéralité de la voie : droit, gauche, LesDeuxCotes';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE
