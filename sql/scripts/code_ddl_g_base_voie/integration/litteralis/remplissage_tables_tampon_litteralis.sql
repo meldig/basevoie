@@ -28,6 +28,7 @@ WITH
         C_1 a;
 -- Résultat : 11 entités insérées
 
+-- Insertion des voies administratives sans distinction de latéralité
 INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE(objectid, code_voie, nom_voie, code_insee, geometry)
 WITH
     C_1 AS(-- Sélection et matérialisation des voies secondaires
@@ -81,7 +82,6 @@ GROUP BY
     CAST(d.objectid AS VARCHAR2(254 BYTE)),
     CAST(SUBSTR(UPPER(TRIM(e.libelle)), 1, 1) || SUBSTR(LOWER(TRIM(e.libelle)), 2) || CASE WHEN d.libelle_voie IS NOT NULL THEN ' ' || TRIM(d.libelle_voie) ELSE '' END || CASE WHEN d.complement_nom_voie IS NOT NULL THEN ' ' || TRIM(d.complement_nom_voie) ELSE '' END || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS VARCHAR2(254)),
     CAST(d.code_insee AS VARCHAR2(254 BYTE));
-    
 -- Résultat : 22 164 lignes insérées.
 
 -- Insertion des voies administratives principales/secondaires au format LITTERALIS dans TA_TAMPON_LITTERALIS_VOIE
@@ -285,17 +285,19 @@ WITH
         SELECT DISTINCT
             a.objectid AS id_seuil,
             b.objectid AS objectid,
-            CAST(f.objectid AS VARCHAR2(254)) AS CODE_VOIE,
+            CAST(f.objectid AS VARCHAR2(254 BYTE)) AS code_voie,
             CAST(b.objectid AS VARCHAR2(254)) AS CODE_POINT,
-            f.objectid AS FID_VOIE,
+            f.objectid AS ID_VOIE,
+            c.objectid AS id_troncon,
+            d.objectid AS id_voie_physique,
             CAST('ADR' AS VARCHAR2(254)) AS NATURE,
-            CAST(b.numero_seuil || ' ' || TRIM(b.complement_numero_seuil) AS VARCHAR2(254)) AS LIBELLE,
-            CAST(b.numero_seuil  AS VARCHAR2(254)) AS NUMERO,
+            CAST(CASE WHEN LENGTH(CAST(TRIM(b.numero_seuil) AS VARCHAR2(254 BYTE))) = 1 THEN '0' || CAST(TRIM(b.numero_seuil) AS VARCHAR2(254 BYTE)) ELSE CAST(b.numero_seuil AS VARCHAR2(254 BYTE)) END || ' ' || TRIM(b.complement_numero_seuil) AS VARCHAR2(254)) AS LIBELLE,
+            CAST(b.numero_seuil  AS NUMBER(8,0)) AS NUMERO,
             CAST(TRIM(b.complement_numero_seuil) AS VARCHAR2(254)) AS REPETITION,
             CASE
-                WHEN LOWER(g.libelle_court) = 'droit'
+                WHEN e.fid_lateralite = 1
                     THEN 'Pair'
-                WHEN LOWER(g.libelle_court) = 'gauche'
+                WHEN e.fid_lateralite = 2
                     THEN 'Impair'
                 ELSE
                     'LesDeuxCotes' 
@@ -306,8 +308,11 @@ WITH
             INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON c ON c.objectid = a.fid_troncon
             INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE d ON d.objectid = c.fid_voie_physique
             INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid    
-            INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE f ON f.objectid = e.fid_voie_administrative AND f.code_insee = a.code_insee
-            INNER JOIN G_BASE_VOIE.TEMP_I_LIBELLE g ON g.objectid = e.fid_lateralite       
+            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE f ON f.objectid = e.fid_voie_administrative AND f.code_insee = a.code_insee
+            --INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE f ON f.id_voie = e.fid_voie_administrative AND f.code_insee = a.code_insee
+        WHERE
+            -- Cette condition est nécessaire car le numéro 97T est en doublon (doublon aussi dans la BdTopo). Ce numéro est affecté à deux parcelles.
+            a.objectid <> 241295
     )
     
     SELECT
@@ -320,18 +325,18 @@ WITH
         a.NUMERO,
         a.REPETITION,
         a.COTE,
-        a.FID_VOIE
+        a.ID_VOIE
     FROM
         C_1 a
         INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL b ON b.objectid = a.id_seuil;
-
+-- Résultat : 351 177 lignes insérées.
 
 -- Insertion des secteurs de la DEPV dans G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR
-INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR(objectid, nom, geometry)
+INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR(geometry, objectid, nom)
 SELECT
+    geom,
     objectid,
-    nom,
-    geom
+    nom
 FROM
     G_BASE_VOIE.TA_SECTEUR_VOIRIE;
 -- Résultat : 31 lignes insérées.
@@ -491,7 +496,7 @@ WHERE
 /*
 La méthode d'aggrégation des Unités Territoriales utilisée, par blocs, permet de contourner l'erreur de dépassement des capacités de mémoire qu'une requête plus condensée génèrait.
 */
-INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_UNITE_TERRITORIALE(nom, geometry)
+INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_UNITE_TERRITORIALE(objectid, nom, geometry)
 WITH 
     C_1 AS(-- Création de l'UT LS
     SELECT
@@ -587,24 +592,28 @@ WITH
     )
     
     SELECT
+        1 AS objectid,
         nom,
         geometry
     FROM
         C_2
     UNION ALL
     SELECT
+        2 AS objectid,
         nom,
         geometry
     FROM
         C_4
     UNION ALL
     SELECT
+        3 AS objectid,
         nom,
         geometry
     FROM
         C_6
     UNION ALL
     SELECT
+        4 AS objectid,
         nom,
         geometry
     FROM

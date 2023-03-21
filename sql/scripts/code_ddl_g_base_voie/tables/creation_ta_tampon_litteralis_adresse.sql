@@ -29,7 +29,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.NATURE IS 'Nature du 
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.LIBELLE IS 'Libellé du point au format LITTERALIS. C''est le libellé qui sera affiché sur les arrêtés.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.NUMERO IS 'Numéro du seuil sur la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.REPETITION IS 'Valeur de répétition d’un numéro sur une rue (quand elle existe).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.COTE IS 'Côté du seuil par rapport à la voie : LesDeuxCotes ; Impair ; Pair';
+COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.COTE IS 'Côté du seuil par rapport à la voie : LesDeuxCotes ; Impair ; Pair.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE.FID_VOIE IS 'Clé étrangère vers la table TA_TAMPON_LITTERALIS_VOIE permettant d''associer un seuil à une voie administrative.';
 
 -- 3. Création de la clé primaire
