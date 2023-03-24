@@ -90,8 +90,35 @@ WITH
         WHERE
             numero IS NULL
     ),
+
+    C_5 AS(-- Sélection des voies présentes dans la table des tronçons
+        SELECT
+            id_voie_gauche AS code_voie
+        FROM
+            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
+        UNION ALL
+        SELECT
+            id_voie_droite AS code_voie
+        FROM
+            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
+    ),
+
+    C_6 AS(-- Sélection des voies associées aux adresses absentes de la table des tronçons
+        SELECT
+            'Voie absente de la table des tronçons' AS thematique,
+            objectid AS id_adresse,
+            code_voie,
+            nature,
+            numero,
+            repetition,
+            0 AS distance
+        FROM
+            G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE
+        WHERE
+            code_voie NOT IN(SELECT DISTINCT code_voie FROM C_5)
+    ),
     
-    C_5 AS(-- Mise en forme des données
+    C_7 AS(-- Mise en forme des données
         SELECT
             thematique,
             id_adresse,
@@ -124,6 +151,17 @@ WITH
             distance
         FROM
             C_4
+        UNION ALL
+        SELECT
+            thematique,
+            id_adresse,
+            code_voie,
+            nature,
+            numero,
+            repetition,
+            distance
+        FROM
+            C_6
     )
     
     SELECT
@@ -136,7 +174,7 @@ WITH
         repetition,
         distance
     FROM
-        C_5
+        C_7
     ORDER BY
         thematique,
         code_voie,
