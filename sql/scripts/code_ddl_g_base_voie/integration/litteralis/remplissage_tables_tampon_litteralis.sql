@@ -303,119 +303,7 @@ GROUP BY
     a.code_insee_voie_gauche,
     'LesDeuxCotes';
 -- Résultat : 22 583 lignes insérées
-/*
-WITH
-    C_1 AS(-- Matérialisation des voies de droite, puis gauche, puis à l'intérieur des communes
-        SELECT
-            id_voie_droite AS id_voie,
-            CAST(id_voie_droite AS VARCHAR2(254 BYTE)) AS code_voie,
-            code_insee_voie_droite AS code_insee,
-            'Droit' AS cote_voie,
-            SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-        FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
-        WHERE
-            id_voie_droite <> id_voie_gauche
-        GROUP BY
-            id_voie_droite,
-            CAST(id_voie_droite AS VARCHAR2(254 BYTE)),
-            code_insee_voie_droite,
-            'Droit'
-        UNION ALL
-        SELECT
-            id_voie_gauche AS id_voie,
-            CAST(id_voie_gauche AS VARCHAR2(254 BYTE)) AS code_voie,
-            code_insee_voie_gauche AS code_insee,
-            'Gauche' AS cote_voie,
-            SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-        FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
-        WHERE
-            id_voie_droite <> id_voie_gauche
-        GROUP BY
-            id_voie_gauche,
-            CAST(id_voie_gauche AS VARCHAR2(254 BYTE)),
-            code_insee_voie_gauche,
-            'Gauche'
-        UNION ALL
-        SELECT
-            id_voie_gauche AS id_voie,
-            CAST(id_voie_gauche AS VARCHAR2(254 BYTE)) AS code_voie,
-            code_insee_voie_gauche AS code_insee,
-            'LesDeuxCotes' AS cote_voie,
-            SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-        FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
-        WHERE
-            id_voie_droite = id_voie_gauche
-        GROUP BY
-            id_voie_gauche,
-            CAST(id_voie_gauche AS VARCHAR2(254 BYTE)),
-            code_insee_voie_gauche,
-            'LesDeuxCotes'
-    )
 
-WITH
-    C_1 AS(-- Sélection et matérialisation des voies secondaires
-        SELECT
-            d.objectid,
-            e.libelle,
-            d.libelle_voie,
-            d.complement_nom_voie,
-            d.code_insee,
-            g.libelle_court,
-            SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-        FROM
-            G_BASE_VOIE.TEMP_I_TRONCON a
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
-            INNER JOIN G_BASE_VOIE.TEMP_I_TYPE_VOIE e ON e.objectid = d.fid_type_voie
-            INNER JOIN G_BASE_VOIE.TEMP_I_HIERARCHISATION_VOIE f ON f.fid_voie_secondaire = d.objectid
-            INNER JOIN G_BASE_VOIE.TEMP_I_LIBELLE g ON g.objectid = c.fid_lateralite
-        GROUP BY
-            d.objectid,
-            e.libelle,
-            d.libelle_voie,
-            d.complement_nom_voie,
-            d.code_insee,
-            g.libelle_court
-    )
-
-SELECT -- mise en ordre des voies secondaires en fonction de leur taille (ajout du suffixe ANNEXE 1, 2, 3 en fonction de la taille pour un même libelle_voie et code_insee)
-    a.objectid,
-    CAST(a.objectid AS VARCHAR2(254 BYTE)) AS code_voie,
-    CAST(SUBSTR(UPPER(TRIM(a.libelle)), 1, 1) || SUBSTR(LOWER(TRIM(a.libelle)), 2) || CASE WHEN a.libelle_voie IS NOT NULL THEN ' ' || TRIM(a.libelle_voie) ELSE '' END || CASE WHEN a.complement_nom_voie IS NOT NULL THEN ' ' || TRIM(a.complement_nom_voie) ELSE '' END || CASE WHEN a.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN a.code_insee = '59355' THEN ' (Lomme)' END || ' Annexe ' || ROW_NUMBER() OVER (PARTITION BY (UPPER(TRIM(a.libelle_voie)) || ' ' || a.code_insee) ORDER BY SDO_GEOM.SDO_LENGTH(a.geom, 0.001) DESC) AS VARCHAR2(254)) AS nom_voie,
-    CAST(a.code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
-    CAST(a.libelle_court AS VARCHAR2(254 BYTE)) AS cote_voie,
-    a.geom
-FROM
-    C_1 a
-UNION ALL
-SELECT -- Sélection et matérialisation des voies principales
-    d.objectid,
-    CAST(d.objectid AS VARCHAR2(254 BYTE)) AS code_voie,
-    CAST(SUBSTR(UPPER(TRIM(e.libelle)), 1, 1) || SUBSTR(LOWER(TRIM(e.libelle)), 2) || CASE WHEN d.libelle_voie IS NOT NULL THEN ' ' || TRIM(d.libelle_voie) ELSE '' END || CASE WHEN d.complement_nom_voie IS NOT NULL THEN ' ' || TRIM(d.complement_nom_voie) ELSE '' END || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS VARCHAR2(254)) AS nom_voie,
-    CAST(d.code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
-    CAST(f.libelle_court AS VARCHAR2(254 BYTE)) AS cote_voie,
-    SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-FROM
-    G_BASE_VOIE.TEMP_I_TRONCON a
-    INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-    INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-    INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
-    INNER JOIN G_BASE_VOIE.TEMP_I_TYPE_VOIE e ON e.objectid = d.fid_type_voie
-    INNER JOIN G_BASE_VOIE.TEMP_I_LIBELLE f ON f.objectid = c.fid_lateralite
-WHERE
-    d.objectid NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TEMP_H_HIERARCHISATION_VOIE)
-GROUP BY
-    d.objectid,
-    CAST(d.objectid AS VARCHAR2(254 BYTE)),
-    CAST(SUBSTR(UPPER(TRIM(e.libelle)), 1, 1) || SUBSTR(LOWER(TRIM(e.libelle)), 2) || CASE WHEN d.libelle_voie IS NOT NULL THEN ' ' || TRIM(d.libelle_voie) ELSE '' END || CASE WHEN d.complement_nom_voie IS NOT NULL THEN ' ' || TRIM(d.complement_nom_voie) ELSE '' END || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS VARCHAR2(254)),
-    CAST(d.code_insee AS VARCHAR2(254 BYTE)),
-    CAST(f.libelle_court AS VARCHAR2(254 BYTE));
--- Résultat : 22 587 lignes insérées.
-*/
 -- Insertion des adresses
 INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE(geometry, objectid, code_point, code_voie, nature, libelle, numero, repetition, cote, fid_voie)
 WITH
@@ -443,11 +331,12 @@ WITH
         FROM
             G_BASE_VOIE.TEMP_H_SEUIL a
             INNER JOIN G_BASE_VOIE.TEMP_H_INFOS_SEUIL b ON b.fid_seuil = a.objectid
-            INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON c ON c.objectid = a.fid_troncon
+            INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON g ON g.objectid = a.fid_troncon
+            INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON c ON c.objectid = g.objectid
             INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE d ON d.objectid = c.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid    
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE f ON f.objectid = e.fid_voie_administrative AND f.code_insee = a.code_insee
-            --INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE f ON f.id_voie = e.fid_voie_administrative AND f.code_insee = a.code_insee
+            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid
+            INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE h ON h.objectid = e.fid_voie_administrative AND h.code_insee = a.code_insee
+            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE f ON f.objectid = h.objectid
         WHERE
             -- Cette condition est nécessaire car le numéro 97T est en doublon (doublon aussi dans la BdTopo). Ce numéro est affecté à deux parcelles.
             a.objectid <> 241295
@@ -467,7 +356,7 @@ WITH
     FROM
         C_1 a
         INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL b ON b.objectid = a.id_seuil;
--- Résultat : 351 177 lignes insérées.
+-- Résultat : 351 158 lignes insérées - Temps  449,635 sec
 
 -- Insertion des secteurs de la DEPV dans G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR
 INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR(geometry, objectid, nom)
