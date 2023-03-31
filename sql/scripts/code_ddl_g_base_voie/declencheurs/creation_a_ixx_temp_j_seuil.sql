@@ -8,7 +8,6 @@ FOR EACH ROW
 DECLARE
     username VARCHAR2(100);
     v_id_agent NUMBER(38,0);
-
 BEGIN
     /*
     Objectif : ce trigger permet de créer l'identifiant d'un seuil et ses informations de création/édition (les autres informations étant renseignées via l'application dans un second temps).
@@ -21,11 +20,11 @@ BEGIN
 
     -- Création d'un nouveau dossier dans TEMP_J_GG_DOSSIER correspondant au périmètre dessiné
     INSERT INTO G_BASE_VOIE.TEMP_J_INFOS_SEUIL(fid_seuil, numero_seuil, fid_pnom_saisie, date_saisie, fid_pnom_modification, date_modification)
-    VALUES(:new.objectid, 999999, v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'), v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'));
+    VALUES(:new.objectid, 99999, v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'), v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'));
 
 EXCEPTION
     WHEN OTHERS THEN
-        mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER G_BASE_VOIE.A_IXX_TEMP_J_SEUIL','bjacq@lillemetropole.fr');
+        mail.sendmail('bjacq@lillemetropole.fr',SQLERRM || ' Erreur provoquée par ' || username || ' à ' || sysdate,'ERREUR TRIGGER G_BASE_VOIE.A_IXX_TEMP_J_SEUIL','bjacq@lillemetropole.fr');
 END;
 
 /

@@ -16,7 +16,7 @@ BEGIN
     -- Sélection de l'id du pnom correspondant dans la table TEMP_AGENT
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TEMP_J_AGENT WHERE pnom = username;
 
-    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TEMP_AGENT. 
+    -- En cas d'insertion on insère la FK du pnom de l'agent, ayant créé le tronçon, présent dans TEMP_J_AGENT. 
     IF INSERTING THEN 
         :new.objectid := SEQ_TEMP_J_TRONCON_OBJECTID.NEXTVAL;
         :new.fid_pnom_saisie := v_id_agent;
