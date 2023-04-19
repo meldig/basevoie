@@ -112,8 +112,8 @@ Base Adresse Locale lors de la transmission des adresses ;
 - La numérotation doit adopter une granularité fine : entrée d’immeuble, entrées de magasin, d’usine, portails desservant une cour d’immeuble, entrées de propriétés. En cas de
 lieux-dits contigus identifiés par des panneaux, la numérotation doit reprendre à chaque
 changement de dénomination ;
-- Il existe deux types de numérotations :
-	-> **La numérotation continue** attribue des numéros dans l’ordre de la succession des bâtiments (pairs à droite et impairs à gauche). Elle est plus adaptée aux centres urbains.
+- Il existe deux types de numérotations :  
+	-> **La numérotation continue** attribue des numéros dans l’ordre de la succession des bâtiments (pairs à droite et impairs à gauche). Elle est plus adaptée aux centres urbains.  
 	-> **La numérotation métrique**, fondée sur la mesure depuis le début de la voie est privilégiée en zone d’habitation peu dense. Elle permet d’intercaler de nouveaux numéros sans changer la numérotation existante ni créer de numéros bis ou ter. Ce type de numérotation intéresse les services de secours et fournisseurs de réseaux car elle renseigne sur la longueur de la voie.
 - Les numéros s’échelonnent de 1 à 9999. Une adresse comportant un zéro ou un numéro de 10000 ou au-delà n’est pas prise en compte ;
 - Les numéros se suivent depuis le centre vers la périphérie et en cas d’ambiguïté, il
