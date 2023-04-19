@@ -135,3 +135,6 @@ réalité du terrain) ;
 - Une numérotation peut ne pas être continue au niveau des dents creuses, ce qui permet de réserver des numéros et d'éviter d'avoir à renuméroter toute la voie en cas de nouvelle construction ;
 ![numerotation_dent_creuse](image/numerotation_dent_creuse.png)
 - L'adressage d'ensembles privés clos n'est pas de la responsabilité de la commune ;
+
+## Bibliographie :
+[Bonnes pratiques de l'adresse - Agence nationale de la cohésion des territoires]{https://adresse.data.gouv.fr/data/docs/guide-bonnes-pratiques.pdf}
