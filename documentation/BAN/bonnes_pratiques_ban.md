@@ -4,10 +4,10 @@
 En vertu de la loi du 22/02/2022 dite Loi 3Ds, l'adressage est réalisé sous la responsabilité du conseil muncipal de la commune. 
 
 ### Les données sous la responsabilité des communes sont :
-- nom de toutes les voies publiques (article L. 111-1 du code de la voirie routière) ;
-- nom des voies privées ouvertes à la circulation ;
-- nom des lieux-dits ;
-- numéros des locaux adressables ;
+- le nom de toutes les voies publiques (article L. 111-1 du code de la voirie routière) ;
+- le nom des voies privées ouvertes à la circulation ;
+- le nom des lieux-dits ;
+- le numéro des locaux adressables ;
 
 ### Les données n'étant pas sous la responsabilité des communes sont :
 - les chemins d'exploitation, sentiers et voies privées non-ouverts à la circulation.
@@ -26,7 +26,7 @@ En vertu de la loi du 22/02/2022 dite Loi 3Ds, l'adressage est réalisé sous la
 
 ### Liste des principaux types de voies :
 
-Il n'existe pas de liste exhaustive des voies. 
+Précision : il n'existe pas de liste exhaustive des voies. 
 
 |Types de voies		|Définition																																				|
 |:------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -48,7 +48,7 @@ Il n'existe pas de liste exhaustive des voies.
 
 ### Liste des éléments n'étant pas des types de voies :
 
-La liste n'est pas exhaustive.
+Précision :  la liste n'est pas exhaustive.
 
 |Eléments n'étant pas des types de voies				 |
 |:-------------------------------------------------------|
@@ -68,16 +68,16 @@ La liste n'est pas exhaustive.
 et à bien respecter la même orthographe sur la délibération, le panneau et la
 Base Adresse Locale lors de la transmission des adresses ;
 - Un nom de voie s'applique à un tronçon continu. En cas de discontinuité, le tronçon prend un nom diffférent ;
-![un_nom_de_voie_egal_un_troncon_continu](image/un_nom_de_voie_egal_un_troncon_continu.png)
+![un_nom_de_voie_egal_un_troncon_continu](image/un_nom_de_voie_egal_un_troncon_continu.png)  
 *Source : guide-bonnes-pratiques - ANCT*
 - Une voie à double raccordement doit porter un nom différent de la voie à laquelle elle est rattachée ;
-![voie_a_double_raccordement_porte_un_nom_specifique](image/voie_a_double_raccordement_porte_un_nom_specifique.png)
+![voie_a_double_raccordement_porte_un_nom_specifique](image/voie_a_double_raccordement_porte_un_nom_specifique.png)  
 *Source : guide-bonnes-pratiques - ANCT*
 - En cas de voie traversante unique, une voie donne son nom au giratoire ;
-![giratoire_voie_traversante_unique](image/giratoire_voie_traversante_unique.png)
+![giratoire_voie_traversante_unique](image/giratoire_voie_traversante_unique.png)  
 *Source : guide-bonnes-pratiques - ANCT*
 - En cas de voies traversantes multiples, la voie la plus importante nomme le giratoire ;
-![giratoire_voies_traversantes_multiples](image/giratoire_voies_traversantes_multiples.png)
+![giratoire_voies_traversantes_multiples](image/giratoire_voies_traversantes_multiples.png)  
 *Source : guide-bonnes-pratiques - ANCT*
 - Si les lotissements ne sont pas des types de voies, la mention du lotissement peut être faite en complément de nom de voie ;
 - En cas de voie partagée entre deux communes, celles-ci doivent s'accorder sur la dénomination et la numérotation (qui doit se suivre d'une commune à l'autre) ;
@@ -137,9 +137,9 @@ réalité du terrain) ;
 |Service technique 	|Point d’accès technique (ex : local disposant d’organe de coupure eau, électricité, gaz, etc)|
 
 - Une numérotation peut ne pas être continue au niveau des dents creuses, ce qui permet de réserver des numéros et d'éviter d'avoir à renuméroter toute la voie en cas de nouvelle construction ;
-![numerotation_dent_creuse](image/numerotation_dent_creuse.png)
+![numerotation_dent_creuse](image/numerotation_dent_creuse.png)  
 *Source : guide-bonnes-pratiques - ANCT*
 - L'adressage d'ensembles privés clos n'est pas de la responsabilité de la commune ;
 
 ## Bibliographie :
-[Bonnes pratiques de l'adresse - Agence nationale de la cohésion des territoires]{https://adresse.data.gouv.fr/data/docs/guide-bonnes-pratiques.pdf}
+[Bonnes pratiques de l'adresse - Agence nationale de la cohésion des territoires](https://adresse.data.gouv.fr/data/docs/guide-bonnes-pratiques.pdf)
