@@ -69,12 +69,16 @@ et à bien respecter la même orthographe sur la délibération, le panneau et l
 Base Adresse Locale lors de la transmission des adresses ;
 - Un nom de voie s'applique à un tronçon continu. En cas de discontinuité, le tronçon prend un nom diffférent ;
 ![un_nom_de_voie_egal_un_troncon_continu](image/un_nom_de_voie_egal_un_troncon_continu.png)
+*Source : guide-bonnes-pratiques - ANCT*
 - Une voie à double raccordement doit porter un nom différent de la voie à laquelle elle est rattachée ;
 ![voie_a_double_raccordement_porte_un_nom_specifique](image/voie_a_double_raccordement_porte_un_nom_specifique.png)
+*Source : guide-bonnes-pratiques - ANCT*
 - En cas de voie traversante unique, une voie donne son nom au giratoire ;
 ![giratoire_voie_traversante_unique](image/giratoire_voie_traversante_unique.png)
+*Source : guide-bonnes-pratiques - ANCT*
 - En cas de voies traversantes multiples, la voie la plus importante nomme le giratoire ;
 ![giratoire_voies_traversantes_multiples](image/giratoire_voies_traversantes_multiples.png)
+*Source : guide-bonnes-pratiques - ANCT*
 - Si les lotissements ne sont pas des types de voies, la mention du lotissement peut être faite en complément de nom de voie ;
 - En cas de voie partagée entre deux communes, celles-ci doivent s'accorder sur la dénomination et la numérotation (qui doit se suivre d'une commune à l'autre) ;
 - Lors de la fusion de communes, la commune nouvelle doit éviter les doublons de nom. Pour cela elle peut préciser le nom de la commune associée en complément ;
@@ -134,6 +138,7 @@ réalité du terrain) ;
 
 - Une numérotation peut ne pas être continue au niveau des dents creuses, ce qui permet de réserver des numéros et d'éviter d'avoir à renuméroter toute la voie en cas de nouvelle construction ;
 ![numerotation_dent_creuse](image/numerotation_dent_creuse.png)
+*Source : guide-bonnes-pratiques - ANCT*
 - L'adressage d'ensembles privés clos n'est pas de la responsabilité de la commune ;
 
 ## Bibliographie :
