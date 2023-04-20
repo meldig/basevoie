@@ -144,7 +144,8 @@ réalité du terrain) ;
 |Segment 			|Position dérivée du segment de la voie de rattachement		|
 |Service technique 	|Point d’accès technique (ex : local disposant d’organe de coupure eau, électricité, gaz, etc)|
 
-- Une numérotation peut ne pas être continue au niveau des dents creuses, ce qui permet de réserver des numéros et d'éviter d'avoir à renuméroter toute la voie en cas de nouvelle construction ;
+- Une numérotation peut ne pas être continue au niveau des dents creuses, ce qui permet de réserver des numéros et d'éviter d'avoir à renuméroter toute la voie en cas de nouvelle construction ;  
+
 ![numerotation_dent_creuse](image\numerotation_dent_creuse.png) 
 
 *Source : guide-bonnes-pratiques - ANCT*
