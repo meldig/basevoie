@@ -58,6 +58,7 @@ MERGE INTO G_BASE_VOIE.TEMP_J_VOIE_SUPRA_COMMUNALE a
                 SELECT DISTINCT
                     f.id_voie_supra_communale,
                     e.id_voie_administrative,
+                    e.nom_voie,
                     e.code_insee,
                     a.domania AS domanialite_supra_communale
                 FROM
@@ -72,6 +73,7 @@ MERGE INTO G_BASE_VOIE.TEMP_J_VOIE_SUPRA_COMMUNALE a
             SELECT
                 a.id_voie_supra_communale,
                 a.id_voie_administrative,
+                b.nom_voie,
                 a.code_insee,
                 a.domanialite_supra_communale,
                 b.geom

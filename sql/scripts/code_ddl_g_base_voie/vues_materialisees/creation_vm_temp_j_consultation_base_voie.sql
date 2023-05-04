@@ -2,7 +2,7 @@
 Création de la Vue matérialisée VM_TEMP_J_CONSULTATION_BASE_VOIE permettant de visualiser tous les éléments de la Base Voie.
 */
 /*
-DROP VIEW G_BASE_VOIE.VM_TEMP_J_CONSULTATION_BASE_VOIE;
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_CONSULTATION_BASE_VOIE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_TEMP_J_CONSULTATION_BASE_VOIE';
 COMMIT;
 */
@@ -21,8 +21,7 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_CONSULTATION_BASE_VOIE(
     COMMENTAIRE,
     GEOM
 )
-REFRESH ON COMMIT
-FORCE
+REFRESH FORCE ON DEMAND START WITH sysdate+0 NEXT (SYSDATE+1/24/60)
 DISABLE QUERY REWRITE AS
 SELECT
     rownum AS objectid,
@@ -39,13 +38,12 @@ SELECT
     a.geom
 FROM
     G_BASE_VOIE.TEMP_J_TRONCON a
-    INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-    INNER JOIN G_BASE_VOIE.TEMP_J_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-    INNER JOIN G_BASE_VOIE.TEMP_J_LIBELLE d ON d.objectid = b.fid_action
-    INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE e ON e.objectid = c.fid_voie_administrative
-    INNER JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE f ON f.objectid = e.fid_type_voie
-    INNER JOIN G_BASE_VOIE.TEMP_J_LIBELLE g ON g.objectid = c.fid_lateralite
-);
+    LEFT JOIN G_BASE_VOIE.TEMP_J_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
+    LEFT JOIN G_BASE_VOIE.TEMP_J_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
+    LEFT JOIN G_BASE_VOIE.TEMP_J_LIBELLE d ON d.objectid = b.fid_action
+    LEFT JOIN G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE e ON e.objectid = c.fid_voie_administrative
+    LEFT JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE f ON f.objectid = e.fid_type_voie
+    LEFT JOIN G_BASE_VOIE.TEMP_J_LIBELLE g ON g.objectid = c.fid_lateralite
 
 -- 2. Création des commentaires
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_CONSULTATION_BASE_VOIE IS 'Vue matérialisée permettant de visualiser tous les éléments de la Base Voie.';
