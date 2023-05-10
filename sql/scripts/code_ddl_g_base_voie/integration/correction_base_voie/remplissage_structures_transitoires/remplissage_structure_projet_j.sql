@@ -29,6 +29,21 @@ FROM
     G_BASE_VOIE.TEMP_I_LIBELLE;
 -- Résultat : 8 lignes fusionnées.
 
+-- Insertion des genres des noms de voie
+INSERT INTO G_BASE_VOIE.TEMP_J_LIBELLE(libelle_court, libelle_long)
+SELECT
+    'masculin' AS libelle_court,
+    'Genre d''un objet (masculin).' AS libelle_long
+FROM
+    DUAL
+UNION ALL
+SELECT
+    'féminin' AS libelle_court,
+    'Genre d''un objet (féminin).' AS libelle_long
+FROM
+    DUAL;
+-- Résultat : 2 lignes insérées
+
 INSERT INTO G_BASE_VOIE.TEMP_J_LIBELLE(libelle_court, libelle_long)
 VALUES('à déterminer', 'valeur à déterminer');
 -- Résultat : 1 ligne insérée
