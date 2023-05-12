@@ -37,9 +37,9 @@ WITH
             INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
             INNER JOIN G_BASE_VOIE.TEMP_J_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
             INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
-            INNER JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE e ON e.objectid = d.fid_type_voie
-            INNER JOIN G_BASE_VOIE.TEMP_J_LIBELLE f ON f.objectid = c.fid_lateralite
-            LEFT JOIN G_BASE_VOIE.TEMP_J_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = d.objectid
+            RIGHT JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE e ON e.objectid = d.fid_type_voie
+            RIGHT JOIN G_BASE_VOIE.TEMP_J_LIBELLE f ON f.objectid = c.fid_lateralite
+            RIGHT JOIN G_BASE_VOIE.TEMP_J_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = d.objectid
         GROUP BY
             d.code_insee,
             f.libelle_court,

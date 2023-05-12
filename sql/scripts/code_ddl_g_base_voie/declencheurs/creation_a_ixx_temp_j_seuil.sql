@@ -19,8 +19,8 @@ BEGIN
     SELECT numero_agent INTO v_id_agent FROM G_BASE_VOIE.TEMP_J_AGENT WHERE pnom = username;
 
     -- Création d'un nouveau dossier dans TEMP_J_GG_DOSSIER correspondant au périmètre dessiné
-    INSERT INTO G_BASE_VOIE.TEMP_J_INFOS_SEUIL(fid_seuil, numero_seuil, fid_pnom_saisie, date_saisie, fid_pnom_modification, date_modification)
-    VALUES(:new.objectid, 99999, v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'), v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'));
+    INSERT INTO G_BASE_VOIE.TEMP_J_INFOS_SEUIL(fid_seuil, fid_pnom_saisie, date_saisie, fid_pnom_modification, date_modification)
+    VALUES(:new.objectid, v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'), v_id_agent, TO_DATE(sysdate, 'dd/mm/yy'));
 
 EXCEPTION
     WHEN OTHERS THEN
