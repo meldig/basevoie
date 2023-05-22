@@ -17,11 +17,13 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(
     code_insee,
     lateralite,
     id_troncon,
+    id_voie_physique,
     id_voie_administrative,
-    nom_voie
+    nom_voie,
+    hierarchie_voie_admin
 )
 REFRESH FORCE
-START WITH TO_DATE('04-04-2023 09:55:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('15-05-2023 09:20:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 240/24/1440
 DISABLE QUERY REWRITE AS
 SELECT
@@ -34,8 +36,15 @@ SELECT
     b.code_insee,
     g.libelle_court AS lateralite,
     b.fid_troncon AS id_troncon,
+    d.objectid AS id_voie_physique,
     f.objectid AS id_voie_administrative,
-    TRIM(SUBSTR(UPPER(h.libelle), 1, 1) || SUBSTR(LOWER(h.libelle), 2) || ' ' || TRIM(f.libelle_voie) || ' ' || TRIM(f.complement_nom_voie)) AS nom_voie
+    TRIM(SUBSTR(UPPER(h.libelle), 1, 1) || SUBSTR(LOWER(h.libelle), 2) || ' ' || TRIM(f.libelle_voie) || ' ' || TRIM(f.complement_nom_voie)) AS nom_voie,
+    CASE 
+        WHEN i.fid_voie_secondaire IS NOT NULL
+            THEN 'Voie secondaire'
+        ELSE 
+            'Voie principale'
+    END AS hierarchie_voie_admin
 FROM
     G_BASE_VOIE.TEMP_J_INFOS_SEUIL a
     INNER JOIN G_BASE_VOIE.TEMP_J_SEUIL b ON b.objectid = a.fid_seuil
@@ -44,10 +53,11 @@ FROM
     INNER JOIN G_BASE_VOIE.TEMP_J_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid
     INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE f ON f.objectid = e.fid_voie_administrative AND f.code_insee = b.code_insee
     LEFT JOIN G_BASE_VOIE.TEMP_J_LIBELLE g ON g.objectid = b.fid_lateralite
-    INNER JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE h ON h.objectid = f.fid_type_voie;
-        
+    INNER JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE h ON h.objectid = f.fid_type_voie
+    LEFT JOIN G_BASE_VOIE.TEMP_J_HIERARCHISATION_VOIE i ON i.fid_voie_secondaire = f.objectid;
+
 -- 2. Création des commentaires de table et de colonnes
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL et leur tronçon.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.geom IS 'Géométrie de type point des seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.objectid IS 'Clé primaire de la VM correspondant aux identifiants de chaque seuil (TEMP_J_INFOS_SEUIL).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.numero IS 'Numéro du seuil.';
@@ -57,8 +67,10 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.date_modification IS
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.code_insee IS 'Code INSEE du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.lateralite IS 'Latéralité du seuil par rapport au tronçon (droite/gauche).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.id_troncon IS 'Identifiant du tronçon auquel est rattaché le seuil.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.id_voie_administrative IS 'Identifiant de la voie à laquelle est rattaché le seuil.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.nom_voie IS 'Nom de la voie à laquelle le seuil est affecté.'
+COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.id_voie_physique IS 'Identifiant de la voie physique à laquelle est rattaché le seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.id_voie_administrative IS 'Identifiant de la voie administrative à laquelle est rattaché le seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.nom_voie IS 'Nom de la voie à laquelle le seuil est affecté.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL.hierarchie_voie_admin IS 'Hiérarchie de la voie administrative.';
 
 -- 3. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
@@ -91,7 +103,8 @@ PARAMETERS(
   tablespace=G_ADT_INDX, 
   work_tablespace=DATA_TEMP'
 );
-    
+
+-- Autres index  
 CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_NUMERO_IDX ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(NUMERO)
     TABLESPACE G_ADT_INDX;
 
@@ -109,14 +122,21 @@ CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_CODE_INSEE_IDX ON G_BASE_VOIE.VM_TEMP
     
 CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_ID_TRONCON_IDX ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(ID_TRONCON)
     TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_ID_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(id_voie_physique)
+    TABLESPACE G_ADT_INDX;
     
 CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_ID_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(ID_VOIE_ADMINISTRATIVE)
     TABLESPACE G_ADT_INDX;
     
 CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_NOM_VOIE_IDX ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(NOM_VOIE)
     TABLESPACE G_ADT_INDX;
+    
+CREATE INDEX VM_TEMP_J_VISUALISATION_SEUIL_HIERARCHIE_VOIE_ADMIN_IDX ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL(hierarchie_voie_admin)
+    TABLESPACE G_ADT_INDX;
 
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_TEMP_J_VISUALISATION_SEUIL TO G_ADMIN_SIG;
 
 /
+

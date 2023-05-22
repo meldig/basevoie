@@ -18,14 +18,14 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TEMP_J_VOIE_ADMINISTRATIVE_MATERIALISEE 
     GEOM
 )        
 REFRESH FORCE
-START WITH TO_DATE('06-04-2023 16:10:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('16-05-2023 15:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 120/24/1440
 DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(
         SELECT
             d.objectid AS id_voie_administrative,
-            TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) AS nom_voie,
+            TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
             CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END AS hierarchie,
             d.code_insee,
             f.libelle_court AS lateralite,
@@ -37,14 +37,14 @@ WITH
             INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
             INNER JOIN G_BASE_VOIE.TEMP_J_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
             INNER JOIN G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
-            RIGHT JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE e ON e.objectid = d.fid_type_voie
-            RIGHT JOIN G_BASE_VOIE.TEMP_J_LIBELLE f ON f.objectid = c.fid_lateralite
-            RIGHT JOIN G_BASE_VOIE.TEMP_J_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = d.objectid
+            LEFT JOIN G_BASE_VOIE.TEMP_J_TYPE_VOIE e ON e.objectid = d.fid_type_voie
+            LEFT JOIN G_BASE_VOIE.TEMP_J_LIBELLE f ON f.objectid = c.fid_lateralite
+            LEFT JOIN G_BASE_VOIE.TEMP_J_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = d.objectid
         GROUP BY
             d.code_insee,
             f.libelle_court,
             CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END,
-            TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)),
+            TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END,
             d.objectid
     )
     
