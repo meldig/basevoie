@@ -4,14 +4,14 @@ La table TA_TRONCON regroupe tous les tronçons de la base voie.
 
 -- 1. Création de la table TA_TRONCON
 CREATE TABLE G_BASE_VOIE.TA_TRONCON(
-    geom SDO_GEOMETRY NULL,
-    objectid NUMBER(38,0),
+    objectid NUMBER(38,0) DEFAULT SEQ_TA_TRONCON_OBJECTID.NEXTVAL,
     old_objectid NUMBER(38,0),
-    date_saisie DATE DEFAULT sysdate NULL,
+    date_saisie DATE NULL,
     date_modification DATE DEFAULT sysdate NULL,
     fid_pnom_saisie NUMBER(38,0) NULL,
     fid_pnom_modification NUMBER(38,0) NULL,
-    fid_voie_physique NUMBER(38,0) NOT NULL
+    fid_voie_physique NUMBER(38,0) NOT NULL,
+    geom SDO_GEOMETRY NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs

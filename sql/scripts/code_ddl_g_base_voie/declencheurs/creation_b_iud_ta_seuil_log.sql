@@ -1,6 +1,7 @@
 /*
 Déclencheur permettant de remplir la table de logs TA_SEUIL_LOG dans laquelle sont enregistrés chaque insertion, 
 modification et suppression des données de la table TA_SEUIL avec leur date et le pnom de l'agent les ayant effectuées.
+Il permet aussi de remplir les champs date_saisie, date_modificiation, fid_pnom_saisie et fid_pnom_modification de la table TA_SEUIL.
 */
 
 CREATE OR REPLACE TRIGGER G_BASE_VOIE.B_IUD_TA_SEUIL_LOG
@@ -45,41 +46,47 @@ BEGIN
         b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom, id_troncon)
+        :new.fid_pnom_saisie := v_id_agent;
+        :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
+        :new.fid_pnom_modification := v_id_agent;
+
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(id_seuil, geom, code_insee, date_action, fid_type_action, fid_pnom, id_troncon)
             VALUES(
                     :new.objectid, 
                     :new.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :new.geom),
-                    :new.cote_troncon,
+                    :new.code_insee,
                     sysdate,
                     v_id_insertion,
                     v_id_agent,
-                    :new.fid_troncon);
+                    :new.fid_troncon
+            );
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom, id_troncon)
+            :new.fid_pnom_modification := v_id_agent;
+
+            INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(id_seuil, geom, code_insee, date_action, fid_type_action, fid_pnom, id_troncon)
             VALUES(
                     :old.objectid,
                     :old.geom,
-                    GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom),
-                    :old.cote_troncon,
+                    :old.code_insee,
                     sysdate,
                     v_id_modification,
                     v_id_agent,
-                    :old.fid_troncon);
+                    :old.fid_troncon
+            );
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_SEUIL_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(fid_seuil, geom, code_insee, cote_troncon, date_action, fid_type_action, fid_pnom, id_troncon)
+        INSERT INTO G_BASE_VOIE.TA_SEUIL_LOG(id_seuil, geom, code_insee, date_action, fid_type_action, fid_pnom, id_troncon)
         VALUES(
                 :old.objectid,
                 :old.geom,
-                GET_CODE_INSEE_CONTAIN_POINT('TA_SEUIL', :old.geom), 
-                :old.cote_troncon,
+                :old.code_insee, 
                 sysdate,
                 v_id_suppression,
                 v_id_agent,
-                :old.fid_troncon);
+                :old.fid_troncon
+        );
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -87,3 +94,4 @@ BEGIN
 END;
 
 /
+

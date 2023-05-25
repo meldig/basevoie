@@ -12,6 +12,7 @@ DECLARE
     v_id_insertion NUMBER(38,0);
     v_id_modification NUMBER(38,0);
     v_id_suppression NUMBER(38,0);
+
 BEGIN
     -- Sélection du pnom
     SELECT sys_context('USERENV','OS_USER') into username from dual;
@@ -45,38 +46,47 @@ BEGIN
         b.valeur = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee, id_voie)
+        :new.fid_pnom_saisie := v_id_agent;
+        :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
+        :new.fid_pnom_modification := v_id_agent;
+
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(id_troncon, old_id_troncon, geom, date_action, fid_type_action, fid_pnom, id_voie_physique)
             VALUES(
                     :new.objectid,
+                    :new.old_objectid,
                     :new.geom,
                     sysdate,
                     v_id_insertion,
                     v_id_agent,
-                    :new.fid_metadonnee,
-                    :new.fid_voie);
+                    :new.fid_voie_physique
+            );
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee, id_voie)
+            :new.fid_pnom_modification := v_id_agent;
+
+            INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(id_troncon, old_id_troncon, geom, date_action, fid_type_action, fid_pnom, id_voie_physique)
             VALUES(
                     :old.objectid,
+                    :old.old_objectid,
                     :old.geom,
                     sysdate,
                     v_id_modification,
                     v_id_agent,
-                    :old.fid_metadonnee,
-                    :old.fid_voie);
+                    :old.fid_voie_physique
+            );
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(fid_troncon, geom, date_action, fid_type_action, fid_pnom, fid_metadonnee, id_voie)
+        INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(id_troncon, old_id_troncon, geom, date_action, fid_type_action, fid_pnom, id_voie_physique)
         VALUES(
                 :old.objectid,
+                :old.old_objectid,
                 :old.geom,
                 sysdate,
                 v_id_suppression,
                 v_id_agent,
-                :old.fid_metadonnee,
-                :old.fid_voie);
+                :old.fid_voie_physique
+        );
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
@@ -84,3 +94,4 @@ BEGIN
 END;
 
 /
+

@@ -1,3 +1,6 @@
+/*
+Remplissage de la structure finale
+*/
 -- Insertion des pnoms des agents
 INSERT INTO G_BASE_VOIE.TA_AGENT(numero_agent, pnom, validite)
     SELECT numero_agent, pnom, validite FROM TEMP_J_AGENT;
@@ -27,7 +30,7 @@ SELECT
     libelle_long
 FROM
     G_BASE_VOIE.TEMP_J_LIBELLE;
--- Résultat : 8 lignes fusionnées.
+-- Résultat : 11 lignes fusionnées.
 
 -- Insertion des codes RIVOLI
 MERGE INTO G_BASE_VOIE.TA_RIVOLI a
@@ -64,7 +67,7 @@ ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.old_objectid, a.geom, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_voie_physique)
     VALUES(t.objectid, t.old_objectid, t.geom, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_voie_physique);
--- Résultat : 50 625 lignes fusionnées.
+-- Résultat : 50 629 lignes fusionnées.
 
 -- Insertion des voies physiques
 MERGE INTO G_BASE_VOIE.TA_VOIE_PHYSIQUE a
@@ -77,9 +80,9 @@ MERGE INTO G_BASE_VOIE.TA_VOIE_PHYSIQUE a
         )t
 ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
-    INSERT(a.objectid)
-    VALUES(t.objectid);
--- Résultat : 22 759  lignes fusionnées.
+    INSERT(a.objectid, a.fid_action)
+    VALUES(t.objectid, t.fid_action);
+-- Résultat : 22 762  lignes fusionnées.
 
 -- Insertion des relations voies physiques / voies administratives
 MERGE INTO G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
@@ -93,9 +96,9 @@ MERGE INTO G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
     )t
 ON(a.fid_voie_administrative = t.fid_voie_administrative AND a.fid_voie_physique = t.fid_voie_physique)
 WHEN NOT MATCHED THEN
-    INSERT(a.fid_voie_administrative, a.fid_voie_physique)
-    VALUES(t.fid_voie_administrative, t.fid_voie_physique);
--- Résultat : 23 652 lignes fusionnées.
+    INSERT(a.fid_voie_administrative, a.fid_voie_physique, a.fid_lateralite)
+    VALUES(t.fid_voie_administrative, t.fid_voie_physique, t.fid_lateralite);
+-- Résultat : 23 656 lignes fusionnées.
 
 -- Insertion des voies administratives
 MERGE INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE a
@@ -119,7 +122,7 @@ ON(a.objectid = t.objectid AND a.fid_type_voie = t.fid_type_voie)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.libelle_voie, a.complement_nom_voie, a.code_insee, a.fid_type_voie, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_rivoli)
     VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_rivoli);
--- Résultat : 22 165 lignes fusionnées.
+-- Résultat : 22 168 lignes fusionnées.
 
 -- Import des relations voies principales / secondaires
 INSERT INTO G_BASE_VOIE.TA_HIERARCHISATION_VOIE(fid_voie_principale, fid_voie_secondaire)
@@ -136,22 +139,21 @@ MERGE INTO G_BASE_VOIE.TA_SEUIL a
         SELECT
             a.GEOM,
             a.OBJECTID,
-            a.COTE_TRONCON,
             a.CODE_INSEE,
             a.DATE_SAISIE,
             a.DATE_MODIFICATION,
             a.FID_PNOM_SAISIE,
             a.FID_PNOM_MODIFICATION,
             a.FID_TRONCON,
-            a.OLD_OBJECTID
+            a.FID_POSITION
         FROM
             G_BASE_VOIE.TEMP_J_SEUIL a
     )t
 ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
-    INSERT(a.geom, a.objectid, a.cote_troncon, a.code_insee, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_troncon, a.old_objectid)
-    VALUES(t.geom, t.objectid, t.cote_troncon, t.code_insee, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_troncon, t.old_objectid);
--- Résultat : 351457 lignes fusionnées.
+    INSERT(a.geom, a.objectid, a.code_insee, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_troncon, a.fid_position)
+    VALUES(t.geom, t.objectid, t.code_insee, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_troncon, t.fid_position);
+-- Résultat : 351 458 lignes fusionnées.
 
 -- Insertion des informations des seuils
 MERGE INTO G_BASE_VOIE.TA_INFOS_SEUIL a
@@ -172,7 +174,7 @@ ON(a.objectid = t.objectid)
 WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.numero_seuil, a.complement_numero_seuil, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_seuil)
     VALUES(t.objectid, t.numero_seuil, t.complement_numero_seuil, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_seuil);
--- Résultat : 351466 lignes fusionnées.
+-- Résultat : 351 467 lignes fusionnées.
 
 -----------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -185,28 +187,28 @@ SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TEMP_J_VOIE_PHYSIQUE;
--- 22759
+-- 22762
 
 -- Décompte des voies physiques dans la structure cible
 SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TA_VOIE_PHYSIQUE;
--- 22759
+-- 22762
 
 -- Sélection du nombre de tronçons valides dans l'ancienne structure
 SELECT 
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TEMP_J_TRONCON;
--- 50625
+-- 50629
 
 -- Sélection du nombre de tronçons dans TA_TRONCON
 SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TA_TRONCON;
--- 50625 tronçons
+-- 50629 tronçons
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Décompte du nombre de voies présentes dans la structure d'import
@@ -214,14 +216,14 @@ SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE;
--- Résultat : 22165 voies
+-- Résultat : 22168 voies
 
 -- Décompte du nombre de voies présentes dans la structure cible
 SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE;
--- Résultat : 22165 libellés de voies
+-- Résultat : 22168 libellés de voies
     
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Décompte du nombre de relations voies physiques/administratives présentes dans la structure d'import
@@ -229,14 +231,14 @@ SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TEMP_J_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE;
--- Résultat : 23652 relations
+-- Résultat : 23656 relations
 
 -- Décompte du nombre de voies présentes dans la structure cible
 SELECT
     COUNT(objectid)
 FROM
     G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE;
--- Résultat : 23652 relations
+-- Résultat : 23656 relations
     
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Vérification de la présence d'une action pour toutes les voies physiques

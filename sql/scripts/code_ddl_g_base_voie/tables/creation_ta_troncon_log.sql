@@ -11,7 +11,7 @@ CREATE TABLE G_BASE_VOIE.TA_TRONCON_LOG(
     date_action DATE DEFAULT sysdate,
     fid_type_action NUMBER(38,0) NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL,
-    geom SDO_GEOMETRY NOT NULL,
+    geom SDO_GEOMETRY NOT NULL
 );
 
 -- 2. Création des commentaires sur la table et les champs
@@ -45,13 +45,7 @@ VALUES(
     2154
 );
 
--- 5. Création de l'index spatial sur le champ geom
-CREATE INDEX TA_TRONCON_LOG_SIDX
-ON G_BASE_VOIE.TA_TRONCON_LOG(GEOM)
-INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
-PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
-
--- 6. Création des clés étrangères
+-- 5. Création des clés étrangères
 ALTER TABLE G_BASE_VOIE.TA_TRONCON_LOG
 ADD CONSTRAINT TA_TRONCON_LOG_FID_TYPE_ACTION_FK 
 FOREIGN KEY (fid_type_action)
@@ -62,7 +56,7 @@ ADD CONSTRAINT TA_TRONCON_LOG_FID_PNOM_FK
 FOREIGN KEY (fid_pnom)
 REFERENCES G_BASE_VOIE.TA_AGENT(numero_agent);
 
--- 7. Création des index sur les clés étrangères
+-- 6. Création des index
 CREATE INDEX TA_TRONCON_LOG_ID_TRONCON_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(id_troncon)
     TABLESPACE G_ADT_INDX;
 
@@ -77,8 +71,13 @@ CREATE INDEX TA_TRONCON_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fi
 
 CREATE INDEX TA_TRONCON_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_TRONCON_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
-    
--- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
+
+CREATE INDEX TA_TRONCON_LOG_SIDX
+ON G_BASE_VOIE.TA_TRONCON_LOG(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2
+PARAMETERS('sdo_indx_dims=2, layer_gtype=LINE, tablespace=G_ADT_INDX, work_tablespace=DATA_TEMP');
+
+-- 7. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_TRONCON_LOG TO G_ADMIN_SIG;
 
 /
