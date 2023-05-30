@@ -27,7 +27,7 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     geom
 )
 REFRESH FORCE
-START WITH TO_DATE('26-05-2023 15:10:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('26-05-2023 16:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 240/24/1440
 DISABLE QUERY REWRITE AS
 SELECT
@@ -43,7 +43,7 @@ SELECT
     TRIM(SUBSTR(UPPER(h.libelle), 1, 1) || SUBSTR(LOWER(h.libelle), 2)) AS type_voie,
     TRIM(f.libelle_voie) AS libelle_voie,
     TRIM(f.complement_nom_voie) AS complement_nom_voie,
-    TRIM(SUBSTR(UPPER(g.libelle), 1, 1) || SUBSTR(LOWER(g.libelle), 2) || ' ' || TRIM(f.libelle_voie) || ' ' || TRIM(f.complement_nom_voie)) || CASE WHEN f.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN f.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
+    TRIM(SUBSTR(UPPER(h.libelle), 1, 1) || SUBSTR(LOWER(h.libelle), 2) || ' ' || TRIM(f.libelle_voie) || ' ' || TRIM(f.complement_nom_voie)) || CASE WHEN f.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN f.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
     CASE 
         WHEN i.fid_voie_secondaire IS NOT NULL
             THEN 'Voie secondaire'

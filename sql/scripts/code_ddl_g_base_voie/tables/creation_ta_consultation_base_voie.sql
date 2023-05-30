@@ -1,5 +1,5 @@
 /*
-Création de la table TA_CONSULTATION_BASE_VOIE regroupant tous les tronçons de la base voie.
+La table TA_CONSULTATION_BASE_VOIE regroupe tous les tronçons de la base voie avec leurs voie physiques et administratives.
 */
 /*
 DROP TABLE TA_CONSULTATION_BASE_VOIE CASCADE CONSTRAINTS;

@@ -47,6 +47,7 @@ copy /b %chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
 %chemin_code_table%\creation_ta_relation_voie_physique_administrative_log.sql + ^
 %chemin_code_table%\creation_ta_seuil_log.sql + ^
 %chemin_code_table%\creation_ta_infos_seuil_log.sql + ^
+%chemin_code_table%\creation_ta_consultation_base_voie.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_infos_seuil_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_relation_voie_physique_administrative_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql + ^
