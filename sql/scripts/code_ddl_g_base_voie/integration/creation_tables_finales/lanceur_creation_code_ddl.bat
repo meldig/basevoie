@@ -9,11 +9,23 @@ SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant
 SET /p chemin_code_trigger="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des DECLENCHEURS du schema : "
 SET /p chemin_code_sequence="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des SEQUENCES du schema : "
 ::SET /p chemin_code_fonction="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des FONCTIONS du schema : "
-::SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du schema : "
-::SET /p chemin_code_vue_materialisees="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES MATERIALISEES du schema : "
-SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration\correction_base_voie\creation_structures_transitoires : "
+SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration\creation_tables_finales : "
+
+
+:: 3. Compilation des fichiers
+::%chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_contain_point.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_contain_line.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_pourcentage.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_within_distance.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_troncon.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_97_communes_contain_line.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_97_communes_pourcentage.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_97_communes_within_distance.sql + ^
+%chemin_code_fonction%\creation_get_code_insee_97_communes_troncon.sql + ^::
 
 copy /b %chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
+%chemin_code_sequence%\creation_seq_ta_voie_physique_objectid.sql + ^
 %chemin_code_table%\creation_ta_agent.sql + ^
 %chemin_code_table%\creation_ta_famille.sql + ^
 %chemin_code_table%\creation_ta_famille_libelle.sql + ^
@@ -34,15 +46,23 @@ copy /b %chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
 %chemin_code_table%\creation_ta_voie_administrative_log.sql + ^
 %chemin_code_table%\creation_ta_relation_voie_physique_administrative.sql + ^
 %chemin_code_table%\creation_ta_hierarchisation_log.sql + ^
-%chemin_code_trigger%\creation_b_iux_ta_troncon_date_pnom.sql + ^
+%chemin_code_trigger%\creation_a_ixx_ta_seuil.sql + ^
+%chemin_code_trigger%\creation_a_ixx_ta_voie_administrative.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_infos_seuil_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_relation_voie_physique_administrative_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_seuil_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_troncon_log + ^
+%chemin_code_trigger%\creation_b_iud_ta_voie_administrative_log.sql + ^
+%chemin_code_trigger%\creation_b_iud_ta_voie_physique_log.sql + ^
+%chemin_code_temp%\creation_droits_lecture_edition.sql + ^
 %chemin_code_temp%\desactivation_contraintes_index_tables.sql ^
-%chemin_code_temp%\temp_code_ddl_schema_final.sql
+%chemin_code_temp%\temp_code_ddl_schema.sql
 
-:: 3. lancement de SQL plus.
+:: 4. lancement de SQL plus.
 ::CD C:/ora12c/R1/BIN
 
-:: 4. Execution de sqlplus. pour lancer les requetes SQL.
+:: 5. Execution de sqlplus. pour lancer les requetes SQL.
 ::sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_temp%\temp_code_ddl_schema_transitoire_projet_j.sql
 
-:: 5. MISE EN PAUSE
+:: 6. MISE EN PAUSE
 PAUSE

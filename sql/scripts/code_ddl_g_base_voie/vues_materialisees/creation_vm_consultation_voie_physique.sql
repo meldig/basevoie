@@ -13,7 +13,7 @@ CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_CONSULTATION_VOIE_PHYSIQUE" (
     GEOM
 )        
 REFRESH FORCE
-START WITH TO_DATE('26-05-2023 10:30:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 1440/24/1440
 DISABLE QUERY REWRITE AS
 SELECT
@@ -30,7 +30,7 @@ WHERE
     c.libelle_court = 'à conserver'
 GROUP BY
     b.objectid,
-    'sens conservé'
+    'sens conservé'-- sens de saisie conservé
 UNION ALL
 SELECT
     b.objectid AS id_voie_physique,

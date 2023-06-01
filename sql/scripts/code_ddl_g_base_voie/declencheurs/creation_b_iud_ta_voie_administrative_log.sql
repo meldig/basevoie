@@ -24,33 +24,39 @@ BEGIN
     SELECT
         a.objectid INTO v_id_insertion
     FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE
-        b.valeur = 'insertion';
+        a.libelle_court = 'insertion';
 
     SELECT
         a.objectid INTO v_id_modification
     FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE
-        b.valeur = 'édition';
+        a.libelle_court = 'édition';
 
     SELECT
         a.objectid INTO v_id_suppression
     FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE
-        b.valeur = 'suppression';
+        a.libelle_court = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_ADMINISTRATIVE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         :new.fid_pnom_saisie := v_id_agent;
         :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
         :new.fid_pnom_modification := v_id_agent;
 
-        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, id_rivoli, date_action, fid_type_action, fid_pnom)
+        -- Création d'une nouvelle voie physique
+        INSERT INTO G_BASE_VOIE.TA_VOIE_PHYSIQUE(fid_action)
+           SELECT
+                objectid
+            FROM
+                G_BASE_VOIE.TA_LIBELLE
+            WHERE
+                libelle_court = 'à déterminer';
+
+        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
                     :new.genre_voie,
@@ -59,7 +65,6 @@ BEGIN
                     :new.code_insee,
                     :new.commentaire,
                     :new.fid_type_voie,
-                    :new.fid_rivoli,
                     sysdate,
                     v_id_insertion,
                     v_id_agent
@@ -68,7 +73,7 @@ BEGIN
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_VOIE_ADMINISTRATIVE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
             :new.fid_pnom_modification := v_id_agent;
 
-            INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, id_rivoli, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid,
                     :old.genre_voie,
@@ -77,15 +82,14 @@ BEGIN
                     :old.code_insee,
                     :old.commentaire,
                     :old.fid_type_voie,
-                    :old.fid_rivoli,
                     sysdate,
-                    v_id_insertion,
+                    v_id_modification,
                     v_id_agent
             );
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_VOIE_ADMINISTRATIVE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, id_rivoli, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid,
                     :old.genre_voie,
@@ -94,9 +98,8 @@ BEGIN
                     :old.code_insee,
                     :old.commentaire,
                     :old.fid_type_voie,
-                    :old.fid_rivoli,
                     sysdate,
-                    v_id_insertion,
+                    v_id_suppression,
                     v_id_agent
             );
     END IF;

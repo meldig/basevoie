@@ -17,6 +17,7 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     code_insee,
     nom_commune,
     lateralite,
+    position,
     type_voie,
     libelle_voie,
     complement_nom_voie,
@@ -27,7 +28,7 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     geom
 )
 REFRESH FORCE
-START WITH TO_DATE('26-05-2023 16:00:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 240/24/1440
 DISABLE QUERY REWRITE AS
 SELECT
@@ -40,6 +41,7 @@ SELECT
     b.code_insee,
     j.nom AS nom_commune,
     g.libelle_court AS lateralite,
+    k.libelle_court AS position,
     TRIM(SUBSTR(UPPER(h.libelle), 1, 1) || SUBSTR(LOWER(h.libelle), 2)) AS type_voie,
     TRIM(f.libelle_voie) AS libelle_voie,
     TRIM(f.complement_nom_voie) AS complement_nom_voie,
@@ -60,7 +62,8 @@ FROM
     INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE d ON d.objectid = c.fid_voie_physique
     INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid
     INNER JOIN G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE f ON f.objectid = e.fid_voie_administrative AND f.code_insee = b.code_insee
-    LEFT JOIN G_BASE_VOIE.TA_LIBELLE g ON g.objectid = e.fid_lateralite
+    LEFT JOIN G_BASE_VOIE.TA_LIBELLE g ON g.objectid = b.fid_lateralite
+    LEFT JOIN G_BASE_VOIE.TA_LIBELLE k ON k.objectid = b.fid_position
     INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE h ON h.objectid = f.fid_type_voie
     LEFT JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE i ON i.fid_voie_secondaire = f.objectid
     INNER JOIN G_REFERENTIEL.MEL_COMMUNE_LLH j ON j.code_insee = b.code_insee;
@@ -76,6 +79,7 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.complement_numero IS 'Compl�
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.code_insee IS 'Code INSEE du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.nom_commune IS 'Nom de la commune du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.lateralite IS 'Latéralité du seuil par rapport au tronçon (droite/gauche).';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.position IS 'Position de l''adresse : au seuil, à la boîte postale, au début de la rue, etc.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.type_voie IS 'Type de voie administrative';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.libelle_voie IS 'Libellé de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.complement_nom_voie IS 'Complément de nom de la voie administrative.';
@@ -128,6 +132,12 @@ CREATE INDEX VM_CONSULTATION_SEUIL_CODE_INSEE_IDX ON G_BASE_VOIE.VM_CONSULTATION
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX VM_CONSULTATION_SEUIL_NOM_COMMUNE_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(NOM_COMMUNE)
+    TABLESPACE G_ADT_INDX;
+    
+CREATE INDEX VM_CONSULTATION_SEUIL_LATERALITE_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(lateralite)
+    TABLESPACE G_ADT_INDX;
+    
+CREATE INDEX VM_CONSULTATION_SEUIL_POSITION_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(position)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX VM_CONSULTATION_SEUIL_ID_TRONCON_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(ID_TRONCON)

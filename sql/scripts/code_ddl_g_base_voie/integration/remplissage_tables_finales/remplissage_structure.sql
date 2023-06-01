@@ -32,6 +32,27 @@ FROM
     G_BASE_VOIE.TEMP_J_LIBELLE;
 -- Résultat : 11 lignes fusionnées.
 
+-- Insertion des types d'action pour les tables de log
+INSERT INTO G_BASE_VOIE.TA_LIBELLE(libelle_court, libelle_long)
+SELECT
+    'insertion' AS libelle_court,
+    'Type d''action' AS libelle_long
+FROM
+    DUAL
+UNION ALL
+SELECT
+    'suppression' AS libelle_court,
+    'Type d''action' AS libelle_long
+FROM
+    DUAL
+UNION ALL
+SELECT
+    'édition' AS libelle_court,
+    'Type d''action' AS libelle_long
+FROM
+    DUAL;
+-- Résultat : 3 lignes insérées.
+
 -- Insertion des codes RIVOLI
 MERGE INTO G_BASE_VOIE.TA_RIVOLI a
     USING(

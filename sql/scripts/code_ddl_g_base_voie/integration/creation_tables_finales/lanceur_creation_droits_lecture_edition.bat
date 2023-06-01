@@ -14,7 +14,7 @@ SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 CD C:/ora12c/R1/BIN
 
 :: 4. Execution de sqlplus. pour lancer les requetes SQL.
-sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_droits_lecture_ecriture%\creation_droits_lecture_base_voie.sql
+sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_droits_lecture_ecriture%\creation_droits_lecture_edition.sql
 
 :: 5. MISE EN PAUSE
 PAUSE

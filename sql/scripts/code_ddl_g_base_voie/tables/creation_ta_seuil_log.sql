@@ -8,6 +8,8 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL_LOG(
     id_seuil NUMBER(38,0),
     code_insee VARCHAR2(5),
     id_troncon NUMBER(38,0),
+    id_position NUMBER(38,0)
+    id_lateralite NUMBER(38,0)
     date_action DATE DEFAULT sysdate,
     fid_type_action NUMBER(38,0) NOT NULL,
     fid_pnom NUMBER(38,0) NOT NULL,
@@ -20,6 +22,8 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.objectid IS 'Clé primaire auto-incr�
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.id_seuil IS 'Identifiant du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.code_insee IS 'Code INSEE du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.id_troncon IS 'Identifiant du tronçon affecté au seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.id_position IS 'identifiant de la table G_BASE_VOIE.TA_LIBELLE permettant d''affecter une position à un seuil. Cette position désigne le lieu physique de l''adresse (seuil, boîte postale, portail, entrée de rue, etc).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.id_lateralite IS 'identifiant de la table G_BASE_VOIE.TA_LIBELLE permettant d''affecter une latéralité à un seuil. Cette latéralité est déterminée par rapport au sens géométrique du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.date_action IS 'Date de création, modification ou suppression d''un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_type_action IS 'Clé étrangère vers la table TA_LIBELLE permettant de savoir quelle action a été effectuée sur le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL_LOG.fid_pnom IS 'Clé étrangère vers la table TA_AGENT permettant d''associer le pnom d''un agent au seuil qu''il a créé, modifié ou supprimé.';
@@ -64,17 +68,23 @@ PARAMETERS('sdo_indx_dims=2, layer_gtype=POINT, tablespace=G_ADT_INDX, work_tabl
 
 CREATE INDEX TA_SEUIL_LOG_ID_SEUIL_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(id_seuil)
     TABLESPACE G_ADT_INDX;
-    
-CREATE INDEX TA_SEUIL_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_type_action)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX TA_SEUIL_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_pnom)
-    TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_LOG_CODE_INSEE_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(code_insee)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX TA_SEUIL_LOG_ID_TRONCON_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(id_troncon)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_SEUIL_LOG_ID_POSITION_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(id_position)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_SEUIL_LOG_ID_LATERALITE_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(id_lateralite)
+    TABLESPACE G_ADT_INDX;
+    
+CREATE INDEX TA_SEUIL_LOG_FID_TYPE_ACTION_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_type_action)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX TA_SEUIL_LOG_FID_PNOM_IDX ON G_BASE_VOIE.TA_SEUIL_LOG(fid_pnom)
     TABLESPACE G_ADT_INDX;
 
 -- 7. Affectation du droit de sélection sur les objets de la table aux administrateurs

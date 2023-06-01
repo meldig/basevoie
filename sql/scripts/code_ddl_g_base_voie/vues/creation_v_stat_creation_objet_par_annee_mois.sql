@@ -6,45 +6,74 @@ DROP VIEW G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS;
 */
 
 -- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS" ("OBJECTID", "TYPE_OBJET", "ANNEE", "MOIS", "NOMBRE", 
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS" (
+    OBJECTID,
+    TYPE_OBJET, 
+    ANNEE, 
+    MOIS, 
+    NOMBRE, 
     CONSTRAINT "V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
 WITH
     C_1 AS(
         SELECT
             'Seuils' AS type_objet,
-            EXTRACT(year from date_saisie) AS annee,
-            EXTRACT(month from date_saisie) AS mois,
-            COUNT(objectid) AS nombre
+            EXTRACT(year from a.date_action) AS annee,
+            EXTRACT(month from a.date_action) AS mois,
+            COUNT(a.objectid) AS nombre
         FROM
-            G_BASE_VOIE.TA_INFOS_SEUIL
+            G_BASE_VOIE.TA_INFOS_SEUIL_LOG a
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON b.objectid = a.fid_type_action
+        WHERE
+            b.libelle_court = 'insertion'           
         GROUP BY
             'Seuils',
-            EXTRACT(year from date_saisie),
-            EXTRACT(month from date_saisie)
+            EXTRACT(year from a.date_action),
+            EXTRACT(month from a.date_action)
         UNION ALL
         SELECT
             'Tronçons' AS type_objet,
-            EXTRACT(year from date_saisie) AS annee,
-            EXTRACT(month from date_saisie) AS mois,
-            COUNT(objectid) AS nombre
+            EXTRACT(year from a.date_action) AS annee,
+            EXTRACT(month from a.date_action) AS mois,
+            COUNT(a.objectid) AS nombre
         FROM
-            G_BASE_VOIE.TA_TRONCON
+            G_BASE_VOIE.TA_TRONCON_LOG a
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON b.objectid = a.fid_type_action
+        WHERE
+            b.libelle_court = 'insertion'
         GROUP BY
             'Tronçons',
-            EXTRACT(year from date_saisie),
-            EXTRACT(month from date_saisie)
+            EXTRACT(year from a.date_action),
+            EXTRACT(month from a.date_action)
+        UNION ALL
+        SELECT
+            'Voies physiques' AS type_objet,
+            EXTRACT(year from a.date_action) AS annee,
+            EXTRACT(month from a.date_action) AS mois,
+            COUNT(a.objectid) AS nombre
+        FROM
+            G_BASE_VOIE.TA_VOIE_PHYSIQUE_LOG a
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON b.objectid = a.fid_type_action
+        WHERE
+            b.libelle_court = 'insertion'
+        GROUP BY
+            'Voies physiques',
+            EXTRACT(year from a.date_action),
+            EXTRACT(month from a.date_action)
         UNION ALL
         SELECT
             'Voies administratives' AS type_objet,
-            EXTRACT(year from date_saisie) AS annee,
-            EXTRACT(month from date_saisie) AS mois,
-            COUNT(objectid) AS nombre
+            EXTRACT(year from a.date_action) AS annee,
+            EXTRACT(month from a.date_action) AS mois,
+            COUNT(a.objectid) AS nombre
         FROM
-            G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE
+            G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG a
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE b ON b.objectid = a.fid_type_action
+        WHERE
+            b.libelle_court = 'insertion'
         GROUP BY
             'Voies administratives',
-            EXTRACT(year from date_saisie),
-            EXTRACT(month from date_saisie)
+            EXTRACT(year from a.date_action),
+            EXTRACT(month from a.date_action)
     )
 
     SELECT
@@ -57,7 +86,7 @@ WITH
         C_1;
 
 -- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS IS 'Vue dénombrant tous les objets de la base voie et de la base adresse par année et mois de création. Cette vue fonctionne directement sur les tables de production, à terme il faudra les adapter aux tables de log.';
+COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS IS 'Vue dénombrant tous les objets de la base voie et de la base adresse par année et mois de création. Cette vue fonctionne à partir des tables de log.';
 COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.objectid IS 'Clé primaire de la vue.';
 COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.type_objet IS 'Type d''objets de la base voie et de la base adresse.';
 COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.annee IS 'Année de création.';

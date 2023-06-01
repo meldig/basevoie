@@ -24,26 +24,23 @@ BEGIN
     SELECT
         a.objectid INTO v_id_insertion
     FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE
-        b.valeur = 'insertion';
+        a.libelle_court = 'insertion';
 
     SELECT
         a.objectid INTO v_id_modification
     FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE
-        b.valeur = 'édition';
+        a.libelle_court = 'édition';
 
     SELECT
         a.objectid INTO v_id_suppression
     FROM
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE
-        b.valeur = 'suppression';
+        a.libelle_court = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_VOIE_PHYSIQUE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         INSERT INTO G_BASE_VOIE.TA_VOIE_PHYSIQUE_LOG(id_voie_physique, id_action, date_action, fid_type_action, fid_pnom)
@@ -61,7 +58,7 @@ BEGIN
                     :old.objectid, 
                     :old.fid_action,
                     sysdate,
-                    v_id_insertion,
+                    v_id_modification,
                     v_id_agent
             );
         END IF;
@@ -72,7 +69,7 @@ BEGIN
                     :old.objectid, 
                     :old.fid_action,
                     sysdate,
-                    v_id_insertion,
+                    v_id_suppression,
                     v_id_agent
             );
     END IF;

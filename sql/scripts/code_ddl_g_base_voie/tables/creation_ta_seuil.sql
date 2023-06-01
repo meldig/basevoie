@@ -15,6 +15,7 @@ CREATE TABLE G_BASE_VOIE.TA_SEUIL(
     fid_pnom_modification NUMBER(38,0) NOT NULL,
     fid_troncon NUMBER(38,0),
     fid_position NUMBER(38,0),
+    fid_lateralite NUMBER(38,0),
     geom SDO_GEOMETRY
 );
 
@@ -28,6 +29,7 @@ COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_saisie IS 'Clé étrangère vers
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_pnom_modification IS 'Clé étrangère vers la table TA_AGENT permettant de récupérer le pnom de l''agent ayant modifié un seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_troncon IS 'Identifiant du tronçon de la table TA_TRONCON associé au seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_position IS 'Clé étrangère vers la table TA_LIBELLE permettant d''indiquer la position de l''adresse (seuil, boîte postale, portail, etc).';
+COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.fid_lateralite IS 'Clé étrangère vers la table G_BASE_VOIE.TA_LIBELLE permettant d''affecter une latéralité à un seuil. Cette latéralité est déterminée par rapport au sens géométrique du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.TA_SEUIL.geom IS 'Géométrie de type point de chaque seuil présent dans la table.';
 
 -- 3. Création de la clé primaire
@@ -77,6 +79,10 @@ ADD CONSTRAINT TA_SEUIL_FID_POSITION_FK
 FOREIGN KEY (fid_position)
 REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
 
+ALTER TABLE G_BASE_VOIE.TA_SEUIL
+ADD CONSTRAINT TA_SEUIL_FID_LATERALITE_FK FOREIGN KEY(fid_lateralite)
+REFERENCES G_BASE_VOIE.TA_LIBELLE(objectid);
+
 -- 7. Création des index sur les clés étrangères et autres
 CREATE INDEX TA_SEUIL_FID_PNOM_SAISIE_IDX ON G_BASE_VOIE.TA_SEUIL(fid_pnom_saisie)
     TABLESPACE G_ADT_INDX;
@@ -93,6 +99,9 @@ CREATE INDEX TA_SEUIL_CODE_INSEE_IDX ON G_BASE_VOIE.TA_SEUIL(code_insee)
 CREATE INDEX TA_SEUIL_FID_POSITION_IDX ON G_BASE_VOIE.TA_SEUIL(fid_position)
     TABLESPACE G_ADT_INDX;
 
+CREATE INDEX TA_SEUIL_FID_LATERALITE_IDX ON G_BASE_VOIE.TA_SEUIL(fid_lateralite)
+    TABLESPACE G_ADT_INDX;
+    
 -- 8. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.TA_SEUIL TO G_ADMIN_SIG;
 

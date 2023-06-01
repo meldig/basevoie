@@ -1,13 +1,13 @@
 /*
-Création de la vue V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE dénombrant tous les objets de la base voie et de la base adresse.
+Création de la vue V_STAT_NOMBRE_OBJET dénombrant tous les objets de la base voie et de la base adresse.
 */
 /*
-DROP VIEW G_BASE_VOIE.V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE;
+DROP VIEW G_BASE_VOIE.V_STAT_NOMBRE_OBJET;
 */
 
 -- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE" ("OBJECTID", "TYPE_OBJET", "NOMBRE", 
-    CONSTRAINT "V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_NOMBRE_OBJET" ("OBJECTID", "TYPE_OBJET", "NOMBRE", 
+    CONSTRAINT "V_STAT_NOMBRE_OBJET_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
     WITH
         C_1 AS(-- Sélection des voies physiques composées d'un seul tronçon
             SELECT
@@ -174,13 +174,13 @@ CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESS
             C_5;
 
 -- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE IS 'Vue dénombrant tous les objets de la base voie et de la base adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE.objectid IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE.type_objet IS 'Type d''objets de la base voie et de la base adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE.nombre IS 'Nombre d''objets par type.';
+COMMENT ON TABLE G_BASE_VOIE.V_STAT_NOMBRE_OBJET IS 'Vue dénombrant tous les objets de la base voie et de la base adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET.objectid IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET.type_objet IS 'Type d''objets de la base voie et de la base adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET.nombre IS 'Nombre d''objets par type.';
 
 -- 3. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.V_STAT_NOMBRE_OBJET_BASE_VOIE_ADRESSE TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.V_STAT_NOMBRE_OBJET TO G_ADMIN_SIG;
 
 /
 

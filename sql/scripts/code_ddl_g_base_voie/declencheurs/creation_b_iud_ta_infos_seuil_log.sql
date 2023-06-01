@@ -24,26 +24,23 @@ BEGIN
     SELECT 
         a.objectid INTO v_id_insertion 
     FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE 
-        b.valeur = 'insertion';
+        a.libelle_court = 'insertion';
 
     SELECT 
         a.objectid INTO v_id_modification 
     FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE 
-        b.valeur = 'édition';
+        a.libelle_court = 'édition';
             
     SELECT 
         a.objectid INTO v_id_suppression 
     FROM 
-        G_GEO.TA_LIBELLE a
-        INNER JOIN G_GEO.TA_LIBELLE_LONG b ON b.objectid = a.fid_libelle_long 
+        G_BASE_VOIE.TA_LIBELLE a
     WHERE 
-        b.valeur = 'suppression';
+        a.libelle_court = 'suppression';
 
     IF INSERTING THEN -- En cas d'insertion on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de insertion et le type de modification.
         :new.fid_pnom_saisie := v_id_agent;
