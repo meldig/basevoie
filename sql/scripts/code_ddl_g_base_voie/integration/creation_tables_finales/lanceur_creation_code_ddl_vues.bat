@@ -11,6 +11,7 @@ SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integratio
 
 :: 3. Compilation des fichiers
 copy /b %chemin_code_vue_materialisees%\creation_vm_consultation_seuil.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_consultation_base_voie.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_voie_administrative.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_voie_physique.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_audit_distance_seuil_troncon_1km.sql + ^
