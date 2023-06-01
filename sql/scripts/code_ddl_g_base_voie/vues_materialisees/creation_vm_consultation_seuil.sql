@@ -25,10 +25,11 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     hierarchie_voie_admin,
     date_saisie,
     date_modification,
+    id_geom,
     geom
 )
 REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('02-06-2023 18:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 240/24/1440
 DISABLE QUERY REWRITE AS
 SELECT
@@ -54,6 +55,7 @@ SELECT
     END AS hierarchie_voie_admin,
     a.date_saisie,
     a.date_modification,
+    b.objectid AS id_geom,
     b.geom
 FROM
     G_BASE_VOIE.TA_INFOS_SEUIL a
@@ -87,6 +89,7 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.nom_voie IS 'Nom de la voie 
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.hierarchie_voie_admin IS 'Hiérarchie de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.date_saisie IS 'Date de saisie du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.date_modification IS 'Date de la dernière modification du seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_geom IS 'Identifiants des géométries des seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.geom IS 'Géométrie de type point des seuils.';
 
 -- 3. Création des métadonnées spatiales
@@ -170,6 +173,9 @@ CREATE INDEX VM_CONSULTATION_SEUIL_DATE_MODIFICATION_IDX ON G_BASE_VOIE.VM_CONSU
 CREATE INDEX VM_CONSULTATION_SEUIL_HIERARCHIE_VOIE_ADMIN_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(HIERARCHIE_VOIE_ADMIN)
     TABLESPACE G_ADT_INDX;
 
+CREATE INDEX VM_CONSULTATION_SEUIL_ID_GEOM_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(ID_GEOM)
+    TABLESPACE G_ADT_INDX;
+    
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_SEUIL TO G_ADMIN_SIG;
 
