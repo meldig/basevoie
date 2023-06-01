@@ -57,12 +57,12 @@ WITH
             d.code_insee,
             SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
         FROM
-            G_BASE_VOIE.TEMP_I_TRONCON a
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
-            INNER JOIN G_BASE_VOIE.TEMP_I_TYPE_VOIE e ON e.objectid = d.fid_type_voie
-            INNER JOIN G_BASE_VOIE.TEMP_I_HIERARCHISATION_VOIE f ON f.fid_voie_secondaire = d.objectid
+            G_BASE_VOIE.TA_TRONCON a
+            INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
+            INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
+            INNER JOIN G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
+            INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_type_voie
+            INNER JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE f ON f.fid_voie_secondaire = d.objectid
         GROUP BY
             d.objectid,
             e.libelle,
@@ -87,13 +87,13 @@ SELECT -- Sélection et matérialisation des voies principales
     CAST(d.code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
     SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
 FROM
-    G_BASE_VOIE.TEMP_I_TRONCON a
-    INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-    INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-    INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
-    INNER JOIN G_BASE_VOIE.TEMP_I_TYPE_VOIE e ON e.objectid = d.fid_type_voie
+    G_BASE_VOIE.TA_TRONCON a
+    INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
+    INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
+    INNER JOIN G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
+    INNER JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_type_voie
 WHERE
-    d.objectid NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TEMP_H_HIERARCHISATION_VOIE)
+    d.objectid NOT IN(SELECT fid_voie_secondaire FROM G_BASE_VOIE.TA_HIERARCHISATION_VOIE)
 GROUP BY
     d.objectid,
     CAST(d.objectid AS VARCHAR2(254 BYTE)),
@@ -173,9 +173,9 @@ WITH
             C_4 a
             INNER JOIN SIREO_LEC.OUT_DOMANIALITE b ON b.cnumtrc = a.cnumtrc
             INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT c ON c.domanialite = b.domania
-            INNER JOIN G_BASE_VOIE.TEMP_I_TRONCON f ON f.old_objectid = a.cnumtrc
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE d ON d.fid_voie_physique = f.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_LIBELLE e ON e.objectid = d.fid_lateralite
+            INNER JOIN G_BASE_VOIE.TA_TRONCON f ON f.old_objectid = a.cnumtrc
+            INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE d ON d.fid_voie_physique = f.fid_voie_physique
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE e ON e.objectid = d.fid_lateralite
         UNION ALL
         SELECT
             b.objectid,
@@ -186,9 +186,9 @@ WITH
             d.fid_lateralite
         FROM
             C_3 a
-            INNER JOIN G_BASE_VOIE.TEMP_I_TRONCON b ON a.cnumtrc = b.old_objectid
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE d ON d.fid_voie_physique = b.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_LIBELLE e ON e.objectid = d.fid_lateralite
+            INNER JOIN G_BASE_VOIE.TA_TRONCON b ON a.cnumtrc = b.old_objectid
+            INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE d ON d.fid_voie_physique = b.fid_voie_physique
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE e ON e.objectid = d.fid_lateralite
         UNION ALL
         SELECT -- Sélection des tronçons n'ayant pas de domanialité - dans ce cas le classement est 'VC'
             b.objectid,
@@ -198,9 +198,9 @@ WITH
             d.fid_voie_administrative,
             d.fid_lateralite
         FROM
-            G_BASE_VOIE.TEMP_I_TRONCON b
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE d ON d.fid_voie_physique = b.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_LIBELLE e ON e.objectid = d.fid_lateralite
+            G_BASE_VOIE.TA_TRONCON b
+            INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE d ON d.fid_voie_physique = b.fid_voie_physique
+            INNER JOIN G_BASE_VOIE.TA_LIBELLE e ON e.objectid = d.fid_lateralite
         WHERE
             b.old_objectid NOT IN(SELECT cnumtrc FROM SIREO_LEC.OUT_DOMANIALITE)
     ),
@@ -239,7 +239,7 @@ WITH
         c.nom_voie AS nom_voie_gauche
     FROM
         C_6 a
-        INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON b ON b.objectid = a.objectid
+        INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.objectid
         INNER JOIN C_6 c ON c.objectid = b.objectid
     WHERE
         a.lateralite IN('Droit', 'LesDeuxCotes')
@@ -329,14 +329,14 @@ WITH
                     'LesDeuxCotes' 
             END AS COTE
         FROM
-            G_BASE_VOIE.TEMP_H_SEUIL a
-            INNER JOIN G_BASE_VOIE.TEMP_H_INFOS_SEUIL b ON b.fid_seuil = a.objectid
+            G_BASE_VOIE.TA_SEUIL a
+            INNER JOIN G_BASE_VOIE.TA_INFOS_SEUIL b ON b.fid_seuil = a.objectid
             INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON g ON g.objectid = a.fid_troncon
-            INNER JOIN G_BASE_VOIE.TEMP_H_TRONCON c ON c.objectid = g.objectid
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_PHYSIQUE d ON d.objectid = c.fid_voie_physique
-            INNER JOIN G_BASE_VOIE.TEMP_I_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid
+            INNER JOIN G_BASE_VOIE.TA_TRONCON c ON c.objectid = g.objectid
+            INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE d ON d.objectid = c.fid_voie_physique
+            INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE e ON e.fid_voie_physique = d.objectid
             INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE h ON h.objectid = e.fid_voie_administrative AND h.code_insee = a.code_insee
-            INNER JOIN G_BASE_VOIE.TEMP_I_VOIE_ADMINISTRATIVE f ON f.objectid = h.objectid
+            INNER JOIN G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE f ON f.objectid = h.objectid
         WHERE
             -- Cette condition est nécessaire car le numéro 97T est en doublon (doublon aussi dans la BdTopo). Ce numéro est affecté à deux parcelles.
             a.objectid <> 241295
@@ -355,7 +355,7 @@ WITH
         a.ID_VOIE
     FROM
         C_1 a
-        INNER JOIN G_BASE_VOIE.TEMP_H_SEUIL b ON b.objectid = a.id_seuil;
+        INNER JOIN G_BASE_VOIE.TA_SEUIL b ON b.objectid = a.id_seuil;
 -- Résultat : 351 158 lignes insérées - Temps  449,635 sec
 
 -- Insertion des secteurs de la DEPV dans G_BASE_VOIE.TA_TAMPON_LITTERALIS_SECTEUR
