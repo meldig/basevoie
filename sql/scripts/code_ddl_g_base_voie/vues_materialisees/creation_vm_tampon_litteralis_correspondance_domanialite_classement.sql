@@ -1,5 +1,5 @@
 /*
-Création de la vue matérialisée VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT - de la structure tampon du projet LITTERALIS - faisant le lien entre les domanialités de la DEPV et les classements du format LITTERALIS.
+Création de la vue matérialisée VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT - de la structure tampon du projet LITTERALIS - faisant le lien entre les domanialités de la DEPV et les classements du format LITTERALIS. Mise à jour le dernier dimanche du mois à 08h00.
 */
 -- Suppression de la VM
 /*
@@ -11,9 +11,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIA
     domanialite, 
     classement
 )        
-REFRESH FORCE
-START WITH TO_DATE('01-06-2023 19:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(
@@ -44,7 +43,7 @@ WITH
         C_1 a;
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - faisant le lien entre les domanialités de la DEPV et les classements du format LITTERALIS.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - faisant le lien entre les domanialités de la DEPV et les classements du format LITTERALIS. Mise à jour le dernier dimanche du mois à 08h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT.domanialite IS 'Domanialités présentes dans la table SIREO_LEC.OUT_DOMANIALITE associant un tronçon et son/ses sous-tronçon(s) à une domanialité au format MEL.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT.classement IS 'Classement du tronçon au format LITTERALIS.';

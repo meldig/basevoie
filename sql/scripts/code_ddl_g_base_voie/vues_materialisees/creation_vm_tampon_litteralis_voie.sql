@@ -2,7 +2,8 @@
 Création de la vue matérialisée VM_TAMPON_LITTERALIS_VOIE - de la structure tampon du projet LITTERALIS - regroupant toutes les données par voies administratives (dont leur géométrie) et latéralité nécessaires à l''export LITTERALIS.
 */
 -- Suppression de la VM
-
+/*
+DROP INDEX VM_TAMPON_LITTERALIS_VOIE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TAMPON_LITTERALIS_VOIE';
 COMMIT;
@@ -16,9 +17,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE (
     code_insee, 
     cote_voie
 )        
-REFRESH FORCE
-START WITH TO_DATE('01-06-2023 20:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(
@@ -85,7 +85,7 @@ WITH
         C_1 a;
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON TABLE G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - regroupant toutes les données par voies administratives (dont leur géométrie) et latéralité nécessaires à l''export LITTERALIS.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - regroupant toutes les données par voies administratives (dont leur géométrie) et latéralité nécessaires à l''export LITTERALIS.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE.geometry IS 'Géométrie de type multiligne des voies administratives.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE.code_voie IS 'Identifiant des voies administratives au format LITTERALIS.';

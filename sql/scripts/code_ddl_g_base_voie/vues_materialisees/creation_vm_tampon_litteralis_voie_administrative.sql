@@ -1,8 +1,9 @@
 /*
-Création de la vue matérialisée VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE - de la structure tampon du projet LITTERALIS - regroupant toutes les données des voies administratives (sauf leur latéralité) et matérialisant leur tracé.
+Création de la vue matérialisée VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE - de la structure tampon du projet LITTERALIS - regroupant toutes les données des voies administratives (sauf leur latéralité) et matérialisant leur tracé. Mise à jour le dernier dimanche du mois à 08h00.
 */
 -- Suppression de la VM
 /*
+DROP INDEX VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE';
 COMMIT;
@@ -15,9 +16,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE (
     nom_voie, 
     code_insee
 )        
-REFRESH FORCE
-START WITH TO_DATE('01-06-2023 19:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(-- Sélection et matérialisation des voies secondaires
@@ -81,7 +81,7 @@ GROUP BY
     END;
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - regroupant toutes les données des voies administratives (sauf leur latéralité) et matérialisant leur tracé.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - regroupant toutes les données des voies administratives (sauf leur latéralité) et matérialisant leur tracé. Mise à jour le dernier dimanche du mois à 08h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE.geometry IS 'Géométrie de type multiligne des voies administratives.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE.objectid IS 'Clé primaire de la VM correspondant aux identifiants des voies administratives de TA_VOIE_ADMINISTRATIVE.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE.code_voie IS 'Identifiant des voies administratives au format LITTERALIS.';

@@ -3,6 +3,7 @@ Création de la vue matérialisée VM_TAMPON_LITTERALIS_TRONCON - de la structur
 */
 -- Suppression de la VM
 /*
+DROP INDEX VM_TAMPON_LITTERALIS_TRONCON_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TAMPON_LITTERALIS_TRONCON';
 COMMIT;
@@ -20,9 +21,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON (
     nom_voie_droite, 
     nom_voie_gauche
 )        
-REFRESH FORCE
-START WITH TO_DATE('01-06-2023 19:30:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(-- Sélection des tronçons composés de plusieurs sous-tronçons de domanialités différentes
