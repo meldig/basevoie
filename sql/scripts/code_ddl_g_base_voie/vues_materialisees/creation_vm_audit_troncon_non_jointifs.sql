@@ -3,18 +3,18 @@ Création de la vue matérialisée VM_AUDIT_TRONCON_NON_JOINTIFS identifiant les
 */
 -- Suppression de la VM
 /*
+DROP INDEX VM_AUDIT_TRONCON_NON_JOINTIFS_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_TRONCON_NON_JOINTIFS';
 */
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS (
     OBJECTID,
     GEOM
 )        
-REFRESH FORCE
-START WITH TO_DATE('23-05-2023 06:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 6/24
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
-
 WITH
     C_1 AS(
         SELECT
@@ -62,7 +62,7 @@ WITH
         INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.objectid;
         
 -- 2. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS IS 'Vue matérialisée identifiant les tronçons distants de 5cm non-jointifs.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS IS 'Vue matérialisée identifiant les tronçons distants de 5cm non-jointifs. Mise à jour tous les samedis à 12h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS.objectid IS 'Identifiants des tronçons correspondant à la clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS.geom IS 'Géométrie des tronçons.';
 

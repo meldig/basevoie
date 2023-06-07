@@ -2,6 +2,7 @@
 Création de la vue matérialisée VM_CONSULTATION_BASE_VOIE contenant les tronçons, voies physiques et voies administratives de la base voie. Mise à jour quotidienne à 21h00
 */
 /*
+DROP INDEX VM_CONSULTATION_BASE_VOIE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_BASE_VOIE';
 COMMIT;
@@ -24,9 +25,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(
     commentaire,
     geom
 )
-REFRESH FORCE
-START WITH TO_DATE('01-06-2023 21:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 SELECT
     rownum AS objectid,
@@ -56,7 +56,7 @@ FROM
     LEFT JOIN G_BASE_VOIE.TA_LIBELLE i ON i.objectid = b.fid_action;
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE IS 'Vue matérialisée contenant les tronçons, voies physiques et voies administratives de la base voie. Mise à jour quotidienne à 21h00.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE IS 'Vue matérialisée contenant les tronçons, voies physiques et voies administratives de la base voie. Mise à jour du lundi au vendredi à 19h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_troncon IS 'Identifiant du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_physique IS 'Identifiant de la voie physique.';

@@ -1,7 +1,8 @@
 /*
-Création de la vue matérialisée VM_CONSULTATION_SEUIL regroupant les seuils de la MEL et leur tronçon.
+Création de la vue matérialisée VM_CONSULTATION_SEUIL regroupant les seuils de la MEL et leur tronçon. Mise à jour du lundi au samedi à 05h00.
 */
 /*
+DROP INDEX VM_CONSULTATION_SEUIL_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_SEUIL';
 COMMIT;
@@ -28,9 +29,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     id_geom,
     geom
 )
-REFRESH FORCE
-START WITH TO_DATE('02-06-2023 18:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 240/24/1440
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 SELECT
     a.objectid AS id_seuil,
@@ -71,7 +71,7 @@ FROM
     INNER JOIN G_REFERENTIEL.MEL_COMMUNE_LLH j ON j.code_insee = b.code_insee;
 
 -- 2. Création des commentaires de table et de colonnes
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative. Mise à jour du lundi au samedi à 05h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_seuil IS 'Clé primaire de la VM correspondant aux identifiants de chaque seuil (TA_INFOS_SEUIL).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_troncon IS 'Identifiant du tronçon auquel est rattaché le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_voie_physique IS 'Identifiant de la voie physique à laquelle est rattaché le seuil.';

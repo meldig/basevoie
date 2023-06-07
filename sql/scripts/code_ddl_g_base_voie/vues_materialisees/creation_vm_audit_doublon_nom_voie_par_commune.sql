@@ -2,6 +2,7 @@
 Création de la vue matérialisée VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE dénombrant les voies en doublon de nom par commune.
 */
 /*
+DROP INDEX VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE';
 COMMIT;
@@ -15,9 +16,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE(
     nombre, 
     geom
 )
-REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 240/24/1440
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
     WITH 
         C_1 AS( -- Sélection du centroïde des voies admin disposant d'un nom de voie 
@@ -75,7 +75,7 @@ DISABLE QUERY REWRITE AS
             C_3 a;
 
 -- 2. Création des commentaires
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE IS 'Vue matérialisée dénombrant les voies en doublon de nom par commune.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE IS 'Vue matérialisée dénombrant les voies en doublon de nom par commune. Mise à jour tous les samedis à 21h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE.nom_voie IS 'Nom de voie (Type de voie + libelle de voie + complément nom de voie + commune associée).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE.code_insee IS 'Code INSEE de la commune d''appartenance de la voie.';
