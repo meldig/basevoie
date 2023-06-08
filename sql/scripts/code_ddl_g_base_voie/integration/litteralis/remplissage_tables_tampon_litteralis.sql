@@ -662,7 +662,7 @@ INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(type_zone, id_voi
     WITH
         C_1 AS(
             SELECT DISTINCT-- Sélection des voies entièrement incluses dans les zones d''agglomération
-                'Agglomération' AS type_zone,
+                'Agglomeration' AS type_zone,
                 a.id_voie,
                 a.code_voie,
                 a.cote_voie,
@@ -692,7 +692,7 @@ INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(type_zone, id_voi
 INSERT INTO G_BASE_VOIE.TA_TAMPON_LITTERALIS_ZONE_PARTICULIERE(type_zone, id_voie, code_voie, cote_voie, code_insee, categorie, geometry)
     WITH C_1 AS( -- Pour toutes les voies intersectant les zones d'agglomération, on sélectionne uniquement la partie située à l''intérieur des zones
         SELECT
-            'Agglomération' AS type_zone,
+            'Agglomeration' AS type_zone,
             a.id_voie,
             a.code_voie,
             a.cote_voie,
