@@ -1,12 +1,20 @@
 /*
-Création de la vue V_TAMPON_LITTERALIS_AUDIT_ADRESSE - de la structure tampon du projet LITTERALIS - vérifiant la présence d''erreur dans la table TA_TAMPON_LITTERALIS_ADRESSE. Les erreurs vérifiées sont celles qui ont été remontées dans les rapports d''erreurs.
+Création de la vue V_LITTERALIS_AUDIT_ADRESSE - de la structure tampon du projet LITTERALIS - vérifiant la présence d''erreur dans la table VM_TAMPON_LITTERALIS_ADRESSE. Les erreurs vérifiées sont celles qui ont été remontées dans les rapports d''erreurs.
 */
 /*
-DROP VIEW G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE;
+DROP VIEW G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE;
 */
 -- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_TAMPON_LITTERALIS_AUDIT_ADRESSE" ("OBJECTID", "THEMATIQUE", "ID_ADRESSE", "CODE_VOIE", "NATURE", "NUMERO", "REPETITION", "DISTANCE", 
-    CONSTRAINT "V_TAMPON_LITTERALIS_AUDIT_ADRESSE_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_AUDIT_ADRESSE" (
+    OBJECTID, 
+    THEMATIQUE, 
+    ID_ADRESSE, 
+    CODE_VOIE, 
+    NATURE, 
+    NUMERO, 
+    REPETITION, 
+    DISTANCE, 
+    CONSTRAINT "V_LITTERALIS_AUDIT_ADRESSE_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS
 WITH
     C_1 AS(-- Sélection des doublons de code_voie, nature, numero, repetition
         SELECT
@@ -15,7 +23,7 @@ WITH
             numero,
             repetition
         FROM
-           G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE
+           G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE
         GROUP BY
             code_voie,
             nature,
@@ -41,7 +49,7 @@ WITH
             0 AS distance
         FROM
             C_1 a
-            INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE b ON b.code_voie = a.code_voie AND b.nature = a.nature AND b.numero = a.numero
+            INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE b ON b.code_voie = a.code_voie AND b.nature = a.nature AND b.numero = a.numero
     ),
     
     C_3 AS(-- Sélection des adresses situées à 1km ou plus de leur voie
@@ -61,11 +69,11 @@ WITH
                 )
             ), 2) AS distance
         FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE a
-            INNER JOIN G_BASE_VOIE.TA_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE b ON b.objectid = a.fid_voie,
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE a
+            INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE b ON b.objectid = a.fid_voie,
             USER_SDO_GEOM_METADATA m
         WHERE
-            m.TABLE_NAME = 'TA_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE'
+            m.TABLE_NAME = 'VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE'
             AND ROUND(SDO_GEOM.SDO_DISTANCE(
                 a.geometry,
                 SDO_LRS.PROJECT_PT(
@@ -86,7 +94,7 @@ WITH
             repetition,
             0 AS distance
         FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE
         WHERE
             numero IS NULL
     ),
@@ -95,12 +103,12 @@ WITH
         SELECT
             id_voie_gauche AS code_voie
         FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON
         UNION ALL
         SELECT
             id_voie_droite AS code_voie
         FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON
     ),
 
     C_6 AS(-- Sélection des voies associées aux adresses absentes de la table des tronçons
@@ -113,7 +121,7 @@ WITH
             repetition,
             0 AS distance
         FROM
-            G_BASE_VOIE.TA_TAMPON_LITTERALIS_ADRESSE
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE
         WHERE
             code_voie NOT IN(SELECT DISTINCT code_voie FROM C_5)
     ),
@@ -182,18 +190,18 @@ WITH
         repetition;
         
 -- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE IS 'Vue d''audit - de la structure tampon du projet LITTERALIS - vérifiant la présence d''erreur dans la table TA_TAMPON_LITTERALIS_ADRESSE. Les erreurs vérifiées sont celles qui ont été remontées dans les rapports d''erreurs.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.OBJECTID IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.THEMATIQUE IS 'Thème de l''erreur identifiée.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.ID_ADRESSE IS 'Identifiant des adresses (présents dans TA_INFOS_SEUIL).';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.CODE_VOIE IS 'Identifiant de la voie associée à l''adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.NATURE IS 'Nature de l''adresse';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.NUMERO IS 'Numéro de l''adresse';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.REPETITION IS 'Complément de numéro de l''adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE.DISTANCE IS 'Valeur en erreur.';
+COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE IS 'Vue d''audit - de la structure tampon du projet LITTERALIS - vérifiant la présence d''erreur dans la table VM_TAMPON_LITTERALIS_ADRESSE. Les erreurs vérifiées sont celles qui ont été remontées dans les rapports d''erreurs.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.OBJECTID IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.THEMATIQUE IS 'Thème de l''erreur identifiée.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.ID_ADRESSE IS 'Identifiant des adresses (présents dans TA_INFOS_SEUIL).';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.CODE_VOIE IS 'Identifiant de la voie associée à l''adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.NATURE IS 'Nature de l''adresse';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.NUMERO IS 'Numéro de l''adresse';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.REPETITION IS 'Complément de numéro de l''adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE.DISTANCE IS 'Valeur en erreur.';
 
 -- 3. Création des droits de lecture
-GRANT SELECT ON G_BASE_VOIE.V_TAMPON_LITTERALIS_AUDIT_ADRESSE TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_AUDIT_ADRESSE TO G_ADMIN_SIG;
 
 /
 
