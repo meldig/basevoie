@@ -19,7 +19,7 @@ CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_TRONCON" ("IDENTIFIANT"
         a.id_voie_droite AS code_rue_d,
         a.nom_voie_droite AS nom_rue_d,
         a.code_insee_voie_droite AS insee_d,
-        CAST('' AS NUMBER(8,0)) AS largeur, 
+        CAST('' AS NUMBER(8,0)) AS largeur,
         a.geometry
     FROM
         G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON a;

@@ -18,41 +18,41 @@ CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_ZONE_PARTICULIERE" (
    CONSTRAINT "V_LITTERALIS_ZONE_PARTICULIERE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS 
     WITH C_1 AS(
         SELECT
-            type_zone,
-            code_voie,
-            cote_voie,
-            code_insee,
-            categorie,
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
             geometry
         FROM
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_EN_AGGLO
         UNION ALL
         SELECT
-            type_zone,
-            code_voie,
-            cote_voie,
-            code_insee,
-            categorie,
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
             geometry
         FROM
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO
         UNION ALL
         SELECT
-            type_zone,
-            code_voie,
-            cote_voie,
-            code_insee,
-            categorie,
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
             geometry
         FROM
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_HORS_AGGLO
         UNION ALL
         SELECT
-            type_zone,
-            code_voie,
-            cote_voie,
-            code_insee,
-            categorie,
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
             geometry
         FROM
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_HORS_AGGLO
