@@ -4,21 +4,24 @@
 
 Ces modifications ont été réalisées pour cette application utilisée par la DEPV et n’ont pas pu être reversées dans la base de production :
 
-- [x] Suppression des seuils intersectant les tronçons ;
-- [x] Suppression des seuils en doublon dont la distance par rapport à leur tronçon est la plus grande au sein des doublons ;
-- [x] Suppression des seuils situés à 1km ou plus de leur tronçon d’affectation ;
-- [x] Suppression des relations tronçons/seuils invalides dues à la suppression des seuils ci-dessus ;
-- [x] Suppression des voies physiques en doublons de géométrie : on ne garde que celles ayant l’identifiant minimum au sein des doublons ;
-- [x] Identification des voies secondaires auxquelles on a affecté le même nom de voie que leur voie principale d’affectation ;
-- [x] Correction des noms de voies situées dans les communes de Lomme et Lille-Hellemmes en mettant le nom de la commune associée entre parenthèses en suffixe du nom afin d’éviter d’avoir deux rues du Général de Gaulle situées à Lille, mais localisées à deux endroits différents ;
-- [x] Suppression des relations de tronçons invalides à certaines voies valides et inversement ;
-- [x] Mise à jour du code INSEE des tronçons situés en dehors des limites de la MEL (celui de la commune la plus proche lui est affecté) ;
-- [x] Suppression des voies de type ruisseau, rivière, canal, car absents de la table G_SIDU.TYPEVOIE dû à un changement de méthode de saisie non finalisé ;
-- [x] Suppression des types de voies dont libellé est null ;
-- [x] Quand un tronçon est affecté à plusieurs voies, on créée un identifiant de tronçon virtuel pour celui dont l’identifiant est le plus grand au sein des doublons ;
-- [x] Pour les tronçons disposant de plusieurs domanialités, on priorise la domanialité qui n’est pas dans la liste suivante : 'VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS' ;
-- [x] Pour les doublons de seuils géométriques on n’en garde qu’un seul dans la table des géométries des seuils, que l’on associe à deux numéros de seuils dans une autre table ;
-- [x] Exclusion des tronçons sans domanialité quand c’est le cas (fait en concertation avec le service Voirie) ;
+- [x] 1. Suppression des seuils intersectant les tronçons ;
+- [x] 2. Suppression des seuils en doublon dont la distance par rapport à leur tronçon est la plus grande au sein des doublons ;
+- [x] 3. Suppression des seuils situés à 1km ou plus de leur tronçon d’affectation ;
+- [x] 4. Suppression des relations tronçons/seuils invalides dues à la suppression des seuils ci-dessus ;
+- [x] 5. Suppression des voies physiques en doublons de géométrie : on ne garde que celles ayant l’identifiant minimum au sein des doublons ;
+- [x] 6. Identification des voies secondaires auxquelles on a affecté le même nom de voie que leur voie principale d’affectation ;
+- [x] 7. Correction des noms de voies situées dans les communes de Lomme et Lille-Hellemmes en mettant le nom de la commune associée entre parenthèses en suffixe du nom afin d’éviter d’avoir deux rues du Général de Gaulle situées à Lille, mais localisées à deux endroits différents ;
+- [x] 8. Suppression des relations de tronçons invalides à certaines voies valides et inversement ;
+- [x] 9. Mise à jour du code INSEE des tronçons situés en dehors des limites de la MEL (celui de la commune la plus proche lui est affecté) ;
+- [x] 10. Suppression des voies de type ruisseau, rivière, canal, car absents de la table G_SIDU.TYPEVOIE dû à un changement de méthode de saisie non finalisé ;
+- [x] 11. Suppression des types de voies dont libellé est null ;
+- [x] 12. Quand un tronçon est affecté à plusieurs voies, on créée un identifiant de tronçon virtuel pour celui dont l’identifiant est le plus grand au sein des doublons ;
+- [x] 13. Pour les tronçons disposant de plusieurs domanialités, on priorise la domanialité qui n’est pas dans la liste suivante : 'VOIE PRIVEE ENTRETENUE PAR LA CUDL','VOIE PRIVEE FERMEE','VOIE PRIVEE OUVERTE','AUTRE VOIE PRIVEE','DECLASSEMENT EN COURS' ;
+- [x] 14. Pour les doublons de seuils géométriques on n’en garde qu’un seul dans la table des géométries des seuils, que l’on associe à deux numéros de seuils dans une autre table ;
+- [x] 15. Exclusion des tronçons sans domanialité quand c’est le cas (fait en concertation avec le service Voirie) ;
+- [x] 16. Création d'une structure regroupant et traitant les données spécifiquement pour le projet LITTERALIS ;
+- [x] 17. Création d'une structure mettant les données au format d'export LITTERALIS ;
+- [x] 18. Création d'une structure d'audit des données intégrant une vérification des erreurs remontées par Sogelink ;
 
 ## Pour la Base Voie/Adresse
 
@@ -46,19 +49,23 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 20. Correction des voies secondaires affectées à deux voies principales (12 voies) ;
 - [x] 21. Correction des doublons de numéro, complément et voie de certains seuils ;
 - [x] 22. Correction des doublons de numéros de seuil par voie administrative ;
-
-### Corrections en cours :
 - [x] 23. Correction des relations seuils / tronçons suite aux corrections topologiques ;
 - [x] 24. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (erreurs notées durant l’étape 22, notre base ne gérant pas actuellement les lieux-dits certains seuils n’étaient jamais corrects) ;
+- [x] 25. Homogénéisation des latéralités par voie administrative en limite de commune (étape 2) ;
+- [x] 26. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
+- [x] 27. Création de vues de consultation ;
+- [x] 28. Création de vues d'audit ;
+- [x] 29. Création de vues d'analyse statistique ;
+
+### Corrections en cours :
+
 
 ### Corrections prévues :
-- [ ] 25. Homogénéisation des latéralités par voie administrative en limite de commune (étape 2) ;
-- [ ] 26. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
-- [ ] 27. Correction des voies en doubles filaires à l’intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 28. Correction des voies administratives ne s’arrêtant pas aux limites de communes, car leur tronçon d’affectation n’a pas été découpé à la limite de commune ;
-- [ ] 29. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
-- [ ] 30. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l’entrée principale du bâtiment) ;
-- [ ] 31. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
-- [ ] 32. Étude visant à déterminer comment gérer la multimodalité ;
-- [ ] 33. Étude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
-- [ ] 34. Mise en place d’une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie
+- [ ] 30. Correction des voies en doubles filaires à l’intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 31. Correction des voies administratives ne s’arrêtant pas aux limites de communes, car leur tronçon d’affectation n’a pas été découpé à la limite de commune ;
+- [ ] 32. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
+- [ ] 33. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l’entrée principale du bâtiment) ;
+- [ ] 34. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
+- [ ] 35. Étude visant à déterminer comment gérer la multimodalité ;
+- [ ] 36. Étude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
+- [ ] 37. Mise en place d’une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie
