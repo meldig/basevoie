@@ -53,16 +53,19 @@ Ces modifications ont été réalisées pour cette application utilisée par la 
 - [x] 24. Correction des seuils affectés à des voies dont le nom se compose uniquement du type de voie (erreurs notées durant l’étape 22, notre base ne gérant pas actuellement les lieux-dits certains seuils n’étaient jamais corrects) ;
 - [x] 25. Homogénéisation des latéralités par voie administrative en limite de commune (étape 2) ;
 - [x] 26. Correction des seuils dont le code INSEE diffère de leur voie (intéressant surtout en limites de communes) ;
+- [x] 27. Création de vues de consultation ;
+- [x] 28. Création de vues d'audit ;
+- [x] 29. Création de vues d'analyse statistique ;
 
 ### Corrections en cours :
 
 
 ### Corrections prévues :
-- [ ] 27. Correction des voies en doubles filaires à l’intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
-- [ ] 28. Correction des voies administratives ne s’arrêtant pas aux limites de communes, car leur tronçon d’affectation n’a pas été découpé à la limite de commune ;
-- [ ] 29. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
-- [ ] 30. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l’entrée principale du bâtiment) ;
-- [ ] 31. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
-- [ ] 32. Étude visant à déterminer comment gérer la multimodalité ;
-- [ ] 33. Étude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
-- [ ] 34. Mise en place d’une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie
+- [ ] 30. Correction des voies en doubles filaires à l’intérieur des communes pour des voies de type AVENUE et BOULEVARD ;
+- [ ] 31. Correction des voies administratives ne s’arrêtant pas aux limites de communes, car leur tronçon d’affectation n’a pas été découpé à la limite de commune ;
+- [ ] 32. Modifier la structure pour lui permettre de prendre en compte les lieux-dits ;
+- [ ] 33. Mettre en place une méthode de saisie des seuils (par exemple basée sur les levés des géomètres faits au niveau de l’entrée principale du bâtiment) ;
+- [ ] 34. Voir comment gérer les seuils correspondant aux logements en cours de création (les traiter avec les dossiers des géomètres par exemple ?) ;
+- [ ] 35. Étude visant à déterminer comment gérer la multimodalité ;
+- [ ] 36. Étude visant à déterminer les responsabilités de chaque service concernant la Base Voie, pour que les services arrêtent de faire certains travaux en doublons ;
+- [ ] 37. Mise en place d’une méthode de travail concertée et transversale entre les différents acteurs et services de la Base Voie
