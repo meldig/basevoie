@@ -54,6 +54,7 @@ copy /b %chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_troncon_log + ^
 %chemin_code_trigger%\creation_b_iud_ta_voie_administrative_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_voie_physique_log.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_voie_supra_communale_date_pnom.sql + ^
 %chemin_code_temp%\creation_droits_lecture_edition.sql + ^
 %chemin_code_temp%\desactivation_contraintes_index_tables.sql ^
 %chemin_code_temp%\temp_code_ddl_schema.sql

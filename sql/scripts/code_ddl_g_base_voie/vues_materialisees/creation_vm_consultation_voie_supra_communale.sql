@@ -17,16 +17,25 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE (
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
-    SELECT
-        rownum AS objectid,
-        a.nom
-        SDO_AGGR_UNION(SDOAGGRTYPE(b.geom, 0.005)) AS geom
-    FROM 
-        G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE a 
-        INNER JOIN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE b ON b.id_voie_administrative = a.fid_voie_administrative
-        INNER JOIN G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE c ON c.objectid = a.fid_voie_supra_communale
-    GROUP BY
-        a.fid_voie_supra_communale;
+    WITH
+        C_1 AS(
+            SELECT
+                c.nom,
+                SDO_AGGR_UNION(SDOAGGRTYPE(b.geom, 0.005)) AS geom
+            FROM 
+                G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE a 
+                INNER JOIN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE b ON b.id_voie_administrative = a.fid_voie_administrative
+                INNER JOIN G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE c ON c.objectid = a.fid_voie_supra_communale
+            GROUP BY
+                c.nom
+        )
+        
+        SELECT
+            rownum AS objectid,
+            a.nom,
+            a.geom
+        FROM
+            C_1 a;
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE IS 'Vue matérialisée contenant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie. Mise à jour du lundi au vendredi à 22h00.';

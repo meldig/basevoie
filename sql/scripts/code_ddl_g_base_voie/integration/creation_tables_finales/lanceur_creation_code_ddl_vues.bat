@@ -14,6 +14,8 @@ copy /b %chemin_code_vue_materialisees%\creation_vm_consultation_seuil.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_base_voie.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_voie_administrative.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_voie_physique.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_consultation_troncon_voie_supra_communale.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_consultation_voie_supra_communale.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_audit_distance_seuil_troncon_1km.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_audit_doublon_nom_voie_par_commune.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_audit_doublon_numero_seuil_par_voie_administrative.sql + ^
