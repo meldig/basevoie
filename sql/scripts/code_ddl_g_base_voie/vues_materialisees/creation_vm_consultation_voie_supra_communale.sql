@@ -11,25 +11,28 @@ COMMIT;
 -- 2. Création de la VM
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE (
     OBJECTID,
+    NOM,
     GEOM
 )        
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
     SELECT
-        a.fid_voie_supra_communale,
+        rownum AS objectid,
+        a.nom
         SDO_AGGR_UNION(SDOAGGRTYPE(b.geom, 0.005)) AS geom
     FROM 
         G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE a 
         INNER JOIN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE b ON b.id_voie_administrative = a.fid_voie_administrative
+        INNER JOIN G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE c ON c.objectid = a.fid_voie_supra_communale
     GROUP BY
         a.fid_voie_supra_communale;
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE IS 'Vue matérialisée contenant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie. Mise à jour du lundi au vendredi à 22h00.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.objectid IS 'Clé primaire de la VM correspondant aux identifiants des voies supra-communales présents dans SIREO_LEC.EXRD_IDSUPVOIE.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.objectid IS 'Clé primaire de la VM.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.nom IS 'Nom de la voie supra-communale : s''il s''agit d''une ex RD, alors l''idsupvoi de la table SIREO_LEC.EXRD_IDSUPVOIE est utilisé, s''il s''agit d''une voie supra-communale absente de la table SIREO_LEC.EXRD_IDSUPVOIE au moment de l''import alors l''idvoi de SIREO_LEC.OUT_DOMANIALITE est utilisé. Pour toute nouvelle voie supra-communale, le nom correspond à l''identifiant de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.geom IS 'Géométrie des voies supra-communales de type multiligne.';
-
 
 -- 4. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
@@ -61,6 +64,9 @@ PARAMETERS(
   tablespace=G_ADT_INDX, 
   work_tablespace=DATA_TEMP'
 );
+
+CREATE INDEX VM_CONSULTATION_VOIE_SUPRA_COMMUNALE_NOM_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE(nom)
+    TABLESPACE G_ADT_INDX;
 
 -- 7. Affectations des droits
 GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE TO G_ADMIN_SIG;
