@@ -29,8 +29,9 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     id_geom,
     geom
 )
-REFRESH ON DEMAND
-FORCE
+REFRESH FORCE
+START WITH TO_DATE('21-07-2023 04:00:00', 'dd-mm-yyyy hh24:mi:ss')
+NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
 SELECT
     a.objectid AS id_seuil,
@@ -71,7 +72,7 @@ FROM
     INNER JOIN G_REFERENTIEL.MEL_COMMUNE_LLH j ON j.code_insee = b.code_insee;
 
 -- 2. Création des commentaires de table et de colonnes
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative. Mise à jour du lundi au samedi à 05h00.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative. Mise à jour quotidienne à 04h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_seuil IS 'Clé primaire de la VM correspondant aux identifiants de chaque seuil (TA_INFOS_SEUIL).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_troncon IS 'Identifiant du tronçon auquel est rattaché le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_voie_physique IS 'Identifiant de la voie physique à laquelle est rattaché le seuil.';
@@ -178,6 +179,7 @@ CREATE INDEX VM_CONSULTATION_SEUIL_ID_GEOM_IDX ON G_BASE_VOIE.VM_CONSULTATION_SE
     
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_SEUIL TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_SEUIL TO G_BASE_VOIE_R;
 
 /
 

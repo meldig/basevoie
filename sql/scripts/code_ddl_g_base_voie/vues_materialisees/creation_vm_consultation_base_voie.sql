@@ -13,20 +13,22 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(
     id_troncon,
     id_voie_physique,
     id_voie_administrative,
+    id_voie_supra_communale,
     code_insee,
     nom_commune,
-    action_sens,
-    type_voie,
-    libelle_voie,
-    complement_nom_voie,
-    nom_voie,
-    lateralite,
-    hierarchie,
+    type_voie_administrative,
+    nom_voie_administrative,
+    libelle_voie_administrative,
+    complement_nom_voie_administrative,
+    nom_voie_supra_communale,
+    lateralite_voie_administrative,
+    hierarchie_voie_administrative,
+    action_sens_voie_physique,
     commentaire,
     geom
 )
 REFRESH FORCE
-START WITH TO_DATE('08-06-2023 19:00:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('21-07-2023 02:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
 SELECT
@@ -34,15 +36,17 @@ SELECT
     a.objectid AS id_troncon,
     b.objectid AS id_voie_physique,
     d.objectid AS id_voie_administrative,
+    j.fid_voie_supra_communale AS id_voie_supra_communale,
     d.code_insee,
     h.nom AS nom_commune,
-    i.libelle_court AS action_sens,
-    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2)) AS type_voie,
-    TRIM(d.libelle_voie) AS libelle_voie,
-    TRIM(d.complement_nom_voie) AS complement_nom_voie,
-    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
-    f.libelle_court AS lateralite,
-    CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END AS hierarchie,
+    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2)) AS type_voie_administrative,
+    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie_administrative,
+    TRIM(d.libelle_voie) AS libelle_voie_administrative,
+    TRIM(d.complement_nom_voie) AS complement_nom_voie_administrative,
+    k.nom AS nom_voie_supra_communale,
+    f.libelle_court AS lateralite_voie_administrative,
+    CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END AS hierarchie_voie_administrative,
+    i.libelle_court AS action_sens_voie_physique,
     d.commentaire,
     a.geom
 FROM
@@ -54,23 +58,27 @@ FROM
     LEFT JOIN G_BASE_VOIE.TA_LIBELLE f ON f.objectid = c.fid_lateralite
     LEFT JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = d.objectid
     INNER JOIN G_REFERENTIEL.MEL_COMMUNE_LLH h ON h.code_insee = d.code_insee
-    LEFT JOIN G_BASE_VOIE.TA_LIBELLE i ON i.objectid = b.fid_action;
+    LEFT JOIN G_BASE_VOIE.TA_LIBELLE i ON i.objectid = b.fid_action
+    LEFT JOIN G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE j ON j.fid_voie_administrative = d.objectid
+    LEFT JOIN G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE k ON k.objectid = j.fid_voie_supra_communale;
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE IS 'Vue matérialisée contenant les tronçons, voies physiques et voies administratives de la base voie. Mise à jour du lundi au vendredi à 19h00.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE IS 'Vue matérialisée contenant les tronçons, voies physiques, voies administratives et voies supra-communales de la base voie. Mise à jour quotidienne à 02h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_troncon IS 'Identifiant du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_physique IS 'Identifiant de la voie physique.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.action_sens IS 'Action sur le sens de la voie physique.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_administrative IS 'Identifiant de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_supra_communale IS 'Identifiant de la voie supra-communale. Si un tronçon est associé à une voie administrative elle-même associée à une voie supra-communale, alors l''identifiant de cette dernière est récupéré, sinon la valeur est NULL.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.code_insee IS 'Code INSEE de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_commune IS 'Nom de la commune d''appartenance de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.type_voie IS 'Type de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.libelle_voie IS 'Libelle de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.complement_nom_voie IS 'Complément de nom de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_voie IS 'Nom de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.hierarchie IS 'Hiérarchie de la voie administrative : principale ou secondaire.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.lateralite IS 'Latéralité de la voie administrative par rapport à sa voie physique.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.type_voie_administrative IS 'Type de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_voie_administrative IS 'Nom de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.libelle_voie_administrative IS 'Libelle de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.complement_nom_voie_administrative IS 'Complément de nom de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_voie_supra_communale IS 'Nom de la voie supra-communale. Si un tronçon est associé à une voie administrative elle-même associée à une voie supra-communale, alors le nom de cette dernière est récupéré, sinon la valeur est NULL.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.lateralite_voie_administrative IS 'Latéralité de la voie administrative par rapport à sa voie physique.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.hierarchie_voie_administrative IS 'Hiérarchie de la voie administrative : principale ou secondaire.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.action_sens_voie_physique IS 'Action effectuée sur la géométrie des voies physiques dans la VM_CONSULTATION_VOIE_PHYSIQUE.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.commentaire IS 'Commentaire de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.geom IS 'Géométrie du tronçon de type ligne simple.';
 
@@ -107,10 +115,10 @@ CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_TRONCON_IDX ON G_BASE_VOIE.VM_CONSULTA
 CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_physique)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_ACTION_SENS_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(action_sens)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_administrative)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_SUPRA_COMMUNALE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_supra_communale)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX VM_CONSULTATION_BASE_VOIE_CODE_INSEE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(code_insee)
@@ -119,26 +127,33 @@ CREATE INDEX VM_CONSULTATION_BASE_VOIE_CODE_INSEE_IDX ON G_BASE_VOIE.VM_CONSULTA
 CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_COMMUNE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_commune)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_TYPE_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(type_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_TYPE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(type_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(libelle_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_COMPLEMENT_NOM_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(complement_nom_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_LIBELLE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(libelle_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_COMPLEMENT_NOM_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(complement_nom_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_HIERARCHIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(hierarchie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_VOIE_SUPRA_COMMUNALE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_voie_supra_communale)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_LATERALITE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(lateralite)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_LATERALITE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(lateralite_voie_administrative)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_HIERARCHIE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(hierarchie_voie_administrative)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_ACTION_SENS_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(action_sens_voie_physique)
     TABLESPACE G_ADT_INDX;
 
 -- 7. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE TO G_BASE_VOIE_R;
 
 /
 
