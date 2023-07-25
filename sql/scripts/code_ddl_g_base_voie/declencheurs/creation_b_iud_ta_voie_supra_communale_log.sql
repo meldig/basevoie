@@ -50,9 +50,10 @@ BEGIN
         :new.fid_pnom_modification := v_id_agent;
         :new.nom := TO_CHAR(:new.objectid);
 
-        INSERT INTO G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE_LOG(id_voie_supra_communale, nom, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE_LOG(id_voie_supra_communale, id_sireo, nom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
+                    :new.id_sireo,
                     :new.nom,
                     sysdate,
                     v_id_insertion,
@@ -60,9 +61,10 @@ BEGIN
             );
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_VOIE_SUPRA_COMMUNALE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
-            INSERT INTO G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE_LOG(id_voie_supra_communale, nom, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE_LOG(id_voie_supra_communale, id_sireo, nom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
+                    :old.id_sireo,
                     :old.nom,
                     sysdate,
                     v_id_modification,
@@ -71,9 +73,10 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_VOIE_SUPRA_COMMUNALE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE_LOG(id_voie_supra_communale, nom, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE_LOG(id_voie_supra_communale, id_sireo, nom, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
+                    :old.id_sireo,
                     :old.nom,
                     sysdate,
                     v_id_suppression,

@@ -26,6 +26,7 @@ SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integratio
 
 copy /b %chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
 %chemin_code_sequence%\creation_seq_ta_voie_physique_objectid.sql + ^
+%chemin_code_sequence%\creation_seq_ta_voie_supra_communale_objectid.sql + ^
 %chemin_code_table%\creation_ta_agent.sql + ^
 %chemin_code_table%\creation_ta_famille.sql + ^
 %chemin_code_table%\creation_ta_famille_libelle.sql + ^
