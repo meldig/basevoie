@@ -20,11 +20,10 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE (
     NOM_VOIE,
     LATERALITE,
     HIERARCHIE,
-    NBR_VOIE_PHYSIQUE,
     GEOM
 )        
 REFRESH FORCE
-START WITH TO_DATE('20-07-2023 21:00:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('23-08-2023 21:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
     WITH 
@@ -39,9 +38,11 @@ DISABLE QUERY REWRITE AS
                 TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
                 f.libelle_court AS lateralite,
                 CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'voie principale' ELSE 'voie secondaire' END AS hierarchie,
-                COUNT(c.fid_voie_physique) AS nbr_voie_physique
+                SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
             FROM
-                G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c
+                G_BASE_VOIE.TA_TRONCON a
+                INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
+                INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
                 INNER JOIN G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
                 LEFT JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_type_voie
                 LEFT JOIN G_BASE_VOIE.TA_LIBELLE f ON f.objectid = c.fid_lateralite
@@ -57,37 +58,6 @@ DISABLE QUERY REWRITE AS
                 TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END,
                 f.libelle_court,
                 CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'voie principale' ELSE 'voie secondaire' END
-        ),
-
-        C_2 AS(
-            SELECT
-                d.id_voie_administrative,
-                d.code_insee,
-                d.nom_commune,
-                d.type_voie,
-                d.libelle_voie,
-                d.complement_nom_voie,
-                d.nom_voie,
-                d.lateralite,
-                d.hierarchie,
-                d.nbr_voie_physique,
-                SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-            FROM
-                G_BASE_VOIE.TA_TRONCON a
-                INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-                INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-                INNER JOIN C_1 d ON d.id_voie_administrative = c.fid_voie_administrative
-            GROUP BY
-                d.id_voie_administrative,
-                d.code_insee,
-                d.nom_commune,
-                d.type_voie,
-                d.libelle_voie,
-                d.complement_nom_voie,
-                d.nom_voie,
-                d.lateralite,
-                d.hierarchie,
-                d.nbr_voie_physique
         )
 
         SELECT
@@ -101,10 +71,9 @@ DISABLE QUERY REWRITE AS
             a.nom_voie,
             a.lateralite,
             a.hierarchie,
-            a.nbr_voie_physique,
             a.geom
         FROM
-            C_2 a;
+            C_1 a;
 
 -- 3. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE IS 'Vue matérialisée contenant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie. Mise à jour quotidienne à 21h00.';
@@ -118,7 +87,6 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.complement_nom
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.nom_voie IS 'Nom des voies administratives : concaténation du type de voie, du libellé de voie et du complément de nom de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.lateralite IS 'Latéralité de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.hierarchie IS 'Hiérarchie des voies (prinicpale/secondaire).';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.nbr_voie_physique IS 'Nombre de voies physiques par voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.geom IS 'Géométrie de type multiligne.';
 
 -- 4. Création des métadonnées spatiales
@@ -171,9 +139,6 @@ CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_COMPLEMENT_NOM_VOIE_IDX ON G_BA
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_NOM_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE(NOM_VOIE)
-    TABLESPACE G_ADT_INDX;
-
-CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_NBR_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE(NBR_VOIE_PHYSIQUE)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_LATERALITE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE(LATERALITE)
