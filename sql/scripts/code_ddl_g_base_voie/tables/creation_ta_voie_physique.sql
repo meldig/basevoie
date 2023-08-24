@@ -12,7 +12,7 @@ CREATE TABLE G_BASE_VOIE.TA_VOIE_PHYSIQUE(
 -- 2. Création des commentaires sur la table et les champs
 COMMENT ON TABLE G_BASE_VOIE.TA_VOIE_PHYSIQUE IS 'Table rassemblant les identifiant de toutes les voies PHYSIQUES (en opposition aux voies administratives : une voie physique peut correspondre à deux voies administratives si elle appartient à deux communes différentes).';
 COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_PHYSIQUE.objectid IS 'Clé primaire auto-incrémentée de la table (ses identifiants ne reprennent PAS ceux de VOIEVOI).';
-COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_PHYSIQUE.FID_ACTION IS 'Champ permettant de savoir s''il faut inverser le sens géométrique de la voie physique ou non.';
+COMMENT ON COLUMN G_BASE_VOIE.TA_VOIE_PHYSIQUE.fid_action IS 'Champ permettant de savoir s''il faut inverser le sens géométrique de la voie physique ou non.';
 
 -- 3. Création de la clé primaire
 ALTER TABLE G_BASE_VOIE.TA_VOIE_PHYSIQUE 
