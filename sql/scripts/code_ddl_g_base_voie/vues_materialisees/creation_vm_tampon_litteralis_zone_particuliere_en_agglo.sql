@@ -23,29 +23,36 @@ DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(
         SELECT DISTINCT-- Sélection des voies entièrement incluses dans les zones d''agglomération
-            'Agglomeration' AS type_zone,
-            a.code_voie,
-            a.cote_voie,
+            CAST('Agglomeration' AS VARCHAR2(254)) AS type_zone,
+            a.id_voie_administrative AS code_voie,
+            CASE
+                WHEN a.lateralite = 'droit'
+                    THEN 'Droit'
+                WHEN a.lateralite = 'gauche'
+                    THEN 'Gauche'
+                WHEN a.lateralite = 'les deux côtés'
+                    THEN 'LesDeuxCotes' 
+                END AS cote_voie,
             a.code_insee,
             0 AS categorie
         FROM
-            G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE a,
+            G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a,
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b
         WHERE
-            SDO_CONTAINS(b.geom, a.geometry) = 'TRUE'
+            SDO_CONTAINS(b.geom, a.geom) = 'TRUE'
     )
 
     SELECT
         rownum AS objectid,
         a.type_zone,
-        a.code_voie,
-        a.cote_voie,
-        a.code_insee,
-        a.categorie,
-        b.geometry
+        CAST(a.code_voie AS VARCHAR2(254)) AS code_voie,
+        CAST(a.cote_voie AS VARCHAR2(254)) AS cote_voie,
+        CAST(a.code_insee AS VARCHAR2(254)) AS code_insee,
+        CAST(a.categorie AS NUMBER(8)) AS categorie,
+        b.geom AS geometry
     FROM
         C_1 a
-        INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE b ON b.code_voie = a.code_voie;
+        INNER JOIN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE b ON b.id_voie_administrative = a.code_voie;
 
 -- 2. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_EN_AGGLO IS 'Vue matérialisée - pour le projet LITTERALIS - regroupant toutes les voies totalement contenues dans une agglomération.';

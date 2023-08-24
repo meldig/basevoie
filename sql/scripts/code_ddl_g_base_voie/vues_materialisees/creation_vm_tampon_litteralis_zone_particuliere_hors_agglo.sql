@@ -23,44 +23,58 @@ DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(
         SELECT -- Sélection des voies distantes d''1mm des zones d'agglomération
-                'InteretCommunautaire' AS type_zone,
-                a.code_voie,
-                a.cote_voie,
-                a.code_insee,
-                0 AS categorie,
-                a.geometry
-            FROM
-                G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE a,
-                G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b,
-                USER_SDO_GEOM_METADATA c,
-                USER_SDO_GEOM_METADATA d
-            WHERE
-                c.table_name = 'VM_TAMPON_LITTERALIS_VOIE'
-                AND d.table_name = 'VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION'
-                AND SDO_GEOM.SDO_DISTANCE(a.geometry, c.diminfo, b.geom, d.diminfo)>0.001
-            UNION ALL
-            SELECT -- Sélection des voies touchant uniquement le périmètre extérieur des zones d''agglomération
-                'InteretCommunautaire' AS type_zone,
-                a.code_voie,
-                a.cote_voie,
-                a.code_insee,
-                0 AS categorie,
-                a.geometry
-            FROM
-                G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE a,
-                G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b
-            WHERE
-                 SDO_TOUCH(a.geometry, b.geom) = 'TRUE'
+            'InteretCommunautaire' AS type_zone,
+            a.id_voie_administrative AS code_voie,
+            CASE
+                WHEN a.lateralite = 'droit'
+                    THEN 'Droit'
+                WHEN a.lateralite = 'gauche'
+                    THEN 'Gauche'
+                WHEN a.lateralite = 'les deux côtés'
+                    THEN 'LesDeuxCotes' 
+                END AS cote_voie,
+            a.code_insee,
+            0 AS categorie,
+            a.geom
+        FROM
+            G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a,
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b,
+            USER_SDO_GEOM_METADATA c,
+            USER_SDO_GEOM_METADATA d
+        WHERE
+            c.table_name = 'VM_CONSULTATION_VOIE_ADMINISTRATIVE'
+            AND d.table_name = 'VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION'
+            AND SDO_GEOM.SDO_DISTANCE(a.geom, c.diminfo, b.geom, d.diminfo)>0.001
+        UNION ALL
+        SELECT -- Sélection des voies touchant uniquement le périmètre extérieur des zones d''agglomération
+            'InteretCommunautaire' AS type_zone,
+            a.id_voie_administrative AS code_voie,
+            CASE
+                WHEN a.lateralite = 'droit'
+                    THEN 'Droit'
+                WHEN a.lateralite = 'gauche'
+                    THEN 'Gauche'
+                WHEN a.lateralite = 'les deux côtés'
+                    THEN 'LesDeuxCotes' 
+                END AS cote_voie,
+            a.code_insee,
+            0 AS categorie,
+            a.geom
+        FROM
+            G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a,
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b
+        WHERE
+             SDO_TOUCH(a.geom, b.geom) = 'TRUE'
     )
 
     SELECT
         rownum AS objectid,
-        a.type_zone,
-        a.code_voie,
-        a.cote_voie,
-        a.code_insee,
-        a.categorie,
-        a.geometry
+        CAST(a.type_zone AS VARCHAR2(254)) AS type_zone,
+        CAST(a.code_voie AS VARCHAR2(254)) AS code_voie,
+        CAST(a.cote_voie AS VARCHAR2(254)) AS cote_voie,
+        CAST(a.code_insee AS VARCHAR2(254)) AS code_insee,
+        CAST(a.categorie AS NUMBER(8)),
+        a.geom AS geometry
     FROM
         C_1 a;
 

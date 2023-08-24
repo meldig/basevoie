@@ -13,7 +13,7 @@ CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_AUDIT_TRONCON" (
     CODE_INSEE, 
     CONSTRAINT "V_LITTERALIS_AUDIT_TRONCON_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS
 WITH
-    C_1 AS(-- Sélection des tronçon dont le code INSEE est en erreur
+    C_1 AS(-- Sélection des tronçon dont le code INSEE est en erreur (absent de la couche des communes ou NULL)
         SELECT
             objectid,
             code_insee_voie_gauche AS code_insee
@@ -22,7 +22,6 @@ WITH
         WHERE
             code_insee_voie_gauche NOT IN(SELECT code_insee FROM G_REFERENTIEL.MEL_COMMUNE_LLH)
             OR code_insee_voie_gauche IS NULL
-            OR code_insee_voie_gauche IN('59355', '59298')
         UNION ALL
         SELECT
             objectid,
@@ -32,7 +31,6 @@ WITH
         WHERE
             code_insee_voie_gauche NOT IN(SELECT code_insee FROM G_REFERENTIEL.MEL_COMMUNE_LLH)
             OR code_insee_voie_droite IS NULL
-            OR code_insee_voie_droite IN('59355', '59298')
     ),
     
     C_2 AS(-- Mise en forme des tronçons dont le code INSEE est en erreur

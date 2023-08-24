@@ -73,8 +73,38 @@ CREATE OR REPLACE FORCE EDITIONABLE VIEW "G_BASE_VOIE"."V_LITTERALIS_AUDIT_ZONE_
                 a.type_zone IN('Commune', 'Agglomeration')
                 AND (
                         a.code_insee IS NULL
-                        OR a.code_INSEE IN('59355', '59298')
                     )
+            UNION ALL
+            SELECT -- Sélection des zones particulières dont le code INSEE différe de son tronçon de rattachement
+                'Zones particulières dont le code INSEE différe de son tronçon de rattachement' AS thematique,
+                a.identifiant,
+                a.type_zone,
+                a.code_voie,
+                a.cote_voie,
+                a.code_insee,
+                a.categorie,
+                a.geometry
+            FROM
+                G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE a,
+                G_BASE_VOIE.V_LITTERALIS_TRONCON b,
+                G_BASE_VOIE.V_LITTERALIS_TRONCON c
+            WHERE
+                (
+                    b.code_rue_d = a.code_voie
+                    AND a.code_insee = b.insee_d
+                    AND a.cote_voie = 'Droit'
+                )
+                OR (
+                    b.code_rue_g = a.code_voie
+                    AND a.code_insee = b.insee_g
+                    AND a.cote_voie = 'Gauche'
+                )
+                OR (
+                    b.code_rue_g = a.code_voie
+                    AND b.code_rue_d = a.code_voie
+                    AND a.code_insee = b.insee_g
+                    AND a.code_insee = b.insee_d
+                    AND a.cote_voie = 'LesDeuxCotes')       
         )
 
         SELECT

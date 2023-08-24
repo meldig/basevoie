@@ -23,16 +23,23 @@ DISABLE QUERY REWRITE AS
 SELECT -- Pour toutes les voies intersectant les zones d'agglomération, on sélectionne uniquement la partie située en-dehors des zones
         rownum AS objectid,
         'InteretCommunautaire' AS type_zone,
-        a.code_voie,
-        a.cote_voie,
-        a.code_insee,
-        0 AS categorie,
-        SDO_GEOM.SDO_DIFFERENCE(a.geometry, b.geom, 0.001) AS geometry
+        a.id_voie_administrative AS code_voie,
+        CASE
+            WHEN a.lateralite = 'droit'
+                THEN 'Droit'
+            WHEN a.lateralite = 'gauche'
+                THEN 'Gauche'
+            WHEN a.lateralite = 'les deux côtés'
+                THEN 'LesDeuxCotes' 
+            END AS cote_voie,
+        CAST(a.code_insee AS VARCHAR2(254)) AS code_insee,
+        CAST(0 AS NUMBER(8)) AS categorie,
+        SDO_GEOM.SDO_DIFFERENCE(a.geom, b.geom, 0.001) AS geometry
     FROM
-        G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE a,
+        G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a,
         G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b
     WHERE
-         SDO_OVERLAPBDYDISJOINT(a.geometry, b.geom) = 'TRUE';
+         SDO_OVERLAPBDYDISJOINT(a.geom, b.geom) = 'TRUE';
 
 -- 2. Création des commentaires de la VM
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_HORS_AGGLO IS 'Vue matérialisée - pour le projet LITTERALIS - regroupant toutes les parties de voies situées hors agglomération.';

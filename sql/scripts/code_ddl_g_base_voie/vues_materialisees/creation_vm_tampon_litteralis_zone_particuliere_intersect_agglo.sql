@@ -23,13 +23,20 @@ DISABLE QUERY REWRITE AS
 WITH C_1 AS( -- Pour toutes les voies intersectant les zones d'agglomération, on sélectionne uniquement la partie située à l''intérieur des zones
         SELECT
             'Agglomeration' AS type_zone,
-            a.code_voie,
-            a.cote_voie,
+            a.id_voie_administrative AS code_voie,
+            CASE
+                WHEN a.lateralite = 'droit'
+                    THEN 'Droit'
+                WHEN a.lateralite = 'gauche'
+                    THEN 'Gauche'
+                WHEN a.lateralite = 'les deux côtés'
+                    THEN 'LesDeuxCotes' 
+                END AS cote_voie,
             a.code_insee,
             0 AS categorie,
-           SDO_GEOM.SDO_INTERSECTION(a.geometry, b.geom, 0.005) AS geometry
+           SDO_GEOM.SDO_INTERSECTION(a.geom, b.geom, 0.005) AS geometry
         FROM
-            G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE a,
+            G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a,
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b
         WHERE
             SDO_GEOM.SDO_INTERSECTION(a.geometry, b.geom, 0.005).sdo_gtype IN(2002, 2006)
@@ -69,11 +76,11 @@ WITH C_1 AS( -- Pour toutes les voies intersectant les zones d'agglomération, o
 
     SELECT
         rownum AS objectid,
-        a.type_zone,
-        a.code_voie,
-        a.cote_voie,
-        a.code_insee,
-        a.categorie,
+        CAST(a.type_zone AS VARCHAR2(254)) AS type_zone,
+        CAST(a.code_voie AS VARCHAR2(254)) AS code_voie,
+        CAST(a.cote_voie AS VARCHAR2(254)) AS cote_voie,
+        CAST(a.code_insee AS VARCHAR2(254)) AS code_insee,
+        CAST(a.categorie AS NUMBER(8)) AS categorie,
         a.geometry
     FROM
         C_2 a
