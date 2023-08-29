@@ -7,7 +7,7 @@ DROP TABLE G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE CASCADE C
 -- 1. Création de la table TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE
 CREATE TABLE G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE(
     fid_voie_administrative NUMBER(38,0),
-    fid_voie_supra_communale VARCHAR2(50 BYTE)
+    fid_voie_supra_communale NUMBER(38,0)
 );
 
 -- 2. Création des commentaires sur la table et les champs

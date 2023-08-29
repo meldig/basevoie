@@ -1,7 +1,8 @@
 /*
-Création de la vue matérialisée VM_CONSULTATION_SEUIL regroupant les seuils de la MEL et leur tronçon.
+Création de la vue matérialisée VM_CONSULTATION_SEUIL regroupant les seuils de la MEL et leur tronçon. Mise à jour du lundi au samedi à 05h00.
 */
 /*
+DROP INDEX VM_CONSULTATION_SEUIL_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_SEUIL';
 COMMIT;
@@ -25,11 +26,12 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL(
     hierarchie_voie_admin,
     date_saisie,
     date_modification,
+    id_geom,
     geom
 )
 REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 240/24/1440
+START WITH TO_DATE('30-08-2023 04:00:00', 'dd-mm-yyyy hh24:mi:ss')
+NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
 SELECT
     a.objectid AS id_seuil,
@@ -54,6 +56,7 @@ SELECT
     END AS hierarchie_voie_admin,
     a.date_saisie,
     a.date_modification,
+    b.objectid AS id_geom,
     b.geom
 FROM
     G_BASE_VOIE.TA_INFOS_SEUIL a
@@ -69,7 +72,7 @@ FROM
     INNER JOIN G_REFERENTIEL.MEL_COMMUNE_LLH j ON j.code_insee = b.code_insee;
 
 -- 2. Création des commentaires de table et de colonnes
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_SEUIL IS 'Vue matérialisée regroupant les seuils de la MEL, leur tronçon, voie physique et voie administrative. Mise à jour quotidienne à 04h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_seuil IS 'Clé primaire de la VM correspondant aux identifiants de chaque seuil (TA_INFOS_SEUIL).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_troncon IS 'Identifiant du tronçon auquel est rattaché le seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_voie_physique IS 'Identifiant de la voie physique à laquelle est rattaché le seuil.';
@@ -87,6 +90,7 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.nom_voie IS 'Nom de la voie 
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.hierarchie_voie_admin IS 'Hiérarchie de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.date_saisie IS 'Date de saisie du seuil.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.date_modification IS 'Date de la dernière modification du seuil.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.id_geom IS 'Identifiants des géométries des seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_SEUIL.geom IS 'Géométrie de type point des seuils.';
 
 -- 3. Création des métadonnées spatiales
@@ -170,6 +174,9 @@ CREATE INDEX VM_CONSULTATION_SEUIL_DATE_MODIFICATION_IDX ON G_BASE_VOIE.VM_CONSU
 CREATE INDEX VM_CONSULTATION_SEUIL_HIERARCHIE_VOIE_ADMIN_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(HIERARCHIE_VOIE_ADMIN)
     TABLESPACE G_ADT_INDX;
 
+CREATE INDEX VM_CONSULTATION_SEUIL_ID_GEOM_IDX ON G_BASE_VOIE.VM_CONSULTATION_SEUIL(ID_GEOM)
+    TABLESPACE G_ADT_INDX;
+    
 -- 6. Affectation du droit de sélection sur les objets de la table aux administrateurs
 GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_SEUIL TO G_ADMIN_SIG;
 
@@ -179,6 +186,7 @@ GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_SEUIL TO G_ADMIN_SIG;
 Création de la vue matérialisée VM_CONSULTATION_BASE_VOIE contenant les tronçons, voies physiques et voies administratives de la base voie. Mise à jour quotidienne à 21h00
 */
 /*
+DROP INDEX VM_CONSULTATION_BASE_VOIE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_BASE_VOIE';
 COMMIT;
@@ -189,20 +197,22 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(
     id_troncon,
     id_voie_physique,
     id_voie_administrative,
+    id_voie_supra_communale,
     code_insee,
     nom_commune,
-    action_sens,
-    type_voie,
-    libelle_voie,
-    complement_nom_voie,
-    nom_voie,
-    lateralite,
-    hierarchie,
+    type_voie_administrative,
+    nom_voie_administrative,
+    libelle_voie_administrative,
+    complement_nom_voie_administrative,
+    nom_voie_supra_communale,
+    lateralite_voie_administrative,
+    hierarchie_voie_administrative,
+    action_sens_voie_physique,
     commentaire,
     geom
 )
 REFRESH FORCE
-START WITH TO_DATE('01-06-2023 21:00:00', 'dd-mm-yyyy hh24:mi:ss')
+START WITH TO_DATE('30-08-2023 02:00:00', 'dd-mm-yyyy hh24:mi:ss')
 NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
 SELECT
@@ -210,15 +220,17 @@ SELECT
     a.objectid AS id_troncon,
     b.objectid AS id_voie_physique,
     d.objectid AS id_voie_administrative,
+    j.fid_voie_supra_communale AS id_voie_supra_communale,
     d.code_insee,
     h.nom AS nom_commune,
-    i.libelle_court AS action_sens,
-    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2)) AS type_voie,
-    TRIM(d.libelle_voie) AS libelle_voie,
-    TRIM(d.complement_nom_voie) AS complement_nom_voie,
-    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
-    f.libelle_court AS lateralite,
-    CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END AS hierarchie,
+    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2)) AS type_voie_administrative,
+    TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie_administrative,
+    TRIM(d.libelle_voie) AS libelle_voie_administrative,
+    TRIM(d.complement_nom_voie) AS complement_nom_voie_administrative,
+    k.nom AS nom_voie_supra_communale,
+    f.libelle_court AS lateralite_voie_administrative,
+    CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END AS hierarchie_voie_administrative,
+    i.libelle_court AS action_sens_voie_physique,
     d.commentaire,
     a.geom
 FROM
@@ -230,23 +242,27 @@ FROM
     LEFT JOIN G_BASE_VOIE.TA_LIBELLE f ON f.objectid = c.fid_lateralite
     LEFT JOIN G_BASE_VOIE.TA_HIERARCHISATION_VOIE g ON g.fid_voie_secondaire = d.objectid
     INNER JOIN G_REFERENTIEL.MEL_COMMUNE_LLH h ON h.code_insee = d.code_insee
-    LEFT JOIN G_BASE_VOIE.TA_LIBELLE i ON i.objectid = b.fid_action;
+    LEFT JOIN G_BASE_VOIE.TA_LIBELLE i ON i.objectid = b.fid_action
+    LEFT JOIN G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE j ON j.fid_voie_administrative = d.objectid
+    LEFT JOIN G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE k ON k.objectid = j.fid_voie_supra_communale;
 
 -- 2. Création des commentaires sur la table et les champs
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE IS 'Vue matérialisée contenant les tronçons, voies physiques et voies administratives de la base voie. Mise à jour quotidienne à 21h00.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE IS 'Vue matérialisée contenant les tronçons, voies physiques, voies administratives et voies supra-communales de la base voie. Mise à jour quotidienne à 02h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_troncon IS 'Identifiant du tronçon.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_physique IS 'Identifiant de la voie physique.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.action_sens IS 'Action sur le sens de la voie physique.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_administrative IS 'Identifiant de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.id_voie_supra_communale IS 'Identifiant de la voie supra-communale. Si un tronçon est associé à une voie administrative elle-même associée à une voie supra-communale, alors l''identifiant de cette dernière est récupéré, sinon la valeur est NULL.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.code_insee IS 'Code INSEE de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_commune IS 'Nom de la commune d''appartenance de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.type_voie IS 'Type de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.libelle_voie IS 'Libelle de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.complement_nom_voie IS 'Complément de nom de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_voie IS 'Nom de la voie administrative.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.hierarchie IS 'Hiérarchie de la voie administrative : principale ou secondaire.';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.lateralite IS 'Latéralité de la voie administrative par rapport à sa voie physique.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.type_voie_administrative IS 'Type de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_voie_administrative IS 'Nom de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.libelle_voie_administrative IS 'Libelle de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.complement_nom_voie_administrative IS 'Complément de nom de la voie administrative.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.nom_voie_supra_communale IS 'Nom de la voie supra-communale. Si un tronçon est associé à une voie administrative elle-même associée à une voie supra-communale, alors le nom de cette dernière est récupéré, sinon la valeur est NULL.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.lateralite_voie_administrative IS 'Latéralité de la voie administrative par rapport à sa voie physique.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.hierarchie_voie_administrative IS 'Hiérarchie de la voie administrative : principale ou secondaire.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.action_sens_voie_physique IS 'Action effectuée sur la géométrie des voies physiques dans la VM_CONSULTATION_VOIE_PHYSIQUE.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.commentaire IS 'Commentaire de la voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE.geom IS 'Géométrie du tronçon de type ligne simple.';
 
@@ -283,10 +299,10 @@ CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_TRONCON_IDX ON G_BASE_VOIE.VM_CONSULTA
 CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_physique)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_ACTION_SENS_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(action_sens)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_administrative)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_ID_VOIE_SUPRA_COMMUNALE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(id_voie_supra_communale)
     TABLESPACE G_ADT_INDX;
 
 CREATE INDEX VM_CONSULTATION_BASE_VOIE_CODE_INSEE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(code_insee)
@@ -295,22 +311,28 @@ CREATE INDEX VM_CONSULTATION_BASE_VOIE_CODE_INSEE_IDX ON G_BASE_VOIE.VM_CONSULTA
 CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_COMMUNE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_commune)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_TYPE_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(type_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_TYPE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(type_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_LIBELLE_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(libelle_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_COMPLEMENT_NOM_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(complement_nom_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_LIBELLE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(libelle_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_voie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_COMPLEMENT_NOM_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(complement_nom_voie_administrative)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_HIERARCHIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(hierarchie)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_NOM_VOIE_SUPRA_COMMUNALE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(nom_voie_supra_communale)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_BASE_VOIE_LATERALITE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(lateralite)
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_LATERALITE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(lateralite_voie_administrative)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_HIERARCHIE_VOIE_ADMINISTRATIVE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(hierarchie_voie_administrative)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_CONSULTATION_BASE_VOIE_ACTION_SENS_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE(action_sens_voie_physique)
     TABLESPACE G_ADT_INDX;
 
 -- 7. Affectation du droit de sélection sur les objets de la table aux administrateurs
@@ -319,10 +341,11 @@ GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE TO G_ADMIN_SIG;
 /
 
 /*
-Création de la vue matérialisée VM_CONSULTATION_VOIE_ADMINISTRATIVE - du projet j de test de production - matérialisant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie.
+Création de la vue matérialisée VM_CONSULTATION_VOIE_ADMINISTRATIVE contenant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie.  Mise à jour du lundi au vendredi à 22h00.
 */
 -- 1. Suppression de la VM et de ses métadonnées
 /*
+DROP INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_VOIE_ADMINISTRATIVE';
 COMMIT;
@@ -339,12 +362,11 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE (
     NOM_VOIE,
     LATERALITE,
     HIERARCHIE,
-    NBR_VOIE_PHYSIQUE,
     GEOM
 )        
 REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 120/24/1440
+START WITH TO_DATE('29-08-2023 21:00:00', 'dd-mm-yyyy hh24:mi:ss')
+NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
     WITH 
         C_1 AS (
@@ -357,10 +379,12 @@ DISABLE QUERY REWRITE AS
                 TRIM(d.complement_nom_voie) AS complement_nom_voie,
                 TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END AS nom_voie,
                 f.libelle_court AS lateralite,
-                CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END AS hierarchie,
-                COUNT(c.fid_voie_physique) AS nbr_voie_physique
+                CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'voie principale' ELSE 'voie secondaire' END AS hierarchie,
+                SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
             FROM
-                G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c
+                G_BASE_VOIE.TA_TRONCON a
+                INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
+                INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
                 INNER JOIN G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE d ON d.objectid = c.fid_voie_administrative
                 LEFT JOIN G_BASE_VOIE.TA_TYPE_VOIE e ON e.objectid = d.fid_type_voie
                 LEFT JOIN G_BASE_VOIE.TA_LIBELLE f ON f.objectid = c.fid_lateralite
@@ -375,38 +399,7 @@ DISABLE QUERY REWRITE AS
                 TRIM(d.complement_nom_voie),
                 TRIM(SUBSTR(UPPER(e.libelle), 1, 1) || SUBSTR(LOWER(e.libelle), 2) || ' ' || TRIM(d.libelle_voie) || ' ' || TRIM(d.complement_nom_voie)) || CASE WHEN d.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN d.code_insee = '59355' THEN ' (Lomme)' END,
                 f.libelle_court,
-                CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'Voie Principale' ELSE 'Voie secondaire' END
-        ),
-
-        C_2 AS(
-            SELECT
-                d.id_voie_administrative,
-                d.code_insee,
-                d.nom_commune,
-                d.type_voie,
-                d.libelle_voie,
-                d.complement_nom_voie,
-                d.nom_voie,
-                d.lateralite,
-                d.hierarchie,
-                d.nbr_voie_physique,
-                SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom
-            FROM
-                G_BASE_VOIE.TA_TRONCON a
-                INNER JOIN G_BASE_VOIE.TA_VOIE_PHYSIQUE b ON b.objectid = a.fid_voie_physique
-                INNER JOIN G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE c ON c.fid_voie_physique = b.objectid
-                INNER JOIN C_1 d ON d.id_voie_administrative = c.fid_voie_administrative
-            GROUP BY
-                d.id_voie_administrative,
-                d.code_insee,
-                d.nom_commune,
-                d.type_voie,
-                d.libelle_voie,
-                d.complement_nom_voie,
-                d.nom_voie,
-                d.lateralite,
-                d.hierarchie,
-                d.nbr_voie_physique
+                CASE WHEN COALESCE(g.fid_voie_secondaire, 0) = 0 THEN 'voie principale' ELSE 'voie secondaire' END
         )
 
         SELECT
@@ -420,13 +413,12 @@ DISABLE QUERY REWRITE AS
             a.nom_voie,
             a.lateralite,
             a.hierarchie,
-            a.nbr_voie_physique,
             a.geom
         FROM
-            C_2 a;
+            C_1 a;
 
 -- 3. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE IS 'Vue matérialisée - du projet j de test de production - matérialisant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE IS 'Vue matérialisée contenant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie. Mise à jour quotidienne à 21h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.objectid IS 'Clé primaire de la VM. Il est nécessaire que cette clé primaire soit différente des identifiants de voie administrative, car la latéralité d''une voie peut-être droite ou gauche sur une partie de son tracé et lesdeuxcôtés sur le reste.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.id_voie_administrative IS 'Identifiants des voies administratives de TA_VOIE_ADMINISTRATIVE.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.code_insee IS 'Code INSEE de la voie administrative.';
@@ -437,7 +429,6 @@ COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.complement_nom
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.nom_voie IS 'Nom des voies administratives : concaténation du type de voie, du libellé de voie et du complément de nom de voie.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.lateralite IS 'Latéralité de la voie.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.hierarchie IS 'Hiérarchie des voies (prinicpale/secondaire).';
-COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.nbr_voie_physique IS 'Nombre de voies physiques par voie administrative.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE.geom IS 'Géométrie de type multiligne.';
 
 -- 4. Création des métadonnées spatiales
@@ -492,9 +483,6 @@ CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_COMPLEMENT_NOM_VOIE_IDX ON G_BA
 CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_NOM_VOIE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE(NOM_VOIE)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_NBR_VOIE_PHYSIQUE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE(NBR_VOIE_PHYSIQUE)
-    TABLESPACE G_ADT_INDX;
-
 CREATE INDEX VM_CONSULTATION_VOIE_ADMINISTRATIVE_LATERALITE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE(LATERALITE)
     TABLESPACE G_ADT_INDX;
 
@@ -510,6 +498,7 @@ GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE TO G_ADMIN_SIG;
 Création de la VM VM_CONSULTATION_VOIE_PHYSIQUE matérialisant les voies physiques, permettant de distinguer les voies dont le sens géométrique est inversé ou non.
 */
 /*
+DROP INDEX VM_CONSULTATION_VOIE_PHYSIQUE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_VOIE_PHYSIQUE';
 COMMIT;
@@ -521,8 +510,8 @@ CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_CONSULTATION_VOIE_PHYSIQUE" (
     GEOM
 )        
 REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1440/24/1440
+START WITH TO_DATE('29-08-2023 19:00:00', 'dd-mm-yyyy hh24:mi:ss')
+NEXT sysdate + 1
 DISABLE QUERY REWRITE AS
 SELECT
     b.objectid AS id_voie_physique,
@@ -555,7 +544,7 @@ GROUP BY
     'sens inversé';
 
 -- 2. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE IS 'Vue matérialisée matérialisant les voies physiques, permettant de distinguer les voies dont le sens géométrique est inversé ou non.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE IS 'Vue matérialisée matérialisant les voies physiques, permettant de distinguer les voies dont le sens géométrique est inversé ou non. Mise à jour quotidienne à 19h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE.id_voie_physique IS 'Clé primaire de la VM et identifiant des voies physiques.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE.type_sens IS 'Types de sens géométrique des voies. Si elles ont été taguées en "à inverser" dans TA_VOIE_PHYSIQUE, alors le sens géométrique de la voie a été inversé, sinon il a été conservé.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE.geom IS 'Géométries de type multiligne.';
@@ -600,9 +589,104 @@ GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE TO G_ADMIN_SIG;
 /
 
 /*
+Création de la vue matérialisée VM_CONSULTATION_VOIE_SUPRA_COMMUNALE contenant la géométrie des voies supra-communales avec leur identifiant, leur nom et leur géométrie. Mise à jour tous les jours à 23h00.
+*/
+-- 1. Suppression de la VM et de ses métadonnées
+/*
+DROP INDEX VM_CONSULTATION_VOIE_SUPRA_COMMUNALE_SIDX;
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_CONSULTATION_VOIE_SUPRA_COMMUNALE';
+COMMIT;
+*/
+-- 2. Création de la VM
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE (
+    OBJECTID,
+    ID_VOIE_SUPRA_COMMUNALE,
+    NOM,
+    GEOM
+)        
+REFRESH FORCE
+START WITH TO_DATE('29-08-2023 23:00:00', 'dd-mm-yyyy hh24:mi:ss')
+NEXT sysdate + 1
+DISABLE QUERY REWRITE AS
+    WITH 
+        C_1 AS(
+            SELECT
+                coalesce(c.id_sireo, TO_CHAR(c.objectid)) AS id_voie_supra_communale,
+                c.nom,
+                SDO_AGGR_UNION(SDOAGGRTYPE(b.geom, 0.005)) AS geom
+            FROM 
+                G_BASE_VOIE.TA_RELATION_VOIE_ADMINISTRATIVE_SUPRA_COMMUNALE a 
+                INNER JOIN G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE b ON b.id_voie_administrative = a.fid_voie_administrative
+                INNER JOIN G_BASE_VOIE.TA_VOIE_SUPRA_COMMUNALE c ON c.objectid = a.fid_voie_supra_communale
+            GROUP BY
+                coalesce(c.id_sireo, TO_CHAR(c.objectid)),
+                c.objectid,
+                c.nom
+        )
+
+        SELECT
+            rownum AS objectid,
+            a.id_voie_supra_communale,
+            a.nom,
+            a.geom
+        FROM
+            C_1 a;
+
+-- 3. Création des commentaires de la VM
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE IS 'Vue matérialisée contenant la géométrie des voies supra-communales avec leur identifiant, leur nom et leur géométrie. Mise à jour quotidienne à 23h00.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.objectid IS 'Clé primaire auto-incrémentée de la VM.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.id_voie_supra_communale IS 'Identifiants des voies supra-communales correspondant aux dentifiants des ex-rd et des voies supra-communales antérieures à la migration (TA_VOIE_SUPRA_COMMUNALE.id_sireo) et aux identifiants des voies supra-communales postérieures à la migration (TA_VOIE_SUPRA_COMMUNALE.objectid).';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.nom IS 'Nom de la voie supra-communale : s''il s''agit d''une ex RD au moement de l''import, alors l''idsupvoi de la table SIREO_LEC.EXRD_IDSUPVOIE est utilisé, s''il s''agit d''une voie supra-communale absente de la table SIREO_LEC.EXRD_IDSUPVOIE au moment de l''import alors l''idvoi de SIREO_LEC.OUT_DOMANIALITE est utilisé. Pour toute nouvelle voie supra-communale post-import, le nom correspond à l''identifiant auto-incrémenté de la voie.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE.geom IS 'Géométrie des voies supra-communales de type multiligne.';
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'VM_CONSULTATION_VOIE_SUPRA_COMMUNALE',
+    'GEOM',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Création de la clé primaire
+ALTER MATERIALIZED VIEW VM_CONSULTATION_VOIE_SUPRA_COMMUNALE 
+ADD CONSTRAINT VM_CONSULTATION_VOIE_SUPRA_COMMUNALE_PK 
+PRIMARY KEY (OBJECTID);
+
+-- 6. Création des index
+CREATE INDEX VM_CONSULTATION_VOIE_SUPRA_COMMUNALE_SIDX
+ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX
+PARAMETERS(
+  'sdo_indx_dims=2, 
+  layer_gtype=MULTILINE, 
+  tablespace=G_ADT_INDX, 
+  work_tablespace=DATA_TEMP'
+);
+
+CREATE INDEX VM_CONSULTATION_VOIE_SUPRA_COMMUNALE_ID_VOIE_SUPRA_COMMUNALE_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE(id_voie_supra_communale)
+    TABLESPACE G_ADT_INDX;
+
+CREATE INDEX VM_CONSULTATION_VOIE_SUPRA_COMMUNALE_NOM_IDX ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE(nom)
+    TABLESPACE G_ADT_INDX;
+
+-- 7. Affectations des droits
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE TO G_ADMIN_SIG;
+
+/
+
+/*
 Vue matérialisée permettant d'identifier les seuils distants d'1km ou plus de leur tronçon d'affectation.
 */
 /*
+DROP INDEX VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM';
 COMMIT;
@@ -616,9 +700,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM (
     DISTANCE,  
     GEOM
 )        
-REFRESH FORCE
-START WITH TO_DATE('31-05-2023 20:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 1
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
   SELECT
     b.objectid AS id_infos_seuil,
@@ -652,7 +735,7 @@ WHERE
     ), 2) >=1000;
 
 -- 2. Création des commentaires
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM  IS 'Vue permettant d''identifier les seuils distants d''1km ou plus de leur tronçon d''affectation.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM  IS 'Vue permettant d''identifier les seuils distants d''1km ou plus de leur tronçon d''affectation. Mise à jour tous les samedis à 08h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM.id_infos_seuil IS 'Identifiants des seuils utilisés en tant que clé primaire (objectid de TA_INFOS_SEUIL).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM.position_seuil IS 'Position géographique du seuil (entrée du bâtiment/seuil, boîte postale, entrée de rue, portail, etc).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM.code_insee_seuil IS 'Code INSEE de la commune dans laquelle se situe le seuil.';
@@ -713,6 +796,7 @@ GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM TO G_ADMIN_SIG;
 Création de la vue matérialisée VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE dénombrant les voies en doublon de nom par commune.
 */
 /*
+DROP INDEX VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE';
 COMMIT;
@@ -726,9 +810,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE(
     nombre, 
     geom
 )
-REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 240/24/1440
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
     WITH 
         C_1 AS( -- Sélection du centroïde des voies admin disposant d'un nom de voie 
@@ -747,25 +830,28 @@ DISABLE QUERY REWRITE AS
                 AND m.table_name = 'VM_CONSULTATION_VOIE_ADMINISTRATIVE'
         ),
 
-        C_2 AS(-- Décompte des doubons de noms de voie par commune
+        C_2 AS(-- Décompte des doublons de noms de voie par commune
             SELECT
                 a.nom_voie,
                 a.code_insee,
+                a.lateralite,
                 COUNT(a.objectid) AS nombre
             FROM
                 G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a
                 INNER JOIN C_1 b ON b.nom_voie = a.nom_voie AND b.code_insee = a.code_insee
             GROUP BY
                 a.nom_voie,
-                a.code_insee
+                a.code_insee,
+                a.lateralite
             HAVING
                 COUNT(a.objectid) > 1
         ),
 
-        C_3 AS(-- Regroupement des géométries par nom de voie et commune
+        C_3 AS(-- Regroupement des géométries par nom de voie, commune et latéralité
             SELECT
                 a.nom_voie,
                 a.code_insee,
+                a.lateralite,
                 b.nombre,
                 SDO_CS.MAKE_2D(SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.001))) AS geom
             FROM
@@ -774,19 +860,21 @@ DISABLE QUERY REWRITE AS
             GROUP BY
                 a.nom_voie,
                 a.code_insee,
+                a.lateralite,
                 b.nombre
         )
         SELECT
             rownum AS objectid,
             a.nom_voie,
             a.code_insee,
+            a.lateralite,
             a.nombre,
             a.geom
         FROM
             C_3 a;
 
 -- 2. Création des commentaires
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE IS 'Vue matérialisée dénombrant les voies en doublon de nom par commune.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE IS 'Vue matérialisée dénombrant les voies en doublon de nom par commune. Mise à jour tous les samedis à 21h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE.objectid IS 'Clé primaire de la VM.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE.nom_voie IS 'Nom de voie (Type de voie + libelle de voie + complément nom de voie + commune associée).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE.code_insee IS 'Code INSEE de la commune d''appartenance de la voie.';
@@ -843,6 +931,7 @@ GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE TO G_ADMIN_SIG
 Création de la vue VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE dénombrant et géolocalisant les doublons de numéros de seuil par voie administrative et par commune.
 */
 /*
+DROP INDEX VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE';
 COMMIT;
@@ -859,9 +948,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMI
     NOMBRE,
     GEOM
 )        
-REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 120/24/1440
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
     WITH 
         C_1 AS(-- Sélection des doublons de numéro de seuil
@@ -898,7 +986,7 @@ DISABLE QUERY REWRITE AS
         C_1 a;
 
 -- 2. Création des commentaires
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE IS 'Vue matérialisée dénombrant et géolocalisant les doublons de numéros de seuil par voie administrative et par commune.';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE IS 'Vue matérialisée dénombrant et géolocalisant les doublons de numéros de seuil par voie administrative et par commune. Mise à jour tous les samedis à 15h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE.objectid IS 'Clé primaire de la vue.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE.numero IS 'Numéro du seuil (numéro + concaténation).';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE.code_insee IS 'Code INSEE de la commune d''appartenance du seuil et de la voie administrative.';
@@ -964,11 +1052,14 @@ GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIV
 /
 
 /*
-Création de la vue matérialisée VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR - du projet j de test de production - matérialisant la géométrie des voies administratives avec leur nom, code insee, latéralité et hiérarchie.
+Création de la vue matérialisée VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR identifiant les seuils dont le code INSEE ne correspond pas au référentiel des communes (G_REFERENTIEL.MEL_COMMUNE_LLH)
 */
 -- Suppression de la VM
 /*
+DROP INDEX VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR_SIDX;
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR';
+COMMIT;
 */
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR (
@@ -978,9 +1069,8 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR (
     CODE_INSEE_CALCULE,
     GEOM
 )        
-REFRESH FORCE
-START WITH TO_DATE('31-05-2023 17:00:00', 'dd-mm-yyyy hh24:mi:ss')
-NEXT sysdate + 6/24
+REFRESH ON DEMAND
+FORCE
 DISABLE QUERY REWRITE AS
 SELECT
     b.objectid AS id_seuil,
@@ -995,7 +1085,7 @@ WHERE
     TRIM(GET_CODE_INSEE_97_COMMUNES_CONTAIN_POINT('TA_SEUIL', a.geom)) <> a.code_insee;
 
 -- 2. Création des commentaires de la VM
-COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR IS 'Vue matérialisée identifiant les seuils dont le code INSEE ne correspond pas au référentiel des communes (G_REFERENTIEL.MEL_COMMUNE_LLH).';
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR IS 'Vue matérialisée identifiant les seuils dont le code INSEE ne correspond pas au référentiel des communes (G_REFERENTIEL.MEL_COMMUNE_LLH). Mise à jour tous les samedis à 18h00.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR.id_seuil IS 'Identifiants des seuils correspondant à la clé primaire de la vue.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR.id_geom_seuil IS 'Identifiants de la géométrie des seuils.';
 COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR.code_insee_base IS 'Code INSEE du seuil en base.';
@@ -1042,284 +1132,79 @@ GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR TO G_ADMIN_SIG;
 /
 
 /*
-Création de la vue V_STAT_NOMBRE_OBJET dénombrant tous les objets de la base voie et de la base adresse.
+Création de la vue matérialisée VM_AUDIT_TRONCON_NON_JOINTIFS identifiant les tronçons distants de 5cm non-jointifs.
 */
+-- Suppression de la VM
 /*
-DROP VIEW G_BASE_VOIE.V_STAT_NOMBRE_OBJET;
+DROP INDEX VM_AUDIT_TRONCON_NON_JOINTIFS_SIDX;
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_TRONCON_NON_JOINTIFS';
 */
-
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_NOMBRE_OBJET" ("OBJECTID", "TYPE_OBJET", "NOMBRE", 
-    CONSTRAINT "V_STAT_NOMBRE_OBJET_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
-    WITH
-        C_1 AS(-- Sélection des voies physiques composées d'un seul tronçon
-            SELECT
-                a.fid_voie_physique
-            FROM
-                G_BASE_VOIE.TA_TRONCON a
-            GROUP BY
-                a.fid_voie_physique
-            HAVING
-                COUNT(a.objectid) = 1
-        ),
-
-        C_2 AS(-- Sélection des voies physiques composées de plusieurs tronçons
-            SELECT
-                a.fid_voie_physique
-            FROM
-                G_BASE_VOIE.TA_TRONCON a
-            GROUP BY
-                a.fid_voie_physique
-            HAVING
-                COUNT(a.objectid) > 1
-        ),
-
-        C_3 AS(-- Sélection des voies administratives composées d'une seule voie physique
-            SELECT
-                a.fid_voie_administrative
-            FROM
-                G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
-            GROUP BY
-                a.fid_voie_administrative
-            HAVING
-                COUNT(a.fid_voie_physique) = 1
-        ),
-
-        C_4 AS(-- Sélection des voies administratives composées de plusieurs voies physiques
-            SELECT
-                a.fid_voie_administrative
-            FROM
-                G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE a
-            GROUP BY
-                a.fid_voie_administrative
-            HAVING
-                COUNT(a.fid_voie_physique) > 1
-        ),
-
-        C_5 AS(
-            SELECT
-                'Seuils' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_INFOS_SEUIL
-            GROUP BY
-                'Seuils'
-            UNION ALL
-            SELECT
-                'Géométries de seuil' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_SEUIL
-            GROUP BY
-                'Géométries de seuil'
-            UNION ALL
-            SELECT
-                'Tronçons' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_TRONCON
-            GROUP BY
-                'Tronçons'
-            UNION ALL
-            SELECT
-                'Voies physiques' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_VOIE_PHYSIQUE
-            GROUP BY
-                'Voies physiques'
-            UNION ALL
-            SELECT
-                'Voies administratives' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE
-            GROUP BY
-                'Voies administratives'
-            UNION ALL
-            SELECT
-                'Type de voie' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_TYPE_VOIE
-            GROUP BY
-                'Type de voie'
-            UNION ALL
-            SELECT
-                'Relation seuil/tronçon' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_SEUIL
-            WHERE
-                fid_troncon IS NOT NULL
-            GROUP BY
-                'Relation seuil/tronçon'
-            UNION ALL
-            SELECT
-                'Relation Tronçon/voie physique' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_TRONCON
-            WHERE
-                fid_voie_physique IS NOT NULL
-            GROUP BY
-                'Relation Tronçon/voie physique'
-            UNION ALL
-            SELECT
-                'Relation voie physique/voie administrative' AS type_objet,
-                COUNT(objectid) AS nb
-            FROM
-                G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE
-            WHERE
-                fid_voie_physique IS NOT NULL
-                AND fid_voie_administrative IS NOT NULL
-            GROUP BY
-                'Relation voie physique/voie administrative'
-            UNION ALL
-            SELECT
-                'Voies physiques composées d''un seul tronçon' AS type_objet,
-                COUNT(fid_voie_physique) AS nb
-            FROM
-                C_1
-            GROUP BY
-                'Voies physiques composées d''un seul tronçon'
-            UNION ALL
-            SELECT
-                'Voies physiques composées de plusieurs tronçons' AS type_objet,
-                COUNT(fid_voie_physique) AS nb
-            FROM
-                C_2
-            GROUP BY
-                'Voies physiques composées de plusieurs tronçons'
-            UNION ALL
-            SELECT
-                'Voies administratives composées d''une seule voie physique' AS type_objet,
-                COUNT(fid_voie_administrative) AS nb
-            FROM
-                C_3
-            GROUP BY
-                'Voies administratives composées d''une seule voie physique'
-            UNION ALL
-            SELECT
-                'Voies administratives composées de plusieurs voies physiques' AS type_objet,
-                COUNT(fid_voie_administrative) AS nb
-            FROM
-                C_4
-            GROUP BY
-                'Voies administratives composées de plusieurs voies physiques'
-        )
-        
-        SELECT
-            rownum AS objectid,
-            type_objet,
-            nb AS nombre
-        FROM
-            C_5;
-
--- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_STAT_NOMBRE_OBJET IS 'Vue dénombrant tous les objets de la base voie et de la base adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET.objectid IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET.type_objet IS 'Type d''objets de la base voie et de la base adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_OBJET.nombre IS 'Nombre d''objets par type.';
-
--- 3. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.V_STAT_NOMBRE_OBJET TO G_ADMIN_SIG;
-
-/
-
-/*
-Création de la vue V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE permettant de connaître le nombre de voies administratives composées de plusieurs voies physiques et ce, dans le détail.
-*/
-/*
-DROP VIEW G_BASE_VOIE.V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE;
-*/
-
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE" (
-    OBJECTID, 
-    NBR_VOIE_ADMINISTRATIVE, 
-    NBR_VOIE_PHYSIQUE, 
-    CONSTRAINT "V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
+-- 1. Création de la VM
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS (
+    OBJECTID,
+    GEOM
+)        
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(
         SELECT
-            fid_voie_administrative,
-            COUNT(fid_voie_physique) AS nb_voie_physique
+            a.objectid AS id1,
+            b.objectid AS id2
         FROM
-            G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE
-        GROUP BY
-            fid_voie_administrative
+            G_BASE_VOIE.TA_TRONCON a,
+            G_BASE_VOIE.TA_TRONCON b,
+            USER_SDO_GEOM_METADATA m
+        WHERE 
+            a.objectid < b.objectid
+            AND m.table_name = 'TA_TRONCON'
+            AND SDO_WITHIN_DISTANCE(a.geom, b.geom, 'distance = 0.5') = 'TRUE'
+            AND SDO_LRS.CONNECTED_GEOM_SEGMENTS(
+                    SDO_LRS.CONVERT_TO_LRS_GEOM(a.geom, m.diminfo),
+                    SDO_LRS.CONVERT_TO_LRS_GEOM(b.geom, m.diminfo),
+                    0.5
+                ) <> 'TRUE'
     ),
     
     C_2 AS(
         SELECT
-            COUNT(fid_voie_administrative) AS nb_voie_administrative,
-            nb_voie_physique
+            id1 AS objectid
         FROM
             C_1
-        GROUP BY
-            nb_voie_physique
+        UNION ALL
+        SELECT
+            id2 AS objectid
+        FROM
+            C_1
+    ),
+    
+    C_3 AS(
+        SELECT DISTINCT
+            objectid
+        FROM
+            C_2
     )
     
     SELECT
-        rownum AS objectid,
-        nb_voie_administrative,
-        nb_voie_physique
+        a.objectid,
+        b.geom
     FROM
-        C_2;
-
--- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE IS 'Vue permettant de connaître le nombre de voies administratives réparties par le nombre de voies physiques les composant.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE.objectid IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE.nbr_voie_administrative IS 'Nombre de voies administratives réparties par le nombre de voies physiques les composant.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE.nbr_voie_physique IS 'Nombre de voies physiques.';
-
--- 3. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.V_STAT_NOMBRE_VOIE_ADMINISTRATIVE_PAR_NOMBRE_VOIE_PHYSIQUE TO G_ADMIN_SIG;
-
-/
-
-/*
-Création de la vue V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE dénombrant tous les objets de la base voie et de la base adresse.
-*/
-/*
-DROP VIEW G_BASE_VOIE.V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE;
-*/
-
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE" (
-    OBJECTID, 
-    NOMBRE, 
-    GEOM, 
-    CONSTRAINT "V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
-    WITH
-        C_1 AS(
-            SELECT
-                a.fid_seuil,
-                COUNT(a.objectid) AS nombre
-            FROM
-                G_BASE_VOIE.TA_INFOS_SEUIL a
-            GROUP BY 
-                a.fid_seuil
-            HAVING
-                COUNT(a.objectid) > 1
-        )
+        C_3 a
+        INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.objectid;
         
-        SELECT
-            a.objectid,
-            b.nombre,
-            a.geom
-        FROM
-            G_BASE_VOIE.TA_SEUIL a
-            INNER JOIN C_1 b ON b.fid_seuil = a.objectid;
+-- 2. Création des commentaires de la VM
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS IS 'Vue matérialisée identifiant les tronçons distants de 5cm non-jointifs. Mise à jour tous les samedis à 12h00.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS.objectid IS 'Identifiants des tronçons correspondant à la clé primaire de la VM.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS.geom IS 'Géométrie des tronçons.';
 
--- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE IS 'Vue dénombrant les seuils partageant la même géométrie (seules les géométries associées à plusieurs seuils sont sélectionnées dans cette vue).';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE.objectid IS 'Clé primaire de la vue correspondant aux identifiants des géométries des seuils présents dans G_BASE_VOIE.TA_SEUIL.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE.nombre IS 'Nombre de seuils (de la table G_BASE_VOIE_INFOS_SEUIL) par géométrie. Seuls les géométries associées à plusieurs seuils sont présentes dans cette table.';
-COMMENT ON COLUMN G_BASE_VOIE.V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE.geom IS 'Géométrie de type point.';
+-- 3. Création de la clé primaire
+ALTER MATERIALIZED VIEW VM_AUDIT_TRONCON_NON_JOINTIFS 
+ADD CONSTRAINT VM_AUDIT_TRONCON_NON_JOINTIFS_PK 
+PRIMARY KEY (OBJECTID);
 
--- 3. Création des métadonnées spatiales
+-- 4. Création des métadonnées spatiales
 INSERT INTO USER_SDO_GEOM_METADATA(
     TABLE_NAME, 
     COLUMN_NAME, 
@@ -1327,15 +1212,44 @@ INSERT INTO USER_SDO_GEOM_METADATA(
     SRID
 )
 VALUES(
-    'V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE',
+    'VM_AUDIT_TRONCON_NON_JOINTIFS',
     'GEOM',
     SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
     2154
 );
 COMMIT;
 
--- 4. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.V_STAT_NOMBRE_SEUIL_PAR_GEOMETRIE TO G_ADMIN_SIG;
+-- 5. Création des index
+-- index spatial
+CREATE INDEX VM_AUDIT_TRONCON_NON_JOINTIFS_SIDX
+ON G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS(GEOM)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX
+PARAMETERS(
+  'sdo_indx_dims=2, 
+  layer_gtype=LINE, 
+  tablespace=G_ADT_INDX, 
+  work_tablespace=DATA_TEMP'
+);
+    
+-- 5. Affectations des droits
+GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS TO G_ADMIN_SIG;
+
+/
+
+/*
+Affectation des droits de lecture et de mise à jour aux vues matérialisées de consultation
+*/
+
+-- 3. Création du droit de lecture sur les vues et les vues matérialisées
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_SEUIL TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE  TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_PHYSIQUE TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_CONSULTATION_VOIE_SUPRA_COMMUNALE TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_DOUBLON_NOM_VOIE_PAR_COMMUNE TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE TO G_BASE_VOIE_LEC;
+GRANT SELECT ON G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR TO G_BASE_VOIE_LEC;
 
 /
 

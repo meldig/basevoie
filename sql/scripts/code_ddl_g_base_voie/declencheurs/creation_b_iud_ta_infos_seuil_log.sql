@@ -47,7 +47,7 @@ BEGIN
         :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
         :new.fid_pnom_modification := v_id_agent;
 
-        INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(id_infos_seuil, numero_seuil, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(id_infos_seuil, numero_seuil, complement_numero_seuil, date_action, id_seuil, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid, 
                     :new.numero_seuil,  
@@ -60,7 +60,7 @@ BEGIN
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
             :new.fid_pnom_modification := v_id_agent;
             
-            INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(id_infos_seuil, numero_seuil, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(id_infos_seuil, numero_seuil, complement_numero_seuil, date_action, id_seuil, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid, 
                     :old.numero_seuil, 
@@ -72,7 +72,7 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_INFOS_SEUIL, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(id_infos_seuil, numero_seuil, complement_numero_seuil, date_action, fid_seuil, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_INFOS_SEUIL_LOG(id_infos_seuil, numero_seuil, complement_numero_seuil, date_action, id_seuil, fid_type_action, fid_pnom)
         VALUES(
                 :old.objectid, 
                 :old.numero_seuil,  

@@ -36,25 +36,28 @@ DISABLE QUERY REWRITE AS
                 AND m.table_name = 'VM_CONSULTATION_VOIE_ADMINISTRATIVE'
         ),
 
-        C_2 AS(-- Décompte des doubons de noms de voie par commune
+        C_2 AS(-- Décompte des doublons de noms de voie par commune
             SELECT
                 a.nom_voie,
                 a.code_insee,
+                a.lateralite,
                 COUNT(a.objectid) AS nombre
             FROM
                 G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a
                 INNER JOIN C_1 b ON b.nom_voie = a.nom_voie AND b.code_insee = a.code_insee
             GROUP BY
                 a.nom_voie,
-                a.code_insee
+                a.code_insee,
+                a.lateralite
             HAVING
                 COUNT(a.objectid) > 1
         ),
 
-        C_3 AS(-- Regroupement des géométries par nom de voie et commune
+        C_3 AS(-- Regroupement des géométries par nom de voie, commune et latéralité
             SELECT
                 a.nom_voie,
                 a.code_insee,
+                a.lateralite,
                 b.nombre,
                 SDO_CS.MAKE_2D(SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.001))) AS geom
             FROM
@@ -63,12 +66,14 @@ DISABLE QUERY REWRITE AS
             GROUP BY
                 a.nom_voie,
                 a.code_insee,
+                a.lateralite,
                 b.nombre
         )
         SELECT
             rownum AS objectid,
             a.nom_voie,
             a.code_insee,
+            a.lateralite,
             a.nombre,
             a.geom
         FROM

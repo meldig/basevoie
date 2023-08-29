@@ -56,10 +56,10 @@ BEGIN
             WHERE
                 libelle_court = 'à déterminer';
 
-        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, id_genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :new.objectid,
-                    :new.genre_voie,
+                    :new.fid_genre_voie,
                     :new.libelle_voie,
                     :new.complement_nom_voie,
                     :new.code_insee,
@@ -73,10 +73,10 @@ BEGIN
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_VOIE_ADMINISTRATIVE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
             :new.fid_pnom_modification := v_id_agent;
 
-            INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
+            INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, id_genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid,
-                    :old.genre_voie,
+                    :old.fid_genre_voie,
                     :old.libelle_voie,
                     :old.complement_nom_voie,
                     :old.code_insee,
@@ -89,10 +89,10 @@ BEGIN
         END IF;
     END IF;
     IF DELETING THEN -- En cas de suppression on insère les valeurs de la table TA_VOIE_ADMINISTRATIVE_LOG, le numéro d'agent correspondant à l'utilisateur, la date de suppression et le type de modification.
-        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
+        INSERT INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE_LOG(id_voie_administrative, id_genre_voie, libelle_voie, complement_nom_voie, code_insee, commentaire, id_type_voie, date_action, fid_type_action, fid_pnom)
             VALUES(
                     :old.objectid,
-                    :old.genre_voie,
+                    :old.fid_genre_voie,
                     :old.libelle_voie,
                     :old.complement_nom_voie,
                     :old.code_insee,

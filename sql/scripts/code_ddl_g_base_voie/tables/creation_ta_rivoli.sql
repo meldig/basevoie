@@ -22,10 +22,10 @@ PRIMARY KEY("OBJECTID")
 USING INDEX TABLESPACE "G_ADT_INDX";
 
 -- 4. Création des index
-CREATE INDEX TA_RIVOLI_code_rivoli_IDX ON G_BASE_VOIE.TA_RIVOLI(code_rivoli)
+CREATE INDEX TA_RIVOLI_CODE_RIVOLI_IDX ON G_BASE_VOIE.TA_RIVOLI(code_rivoli)
     TABLESPACE G_ADT_INDX;
 
-CREATE INDEX TA_RIVOLI_cle_controle_IDX ON G_BASE_VOIE.TA_RIVOLI(cle_controle)
+CREATE INDEX TA_RIVOLI_CLE_CONTROLE_IDX ON G_BASE_VOIE.TA_RIVOLI(cle_controle)
     TABLESPACE G_ADT_INDX;
 
 -- 5. Affectation du droit de sélection sur les objets de la table aux administrateurs

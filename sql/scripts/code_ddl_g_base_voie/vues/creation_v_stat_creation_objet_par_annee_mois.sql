@@ -1,18 +1,18 @@
 /*
-Création de la vue V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS dénombrant tous les objets de la base voie et de la base adresse par année et mois de création.
+Création de la vue V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS dénombrant tous les objets de la base voie et de la base adresse par année et mois de création.
 */
 /*
-DROP VIEW G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS;
+DROP VIEW G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS;
 */
 
 -- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS" (
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS" (
     OBJECTID,
     TYPE_OBJET, 
     ANNEE, 
     MOIS, 
     NOMBRE, 
-    CONSTRAINT "V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
+    CONSTRAINT "V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS_PK" PRIMARY KEY ("OBJECTID") DISABLE) AS 
 WITH
     C_1 AS(
         SELECT
@@ -86,15 +86,15 @@ WITH
         C_1;
 
 -- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS IS 'Vue dénombrant tous les objets de la base voie et de la base adresse par année et mois de création. Cette vue fonctionne à partir des tables de log.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.objectid IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.type_objet IS 'Type d''objets de la base voie et de la base adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.annee IS 'Année de création.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.mois IS 'Mois de création.';
-COMMENT ON COLUMN G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS.nombre IS 'Nombre d''objets par année et mois de création.';
+COMMENT ON TABLE G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS IS 'Vue dénombrant tous les objets de la base voie et de la base adresse par année et mois de création. Cette vue fonctionne à partir des tables de log.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS.objectid IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS.type_objet IS 'Type d''objets de la base voie et de la base adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS.annee IS 'Année de création.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS.mois IS 'Mois de création.';
+COMMENT ON COLUMN G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS.nombre IS 'Nombre d''objets par année et mois de création.';
 
 -- 3. Affectation du droit de sélection sur les objets de la table aux administrateurs
-GRANT SELECT ON G_BASE_VOIE.V_AUDIT_CREATION_OBJET_PAR_ANNEE_MOIS TO G_ADMIN_SIG;
+GRANT SELECT ON G_BASE_VOIE.V_STAT_CREATION_OBJET_PAR_ANNEE_MOIS TO G_ADMIN_SIG;
 
 /
 

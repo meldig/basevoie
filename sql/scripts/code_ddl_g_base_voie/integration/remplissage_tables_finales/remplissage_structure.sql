@@ -30,7 +30,7 @@ SELECT
     libelle_long
 FROM
     G_BASE_VOIE.TEMP_J_LIBELLE;
--- Résultat : 11 lignes fusionnées.
+-- Résultat : 12 lignes fusionnées.
 
 -- Insertion des types d'action pour les tables de log
 INSERT INTO G_BASE_VOIE.TA_LIBELLE(libelle_court, libelle_long)
@@ -126,7 +126,6 @@ MERGE INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE a
     USING(
         SELECT
             a.OBJECTID,
-            a.GENRE_VOIE,
             a.LIBELLE_VOIE,
             a.COMPLEMENT_NOM_VOIE,
             a.CODE_INSEE,
@@ -135,14 +134,15 @@ MERGE INTO G_BASE_VOIE.TA_VOIE_ADMINISTRATIVE a
             a.FID_PNOM_SAISIE,
             a.FID_PNOM_MODIFICATION,
             a.FID_TYPE_VOIE,
+            a.FID_GENRE_VOIE,
             a.FID_RIVOLI
         FROM
             G_BASE_VOIE.TEMP_J_VOIE_ADMINISTRATIVE a
     )t
 ON(a.objectid = t.objectid AND a.fid_type_voie = t.fid_type_voie)
 WHEN NOT MATCHED THEN
-    INSERT(a.objectid, a.libelle_voie, a.complement_nom_voie, a.code_insee, a.fid_type_voie, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_rivoli)
-    VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_rivoli);
+    INSERT(a.objectid, a.libelle_voie, a.complement_nom_voie, a.code_insee, a.fid_type_voie, a.date_saisie, a.date_modification, a.fid_pnom_saisie, a.fid_pnom_modification, a.fid_rivoli, a.fid_genre_voie)
+    VALUES(t.objectid, t.libelle_voie, t.complement_nom_voie, t.code_insee, t.fid_type_voie, t.date_saisie, t.date_modification, t.fid_pnom_saisie, t.fid_pnom_modification, t.fid_rivoli, t.fid_genre_voie);
 -- Résultat : 22 168 lignes fusionnées.
 
 -- Import des relations voies principales / secondaires
