@@ -89,7 +89,7 @@ WITH
             c.classement,
             d.id_voie_physique,
             d.id_voie_administrative,
-            d.lateralite
+            d.lateralite_voie_administrative AS lateralite
         FROM
             C_4 a
             INNER JOIN SIREO_LEC.OUT_DOMANIALITE b ON b.cnumtrc = a.cnumtrc
@@ -102,7 +102,7 @@ WITH
             a.classement,
             b.id_voie_physique,
             b.id_voie_administrative,
-            b.lateralite
+            b.lateralite_voie_administrative AS lateralite
         FROM
             C_3 a
             INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE b ON b.id_troncon = a.cnumtrc
@@ -113,7 +113,7 @@ WITH
             'VC' AS classement,
             a.id_voie_physique,
             a.id_voie_administrative,
-            a.lateralite
+            a.lateralite_voie_administrative AS lateralite
         FROM
             G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE a
             INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.id_troncon
@@ -144,7 +144,7 @@ WITH
 
     SELECT
         b.geom,
-        a.id_troncon,
+        a.id_troncon AS objectid,
         a.code_tronc,
         a.classement,
         a.id_voie AS id_voie_droite,
@@ -160,7 +160,7 @@ WITH
     WHERE
         a.lateralite IN('Droit', 'LesDeuxCotes')
         AND c.lateralite IN('Gauche', 'LesDeuxCotes')
-        AND a.id_troncon NOT IN(1851, 51654);
+        AND a.id_troncon NOT IN(1851, 51654, 90222);
 
 -- 2. Création des commentaires sur la table et les champs
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - regroupant les tronçons de la table TA_TRONCON les informations nécessaires à l''export LITTERALIS.';
@@ -238,4 +238,3 @@ TABLESPACE G_ADT_INDX;
 GRANT SELECT ON G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON TO G_ADMIN_SIG;
 
 /
-

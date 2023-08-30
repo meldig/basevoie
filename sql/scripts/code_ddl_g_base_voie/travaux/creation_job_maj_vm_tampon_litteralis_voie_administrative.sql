@@ -1,5 +1,5 @@
 /*
-Création du job JOB_MAJ_VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE rafraîchissant la VM VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE du lundi au samedi à 12h00.
+Création du job JOB_MAJ_VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE rafraîchissant la VM VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE le premier dimanche du mois à 09h00.
 */
 
 BEGIN
@@ -7,9 +7,9 @@ BEGIN
    job_name          =>  'JOB_MAJ_VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE',
    job_type          =>  'PLSQL_BLOCK',
    job_action        =>  'DBMS_REFRESH.REFRESH('"G_BASE_VOIE"."VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE"');', 
-   start_date        =>  '25/06/23 12:00:00 EUROPE/PARIS',
+   start_date        =>  '02/09/23 09:00:00 EUROPE/PARIS',
    repeat_interval   =>  'FREQ=MONTHLY; INTERVAL=1; BYDAY=SUN',
-   comments          =>  'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE le dernier dimanche du mois à 12h00.');
+   comments          =>  'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE le premier dimanche du mois à 09h00.');
 END;
 /
 

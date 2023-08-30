@@ -8,6 +8,7 @@ DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE';
 COMMIT;
 */
+
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE (
     geometry,
@@ -31,7 +32,7 @@ WITH
         FROM
             G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a
         WHERE
-            a.hierarchie = 'Voie secondaire'
+            LOWER(a.hierarchie) = 'voie secondaire'
         GROUP BY
             a.id_voie_administrative,
             a.type_voie,
@@ -40,45 +41,30 @@ WITH
             a.code_insee
     )
 
-SELECT -- mise en ordre des voies secondaires en fonction de leur taille (ajout du suffixe ANNEXE 1, 2, 3 en fonction de la taille pour un même libelle_voie et code_insee)
-    a.geom,
-    a.id_voie_administrative,
-    CAST(a.id_voie_administrative AS VARCHAR2(254 BYTE)) AS code_voie,
-    CAST(SUBSTR(UPPER(TRIM(a.libelle)), 1, 1) || SUBSTR(LOWER(TRIM(a.libelle)), 2) || CASE WHEN a.libelle_voie IS NOT NULL THEN ' ' || TRIM(a.libelle_voie) ELSE '' END || CASE WHEN a.complement_nom_voie IS NOT NULL THEN ' ' || TRIM(a.complement_nom_voie) ELSE '' END || CASE WHEN a.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN a.code_insee = '59355' THEN ' (Lomme)' END || ' Annexe ' || ROW_NUMBER() OVER (PARTITION BY (UPPER(TRIM(a.libelle_voie)) || ' ' || a.code_insee) ORDER BY SDO_GEOM.SDO_LENGTH(a.geom, 0.001) DESC) AS VARCHAR2(254)) AS nom_voie,
-    CASE
-        WHEN a.code_insee IN('59355', '59298')
-            THEN CAST('59350' AS VARCHAR2(254 BYTE))
-        ELSE 
-            CAST(a.code_insee AS VARCHAR2(254 BYTE))
-    END AS code_insee
-FROM
-    C_1 a
-UNION ALL
-SELECT -- Sélection et matérialisation des voies principales
-    SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom,
-    a.id_voie_administrative,
-    CAST(a.id_voie_administrative AS VARCHAR2(254 BYTE)) AS code_voie,
-    a.nom_voie,
-    CASE
-        WHEN a.code_insee IN('59355', '59298')
-            THEN CAST('59350' AS VARCHAR2(254 BYTE))
-        ELSE 
-            CAST(a.code_insee AS VARCHAR2(254 BYTE))
-    END AS code_insee
-FROM
-    G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a
-WHERE
-    a.hierarchie = 'Voie Principale'
-GROUP BY
-    a.id_voie_administrative,
-    CAST(a.id_voie_administrative AS VARCHAR2(254 BYTE)),
-    a.nom_voie,
-    CASE
-        WHEN a.code_insee IN('59355', '59298')
-            THEN CAST('59350' AS VARCHAR2(254 BYTE))
-        ELSE 
-            CAST(a.code_insee AS VARCHAR2(254 BYTE))
-    END;
+    SELECT -- mise en ordre des voies secondaires en fonction de leur taille (ajout du suffixe ANNEXE 1, 2, 3 en fonction de la taille pour un même libelle_voie et code_insee)
+        a.geom,
+        a.id_voie_administrative AS objectid,
+        CAST(a.id_voie_administrative AS VARCHAR2(254 BYTE)) AS code_voie,
+        CAST(SUBSTR(UPPER(TRIM(a.libelle)), 1, 1) || SUBSTR(LOWER(TRIM(a.libelle)), 2) || CASE WHEN a.libelle_voie IS NOT NULL THEN ' ' || TRIM(a.libelle_voie) ELSE '' END || CASE WHEN a.complement_nom_voie IS NOT NULL THEN ' ' || TRIM(a.complement_nom_voie) ELSE '' END || CASE WHEN a.code_insee = '59298' THEN ' (Hellemmes-Lille)' WHEN a.code_insee = '59355' THEN ' (Lomme)' END || ' Annexe ' || ROW_NUMBER() OVER (PARTITION BY (UPPER(TRIM(a.libelle_voie)) || ' ' || a.code_insee) ORDER BY SDO_GEOM.SDO_LENGTH(a.geom, 0.001) DESC) AS VARCHAR2(254)) AS nom_voie,
+        CAST(a.code_insee AS VARCHAR2(254 BYTE)) AS code_insee
+    FROM
+        C_1 a
+    UNION ALL
+    SELECT -- Sélection et matérialisation des voies principales
+        SDO_AGGR_UNION(SDOAGGRTYPE(a.geom, 0.005)) AS geom,
+        a.id_voie_administrative AS objectid,
+        CAST(a.id_voie_administrative AS VARCHAR2(254 BYTE)) AS code_voie,
+        a.nom_voie,
+        CAST(a.code_insee AS VARCHAR2(254 BYTE)) AS code_insee
+    FROM
+        G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a
+    WHERE
+        LOWER(a.hierarchie) = 'voie principale'
+    GROUP BY
+        a.id_voie_administrative,
+        CAST(a.id_voie_administrative AS VARCHAR2(254 BYTE)),
+        a.nom_voie,
+        CAST(a.code_insee AS VARCHAR2(254 BYTE));
 
 -- 2. Création des commentaires sur la table et les champs
 COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE IS 'Vue matérialisée - de la structure tampon du projet LITTERALIS - regroupant toutes les données des voies administratives (sauf leur latéralité) et matérialisant leur tracé. Mise à jour le dernier dimanche du mois à 08h00.';

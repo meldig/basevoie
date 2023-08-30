@@ -39,9 +39,9 @@ WITH
             CAST(a.numero  AS NUMBER(8,0)) AS NUMERO,
             CAST(TRIM(a.complement_numero) AS VARCHAR2(254)) AS REPETITION,
             CASE
-                WHEN c.lateralite = 'droit'
+                WHEN c.lateralite_voie_administrative = 'droit'
                     THEN 'Pair'
-                WHEN c.lateralite = 'gauche'
+                WHEN c.lateralite_voie_administrative = 'gauche'
                     THEN 'Impair'
                 ELSE
                     'LesDeuxCotes' 
@@ -103,12 +103,6 @@ VALUES(
     2154
 );
 COMMIT;
-
--- 5. Création des clés étrangères
-ALTER TABLE G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE
-ADD CONSTRAINT VM_TAMPON_LITTERALIS_ADRESSE_FID_VOIE_FK
-FOREIGN KEY (fid_voie)
-REFERENCES G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE(objectid);
 
 -- 6. Création de l'index spatial sur le champ geom
 CREATE INDEX VM_TAMPON_LITTERALIS_ADRESSE_SIDX

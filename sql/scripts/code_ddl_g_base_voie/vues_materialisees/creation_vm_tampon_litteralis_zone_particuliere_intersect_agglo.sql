@@ -39,8 +39,8 @@ WITH C_1 AS( -- Pour toutes les voies intersectant les zones d'agglomération, o
             G_BASE_VOIE.VM_CONSULTATION_VOIE_ADMINISTRATIVE a,
             G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_AGGLOMERATION b
         WHERE
-            SDO_GEOM.SDO_INTERSECTION(a.geometry, b.geom, 0.005).sdo_gtype IN(2002, 2006)
-            AND SDO_RELATE(a.geometry, b.geom, 'mask=OVERLAPBDYDISJOINT+OVERLAPBDYINTERSECT') = 'TRUE'
+            SDO_GEOM.SDO_INTERSECTION(a.geom, b.geom, 0.005).sdo_gtype IN(2002, 2006)
+            AND SDO_RELATE(a.geom, b.geom, 'mask=OVERLAPBDYDISJOINT+OVERLAPBDYINTERSECT') = 'TRUE'
     ),
 
     C_2 AS(
