@@ -825,7 +825,7 @@ CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_UNITE_TERRITORIALE_VOIRIE (
 REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
-  AS WITH 
+  WITH 
     C_1 AS(-- Création de l'UT LS
     SELECT
         SUBSTR(a.nom, 0, 4) AS NOM,
@@ -1640,39 +1640,55 @@ Création de la Vue matérialisée VM_INFORMATION_VOIE_LITTERALIS rassemblant le
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS;
 */
 -- 1. Création de la vue matérialisée
-CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_INFORMATION_VOIE_LITTERALIS" ("OBJECTID", "ID_VOIE", "DOMANIALITE", "TRAFIC", "AGE_DES_TRAVAUX", "ANCIENNETE_DES_TRAVAUX")
-REFRESH 
-START WITH sysdate+0 
-NEXT TRUNC(sysdate)+43/24
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS (
+    OBJECTID, 
+    ID_VOIE,
+    DOMANIALITE,
+    TRAFIC,
+    AGE_DES_TRAVAUX,
+    ANCIENNETE_DES_TRAVAUX
+)
+REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
+    WITH C_1 AS(
+        SELECT
+            a.idvoie AS id_voie,
+            a.domania AS domanialite,
+            b.clastrf AS trafic,
+            c.age_travaux AS age_des_travaux,
+            CASE
+                WHEN c.age_travaux< 5
+                    THEN 'Voirie de moins de 5 ans'
+                ELSE
+                    'Voirie de plus de 5 ans'
+            END AS anciennete_des_travaux
+        FROM
+            SIREO_LEC.OUT_DOMANIALITE a
+            INNER JOIN SIREO_LEC.OUT_CLAS_TRAF b ON a.idvoie = b.idvoie 
+            INNER JOIN SIREO_LEC.OUT_TRAVAUX_VOIE c ON c.idvoie = b.idvoie
+        GROUP BY
+            a.idvoie,
+            a.domania,
+            b.clastrf,
+            c.age_travaux,
+            CASE
+                WHEN c.age_travaux< 5
+                    THEN 'Voirie de moins de 5 ans'
+                ELSE
+                    'Voirie de plus de 5 ans'
+            END
+    )
+
     SELECT
-        ROWNUM AS objectid,
-        a.idvoie AS id_voie,
-        a.domania AS domanialite,
-        b.clastrf AS trafic,
-        c.age_travaux AS age_des_travaux,
-        CASE
-            WHEN c.age_travaux< 5
-                THEN 'Voirie de moins de 5 ans'
-            ELSE
-                'Voirie de plus de 5 ans'
-        END AS anciennete_des_travaux
+        rownum AS objectid,
+        a.id_voie,
+        a.domanialite,
+        a.trafic,
+        a.age_des_travaux,
+        a.anciennete_des_travaux
     FROM
-        SIREO_LEC.OUT_DOMANIALITE a
-        INNER JOIN SIREO_LEC.OUT_CLAS_TRAF b ON a.idvoie = b.idvoie 
-        INNER JOIN SIREO_LEC.OUT_TRAVAUX_VOIE c ON c.idvoie = b.idvoie
-    GROUP BY
-        a.idvoie,
-        a.domania,
-        b.clastrf,
-        c.age_travaux,
-        CASE
-            WHEN c.age_travaux< 5
-                THEN 'Voirie de moins de 5 ans'
-            ELSE
-                'Voirie de plus de 5 ans'
-        END;
+        C_1 a;
 
 -- 2. Création des commentaires
 COMMENT ON TABLE G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS IS 'Vue matérialisée rassemblant les informations nécessaires aux agents de la DEPV pour gérer les travaux de voirie via l''application LITTERALIS.';
@@ -1709,8 +1725,288 @@ CREATE INDEX VM_INFORMATION_VOIE_LITTERALIS_ANCIENNETE_DES_TRAVAUX_IDX ON G_BASE
 
 -- 5. Création des droits de lecture
 GRANT SELECT ON G_GESTIONGEO.VM_INFORMATION_VOIE_LITTERALIS TO G_ADMIN_SIG;
-GRANT SELECT ON G_GESTIONGEO.VM_INFORMATION_VOIE_LITTERALIS TO G_BASE_VOIE_R WITH GRANT OPTION;
-GRANT SELECT ON G_GESTIONGEO.VM_INFORMATION_VOIE_LITTERALIS TO G_BASE_VOIE_RW;
+
+/
+
+/*
+Création de la vue V_LITTERALIS_TRONCON - du jeux d'export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.
+*/
+/*
+DROP VIEW G_BASE_VOIE.V_LITTERALIS_TRONCON;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_TRONCON';
+COMMIT;
+*/
+-- 1. Création de la vue
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_TRONCON" ("IDENTIFIANT", "CODE_TRONC", "CLASSEMENT", "CODE_RUE_G", "NOM_RUE_G", "INSEE_G", "CODE_RUE_D", "NOM_RUE_D", "INSEE_D", "LARGEUR", "GEOMETRY", 
+   CONSTRAINT "V_LITTERALIS_TRONCON_PK" PRIMARY KEY ("CODE_TRONC") DISABLE) AS 
+    SELECT
+        a.objectid AS identifiant,
+        a.code_tronc,
+        a.classement,
+        a.id_voie_gauche AS code_rue_g,
+        a.nom_voie_gauche AS nom_rue_g,
+        a.code_insee_voie_gauche AS insee_g,
+        a.id_voie_droite AS code_rue_d,
+        a.nom_voie_droite AS nom_rue_d,
+        a.code_insee_voie_droite AS insee_d,
+        CAST('' AS NUMBER(8,0)) AS largeur,
+        a.geometry
+    FROM
+        G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON a;
+        
+-- Création des commentaires
+COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_TRONCON IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.IDENTIFIANT IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CODE_TRONC IS 'Identificateur unique et immuable du tronçon de voie partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CLASSEMENT IS 'Classement de la voie.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CODE_RUE_G IS 'Code unique de la rue côté gauche du tronçon partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.NOM_RUE_G IS 'Nom de la voie côté gauche du tronçon (telle qu’affichée dans les arrêtés et autorisations).';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.INSEE_G IS 'Code INSEE de la commune côté gauche du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CODE_RUE_D IS 'Code unique de la rue côté droit du tronçon partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.NOM_RUE_D IS 'Nom de la voie côté droit du tronçon (telle qu’affichée dans les arrêtés et autorisations).';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.INSEE_D IS 'Code INSEE de la commune côté droit du tronçon.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.LARGEUR IS 'Valeur indiquant une largeur de la voie.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.GEOMETRY IS 'Géométrie de l''adresse de type ligne simple.';
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'V_LITTERALIS_TRONCON',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_TRONCON TO G_ADMIN_SIG;
+
+/
+
+/*
+Création de la vue V_LITTERALIS_ADRESSE - du jeux d'export du projet LITTERALIS - contenant tous les seuils au format LITTERALIS.
+*/
+/*
+DROP VIEW G_BASE_VOIE.V_LITTERALIS_ADRESSE;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_ADRESSE';
+COMMIT;
+*/
+-- 1. Création de la vue
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_ADRESSE" (
+    IDENTIFIANT, 
+    CODE_VOIE, 
+    CODE_POINT, 
+    NATURE, 
+    LIBELLE, 
+    NUMERO, 
+    REPETITION, 
+    COTE, 
+    GEOMETRY, 
+    CONSTRAINT "V_LITTERALIS_ADRESSE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS 
+    SELECT
+        objectid AS identifiant,
+        code_voie,
+        code_point,
+        nature,
+        libelle,
+        numero,
+        repetition,
+        cote,
+        geometry
+    FROM
+        G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE
+    WHERE
+        objectid NOT IN(32915, 423830, 405371, 405372, 405373, 403572, 405374, 429444, 418366, 37897, 39111, 41292, 41293, 426054, 355617, 359366, 359365, 359364, 359363, 359362, 359361, 359360, 359244, 51594, 64736, 65124, 393958, 373827, 394209, 65585, 65583, 65581, 65580, 65579, 65584, 65582, 373826, 373825, 394325, 418154, 418155, 374459, 81178, 90190, 90189, 330688, 368214, 393303, 106029, 330781, 330782, 428501, 145112, 330819, 383476, 383475, 145111, 145716, 330862, 125358, 383284, 126822, 427937, 428676, 429030, 428198, 330981, 428178, 328367, 369418, 328368, 142229, 428687, 427810, 333163, 159049, 374858, 367335, 429551, 398549, 189812, 189114, 380857, 206308, 384462, 431311, 376634, 27207, 27261, 242734, 242735, 242736, 242743, 407604, 407605, 407606, 407593, 407594, 407595, 407596, 407597, 407518, 406363, 406364, 406365, 243643, 247063, 247068, 367139, 379324, 249233, 430507, 430735, 430691, 256788, 256787, 256789, 256790, 257524, 258408, 367564, 396741, 294271, 302007, 377745, 5754, 377746, 377743, 370688, 370964, 324107, 371347, 326672, 29744, 5755, 5757, 8858, 429850, 429851, 392134);
+      
+-- Création des commentaires
+COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_ADRESSE IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les seuils au format LITTERALIS.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.IDENTIFIANT IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.CODE_VOIE IS 'Liaison avec la vue V_LITTERALIS_TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.CODE_POINT IS 'Identificateur unique et immuable du point partagé entre Littéralis Expert et le SIG.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.NATURE IS 'Indique la nature du point : ADR = Adresse.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.LIBELLE IS 'Libellé du point affiché dans les textes (dans les actes…).';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.NUMERO IS 'Numéro postal.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.REPETITION IS 'Indique la valeur de répétition d’un numéro sur une rue. La saisie de la répétition est libre.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.COTE IS 'Définit sur quel côté de la voie s’appuie l’adresse : LesDeuxCotes, Impair, Pair.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.GEOMETRY IS 'Géométrie de l''adresse de type point.';
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'V_LITTERALIS_ADRESSE',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_ADRESSE TO G_ADMIN_SIG;
+
+/
+
+/*
+Création de la vue V_LITTERALIS_REGROUPEMENT - du jeux d'export du projet LITTERALIS - contenant tous les regroupements (secteurs, territoires, unités territoriales) au format LITTERALIS.
+*/
+/*
+DROP VIEW G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_REGROUPEMENT';
+COMMIT;
+*/
+-- 1. Création de la vue
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_REGROUPEMENT" (
+    NOM,
+    CODE_REGR,
+    TYPE,
+    CODE_INSEE,
+    GEOMETRY, 
+   CONSTRAINT "V_LITTERALIS_REGROUPEMENT_PK" PRIMARY KEY ("CODE_REGR") DISABLE
+) AS 
+    SELECT
+        nom,
+        code_regr,
+        type,
+        code_insee,
+        geometry
+    FROM
+        G_BASE_VOIE.VM_TAMPON_LITTERALIS_REGROUPEMENT;
+        
+-- Création des commentaires
+COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les regroupements (secteurs, territoires, unités territoriales) au format LITTERALIS.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.NOM IS 'Nom du regroupement.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.CODE_REGR IS 'Clé primaire - Identificateur unique et immuable du regroupement partagé entre Littéralis Expert et le SIG';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.TYPE IS 'Type de regroupement. En accord avec le prestataire tous les regroupements sont de type "Zone".';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.CODE_INSEE IS 'Code INSEE de la commune. Les regroupements pouvant recouvrir plusieurs communes il a été convenu avec le prestataire de ne rien mettre dans ce champ.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.GEOMETRY IS 'Géométries de type multipolygone des secteurs, territoires et unités territoriales du service voirie.';
+
+-- 4. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'V_LITTERALIS_REGROUPEMENT',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 5. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT TO G_ADMIN_SIG;
+
+/
+
+/*
+Création de la vue V_LITTERALIS_ZONE_PARTICULIERE - du jeux d'export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.
+*/
+/*
+DROP VIEW G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_ZONE_PARTICULIERE';
+COMMIT;
+*/
+-- 1. Création de la vue
+CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_ZONE_PARTICULIERE" (
+    IDENTIFIANT, 
+    TYPE_ZONE, 
+    CODE_VOIE, 
+    COTE_VOIE, 
+    CODE_INSEE, 
+    CATEGORIE, 
+    GEOMETRY, 
+   CONSTRAINT "V_LITTERALIS_ZONE_PARTICULIERE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS 
+    WITH C_1 AS(
+        SELECT
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
+            geometry
+        FROM
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_EN_AGGLO
+        UNION ALL
+        SELECT
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
+            geometry
+        FROM
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO
+        UNION ALL
+        SELECT
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
+            geometry
+        FROM
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_HORS_AGGLO
+        UNION ALL
+        SELECT
+            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
+            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
+            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
+            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
+            CAST(categorie  AS NUMBER(8,0)) AS categorie,
+            geometry
+        FROM
+            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_HORS_AGGLO
+    )
+
+    SELECT
+        rownum AS identifiant,
+        type_zone,
+        code_voie,
+        cote_voie,
+        code_insee,
+        categorie,
+        geometry
+    FROM
+        C_1;
+        
+-- 2. Création des commentaires
+COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE IS 'Vue - du jeux d''export du projet LITTERALIS - contenant toutes les zones particulières au format LITTERALIS.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.IDENTIFIANT IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.TYPE_ZONE IS 'Type de zone : Commune, Agglomeration, RGC, Categorie, InteretCommunautaire.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.CODE_VOIE IS 'Liaison avec la classe TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.COTE_VOIE IS 'Définit sur quel côté de la voie s’appuie la zone particulière : LesDeuxCotes, Gauche, Droit.';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.CODE_INSEE IS 'Code INSEE de la commune. * Obligatoire pour les entrées « Commune » et « Agglomeration ».';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.CATEGORIE IS 'Valeur définissant la catégorie de la rue sur cette zone (1,2,3..). A définir à 0 lorsque le champ TYPE_ZONE <> « Categorie ».';
+COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.GEOMETRY IS 'Géométries de type multiligne des zones particulières.';
+
+-- 3. Création des métadonnées spatiales
+INSERT INTO USER_SDO_GEOM_METADATA(
+    TABLE_NAME, 
+    COLUMN_NAME, 
+    DIMINFO, 
+    SRID
+)
+VALUES(
+    'V_LITTERALIS_ZONE_PARTICULIERE',
+    'GEOMETRY',
+    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
+    2154
+);
+COMMIT;
+
+-- 4. Affection des droits
+GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE TO G_ADMIN_SIG;
 
 /
 
@@ -2223,288 +2519,6 @@ VALUES(
 
 -- 4. Création des droits de lecture
 GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_AUDIT_ZONE_PARTICULIERE TO G_ADMIN_SIG;
-
-/
-
-/*
-Création de la vue V_LITTERALIS_TRONCON - du jeux d'export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.
-*/
-/*
-DROP VIEW G_BASE_VOIE.V_LITTERALIS_TRONCON;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_TRONCON';
-COMMIT;
-*/
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_TRONCON" ("IDENTIFIANT", "CODE_TRONC", "CLASSEMENT", "CODE_RUE_G", "NOM_RUE_G", "INSEE_G", "CODE_RUE_D", "NOM_RUE_D", "INSEE_D", "LARGEUR", "GEOMETRY", 
-   CONSTRAINT "V_LITTERALIS_TRONCON_PK" PRIMARY KEY ("CODE_TRONC") DISABLE) AS 
-    SELECT
-        a.objectid AS identifiant,
-        a.code_tronc,
-        a.classement,
-        a.id_voie_gauche AS code_rue_g,
-        a.nom_voie_gauche AS nom_rue_g,
-        a.code_insee_voie_gauche AS insee_g,
-        a.id_voie_droite AS code_rue_d,
-        a.nom_voie_droite AS nom_rue_d,
-        a.code_insee_voie_droite AS insee_d,
-        CAST('' AS NUMBER(8,0)) AS largeur,
-        a.geometry
-    FROM
-        G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON a;
-        
--- Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_TRONCON IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.IDENTIFIANT IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CODE_TRONC IS 'Identificateur unique et immuable du tronçon de voie partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CLASSEMENT IS 'Classement de la voie.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CODE_RUE_G IS 'Code unique de la rue côté gauche du tronçon partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.NOM_RUE_G IS 'Nom de la voie côté gauche du tronçon (telle qu’affichée dans les arrêtés et autorisations).';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.INSEE_G IS 'Code INSEE de la commune côté gauche du tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.CODE_RUE_D IS 'Code unique de la rue côté droit du tronçon partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.NOM_RUE_D IS 'Nom de la voie côté droit du tronçon (telle qu’affichée dans les arrêtés et autorisations).';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.INSEE_D IS 'Code INSEE de la commune côté droit du tronçon.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.LARGEUR IS 'Valeur indiquant une largeur de la voie.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_TRONCON.GEOMETRY IS 'Géométrie de l''adresse de type ligne simple.';
-
--- 4. Création des métadonnées spatiales
-INSERT INTO USER_SDO_GEOM_METADATA(
-    TABLE_NAME, 
-    COLUMN_NAME, 
-    DIMINFO, 
-    SRID
-)
-VALUES(
-    'V_LITTERALIS_TRONCON',
-    'GEOMETRY',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
-    2154
-);
-COMMIT;
-
--- 5. Affection des droits
-GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_TRONCON TO G_ADMIN_SIG;
-
-/
-
-/*
-Création de la vue V_LITTERALIS_ADRESSE - du jeux d'export du projet LITTERALIS - contenant tous les seuils au format LITTERALIS.
-*/
-/*
-DROP VIEW G_BASE_VOIE.V_LITTERALIS_ADRESSE;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_ADRESSE';
-COMMIT;
-*/
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_ADRESSE" (
-    IDENTIFIANT, 
-    CODE_VOIE, 
-    CODE_POINT, 
-    NATURE, 
-    LIBELLE, 
-    NUMERO, 
-    REPETITION, 
-    COTE, 
-    GEOMETRY, 
-    CONSTRAINT "V_LITTERALIS_ADRESSE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS 
-    SELECT
-        objectid AS identifiant,
-        code_voie,
-        code_point,
-        nature,
-        libelle,
-        numero,
-        repetition,
-        cote,
-        geometry
-    FROM
-        G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE
-    WHERE
-        objectid NOT IN(32915, 423830, 405371, 405372, 405373, 403572, 405374, 429444, 418366, 37897, 39111, 41292, 41293, 426054, 355617, 359366, 359365, 359364, 359363, 359362, 359361, 359360, 359244, 51594, 64736, 65124, 393958, 373827, 394209, 65585, 65583, 65581, 65580, 65579, 65584, 65582, 373826, 373825, 394325, 418154, 418155, 374459, 81178, 90190, 90189, 330688, 368214, 393303, 106029, 330781, 330782, 428501, 145112, 330819, 383476, 383475, 145111, 145716, 330862, 125358, 383284, 126822, 427937, 428676, 429030, 428198, 330981, 428178, 328367, 369418, 328368, 142229, 428687, 427810, 333163, 159049, 374858, 367335, 429551, 398549, 189812, 189114, 380857, 206308, 384462, 431311, 376634, 27207, 27261, 242734, 242735, 242736, 242743, 407604, 407605, 407606, 407593, 407594, 407595, 407596, 407597, 407518, 406363, 406364, 406365, 243643, 247063, 247068, 367139, 379324, 249233, 430507, 430735, 430691, 256788, 256787, 256789, 256790, 257524, 258408, 367564, 396741, 294271, 302007, 377745, 5754, 377746, 377743, 370688, 370964, 324107, 371347, 326672, 29744, 5755, 5757, 8858, 429850, 429851, 392134);
-      
--- Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_ADRESSE IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les seuils au format LITTERALIS.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.IDENTIFIANT IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.CODE_VOIE IS 'Liaison avec la vue V_LITTERALIS_TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.CODE_POINT IS 'Identificateur unique et immuable du point partagé entre Littéralis Expert et le SIG.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.NATURE IS 'Indique la nature du point : ADR = Adresse.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.LIBELLE IS 'Libellé du point affiché dans les textes (dans les actes…).';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.NUMERO IS 'Numéro postal.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.REPETITION IS 'Indique la valeur de répétition d’un numéro sur une rue. La saisie de la répétition est libre.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.COTE IS 'Définit sur quel côté de la voie s’appuie l’adresse : LesDeuxCotes, Impair, Pair.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ADRESSE.GEOMETRY IS 'Géométrie de l''adresse de type point.';
-
--- 4. Création des métadonnées spatiales
-INSERT INTO USER_SDO_GEOM_METADATA(
-    TABLE_NAME, 
-    COLUMN_NAME, 
-    DIMINFO, 
-    SRID
-)
-VALUES(
-    'V_LITTERALIS_ADRESSE',
-    'GEOMETRY',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
-    2154
-);
-COMMIT;
-
--- 5. Affection des droits
-GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_ADRESSE TO G_ADMIN_SIG;
-
-/
-
-/*
-Création de la vue V_LITTERALIS_REGROUPEMENT - du jeux d'export du projet LITTERALIS - contenant tous les regroupements (secteurs, territoires, unités territoriales) au format LITTERALIS.
-*/
-/*
-DROP VIEW G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_REGROUPEMENT';
-COMMIT;
-*/
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_REGROUPEMENT" (
-    NOM,
-    CODE_REGR,
-    TYPE,
-    CODE_INSEE,
-    GEOMETRY, 
-   CONSTRAINT "V_LITTERALIS_REGROUPEMENT_PK" PRIMARY KEY ("CODE_REGR") DISABLE
-) AS 
-    SELECT
-        nom,
-        code_regr,
-        type,
-        code_insee,
-        geometry
-    FROM
-        G_BASE_VOIE.VM_TAMPON_LITTERALIS_REGROUPEMENT;
-        
--- Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les regroupements (secteurs, territoires, unités territoriales) au format LITTERALIS.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.NOM IS 'Nom du regroupement.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.CODE_REGR IS 'Clé primaire - Identificateur unique et immuable du regroupement partagé entre Littéralis Expert et le SIG';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.TYPE IS 'Type de regroupement. En accord avec le prestataire tous les regroupements sont de type "Zone".';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.CODE_INSEE IS 'Code INSEE de la commune. Les regroupements pouvant recouvrir plusieurs communes il a été convenu avec le prestataire de ne rien mettre dans ce champ.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT.GEOMETRY IS 'Géométries de type multipolygone des secteurs, territoires et unités territoriales du service voirie.';
-
--- 4. Création des métadonnées spatiales
-INSERT INTO USER_SDO_GEOM_METADATA(
-    TABLE_NAME, 
-    COLUMN_NAME, 
-    DIMINFO, 
-    SRID
-)
-VALUES(
-    'V_LITTERALIS_REGROUPEMENT',
-    'GEOMETRY',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
-    2154
-);
-COMMIT;
-
--- 5. Affection des droits
-GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_REGROUPEMENT TO G_ADMIN_SIG;
-
-/
-
-/*
-Création de la vue V_LITTERALIS_ZONE_PARTICULIERE - du jeux d'export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.
-*/
-/*
-DROP VIEW G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE;
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'V_LITTERALIS_ZONE_PARTICULIERE';
-COMMIT;
-*/
--- 1. Création de la vue
-CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_ZONE_PARTICULIERE" (
-    IDENTIFIANT, 
-    TYPE_ZONE, 
-    CODE_VOIE, 
-    COTE_VOIE, 
-    CODE_INSEE, 
-    CATEGORIE, 
-    GEOMETRY, 
-   CONSTRAINT "V_LITTERALIS_ZONE_PARTICULIERE_PK" PRIMARY KEY ("IDENTIFIANT") DISABLE) AS 
-    WITH C_1 AS(
-        SELECT
-            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
-            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
-            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
-            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
-            CAST(categorie  AS NUMBER(8,0)) AS categorie,
-            geometry
-        FROM
-            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_EN_AGGLO
-        UNION ALL
-        SELECT
-            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
-            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
-            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
-            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
-            CAST(categorie  AS NUMBER(8,0)) AS categorie,
-            geometry
-        FROM
-            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO
-        UNION ALL
-        SELECT
-            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
-            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
-            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
-            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
-            CAST(categorie  AS NUMBER(8,0)) AS categorie,
-            geometry
-        FROM
-            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_HORS_AGGLO
-        UNION ALL
-        SELECT
-            CAST(type_zone AS VARCHAR2(254 BYTE)) AS type_zone,
-            CAST(code_voie AS VARCHAR2(254 BYTE)) AS code_voie,
-            CAST(cote_voie AS VARCHAR2(254 BYTE)) AS cote_voie,
-            CAST(code_insee AS VARCHAR2(254 BYTE)) AS code_insee,
-            CAST(categorie  AS NUMBER(8,0)) AS categorie,
-            geometry
-        FROM
-            G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_HORS_AGGLO
-    )
-
-    SELECT
-        rownum AS identifiant,
-        type_zone,
-        code_voie,
-        cote_voie,
-        code_insee,
-        categorie,
-        geometry
-    FROM
-        C_1;
-        
--- 2. Création des commentaires
-COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE IS 'Vue - du jeux d''export du projet LITTERALIS - contenant toutes les zones particulières au format LITTERALIS.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.IDENTIFIANT IS 'Clé primaire de la vue.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.TYPE_ZONE IS 'Type de zone : Commune, Agglomeration, RGC, Categorie, InteretCommunautaire.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.CODE_VOIE IS 'Liaison avec la classe TRONCON sur la colonne CODE_RUE_G ou CODE_RUE_D.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.COTE_VOIE IS 'Définit sur quel côté de la voie s’appuie la zone particulière : LesDeuxCotes, Gauche, Droit.';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.CODE_INSEE IS 'Code INSEE de la commune. * Obligatoire pour les entrées « Commune » et « Agglomeration ».';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.CATEGORIE IS 'Valeur définissant la catégorie de la rue sur cette zone (1,2,3..). A définir à 0 lorsque le champ TYPE_ZONE <> « Categorie ».';
-COMMENT ON COLUMN G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE.GEOMETRY IS 'Géométries de type multiligne des zones particulières.';
-
--- 3. Création des métadonnées spatiales
-INSERT INTO USER_SDO_GEOM_METADATA(
-    TABLE_NAME, 
-    COLUMN_NAME, 
-    DIMINFO, 
-    SRID
-)
-VALUES(
-    'V_LITTERALIS_ZONE_PARTICULIERE',
-    'GEOMETRY',
-    SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 684540, 719822.2, 0.005),SDO_DIM_ELEMENT('Y', 7044212, 7078072, 0.005)), 
-    2154
-);
-COMMIT;
-
--- 4. Affection des droits
-GRANT SELECT ON G_BASE_VOIE.V_LITTERALIS_ZONE_PARTICULIERE TO G_ADMIN_SIG;
 
 /
 
