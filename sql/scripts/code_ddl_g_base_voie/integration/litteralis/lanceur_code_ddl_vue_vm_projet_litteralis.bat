@@ -1,17 +1,17 @@
 @echo off
-echo Bienvenu dans la creation des tables, vues et vues matérialisées du projet LITTERALIS de la Base Voie !
+echo Bienvenu dans la creation des vues et vues matérialisées du projet LITTERALIS de la Base Voie !
 
 :: 1. Configurer le système d'encodage des caractères en UTF-8
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
 :: 2. Déclaration et valorisation des variables
-SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du projet LITTERALIS : "
 SET /p chemin_code_vue_materialisee="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES MATERIALISEES du projet LITTERALIS : "
 SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du projet LITTERALIS : "
+SET /p chemin_droits="Veuillez saisir le chemin d'acces du dossier contenant le code des droits de lecture, insertion, édition et suppression des vues et VM du projet LITTERALIS : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
 
-copy /b %chemin_code_table%\creation_ta_secteur_voirie.sql + ^
-%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_correspondance_domanialite_classement.sql + ^
+:: 3. Concaténation des codes des VM et vues
+copy /b %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_correspondance_domanialite_classement.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_voie_administrative.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_troncon.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_adresse.sql + ^
@@ -31,9 +31,8 @@ copy /b %chemin_code_table%\creation_ta_secteur_voirie.sql + ^
 %chemin_code_vue%\creation_v_litteralis_adresse.sql + ^
 %chemin_code_vue%\creation_v_litteralis_regroupement.sql + ^
 %chemin_code_vue%\creation_v_litteralis_zone_particuliere.sql + ^
-%chemin_code_vue%\creation_droits_lecture_ecriture_suppression_litteralis.sql + ^
-%chemin_code_temp%\desactivation_index_litteralis.sql ^
-%chemin_code_temp%\temp_code_ddl_projet_litteralis.sql
+%chemin_droits%\creation_droits_lecture_ecriture_suppression_litteralis.sql ^
+%chemin_code_temp%\temp_code_ddl_vue_vm_projet_litteralis.sql
 
 :: 5. MISE EN PAUSE
 PAUSE
