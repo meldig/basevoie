@@ -10,11 +10,10 @@ COMMIT;
 */
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_UNITE_TERRITORIALE_VOIRIE (
-    CODE_REGR, 
-    NOM, 
-    CODE_INSEE, 
-    TYPE, 
-    GEOMETRY
+    identifiant,
+    nom,
+    type,
+    geometry
 )        
 REFRESH ON DEMAND
 FORCE
@@ -22,7 +21,7 @@ DISABLE QUERY REWRITE AS
   WITH 
     C_1 AS(-- Création de l'UT LS
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM,
+        'UTLS' AS NOM,
         'Unité Territoriale' AS TYPE,
         SDO_AGGR_UNION(SDOAGGRTYPE(a.geometry, 0.005)) AS GEOMETRY
     FROM
@@ -30,13 +29,13 @@ DISABLE QUERY REWRITE AS
     WHERE
         a.identifiant IN(1, 2, 3)
     GROUP BY
-        SUBSTR(a.nom, 0, 4),
+        'UTLS',
         'Unité Territoriale'
     ),
 
     C_2 AS(
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTLS' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
@@ -48,7 +47,7 @@ DISABLE QUERY REWRITE AS
     
     C_3 AS(-- Création de l'UT ML
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTML' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
@@ -61,7 +60,7 @@ DISABLE QUERY REWRITE AS
     
     C_4 AS(
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTML' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
@@ -73,7 +72,7 @@ DISABLE QUERY REWRITE AS
     
     C_5 AS(-- Création de l'UT RV
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTRV' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
@@ -86,7 +85,7 @@ DISABLE QUERY REWRITE AS
     
     C_6 AS(
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTRV' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
@@ -98,7 +97,7 @@ DISABLE QUERY REWRITE AS
     
     C_7 AS(-- Création de l'UT TA
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTTA' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
@@ -111,7 +110,7 @@ DISABLE QUERY REWRITE AS
     
     C_8 AS(
     SELECT
-        SUBSTR(a.nom, 0, 4) AS NOM, 
+        'UTTA' AS NOM, 
         'Unité Territoriale' AS TYPE,
         SDO_GEOM.SDO_UNION(a.geometry, b.geometry, 0.005) AS geometry
     FROM
