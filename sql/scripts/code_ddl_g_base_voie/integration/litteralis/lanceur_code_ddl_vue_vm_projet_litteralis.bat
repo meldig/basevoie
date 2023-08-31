@@ -24,13 +24,13 @@ copy /b %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_corresponda
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_intersect_agglo.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_intersect_hors_agglo.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_information_voie_litteralis.sql + ^
-%chemin_code_vue%\creation_v_litteralis_audit_troncon.sql + ^
-%chemin_code_vue%\creation_v_litteralis_audit_adresse.sql + ^
-%chemin_code_vue%\creation_v_litteralis_audit_zone_particuliere.sql + ^
 %chemin_code_vue%\creation_v_litteralis_troncon.sql + ^
 %chemin_code_vue%\creation_v_litteralis_adresse.sql + ^
 %chemin_code_vue%\creation_v_litteralis_regroupement.sql + ^
 %chemin_code_vue%\creation_v_litteralis_zone_particuliere.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_troncon.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_adresse.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_zone_particuliere.sql + ^
 %chemin_droits%\creation_droits_lecture_ecriture_suppression_litteralis.sql ^
 %chemin_code_temp%\temp_code_ddl_vue_vm_projet_litteralis.sql
 

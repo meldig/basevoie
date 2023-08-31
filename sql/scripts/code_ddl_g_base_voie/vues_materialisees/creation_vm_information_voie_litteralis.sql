@@ -5,39 +5,55 @@ Création de la Vue matérialisée VM_INFORMATION_VOIE_LITTERALIS rassemblant le
 DROP MATERIALIZED VIEW G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS;
 */
 -- 1. Création de la vue matérialisée
-CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_INFORMATION_VOIE_LITTERALIS" ("OBJECTID", "ID_VOIE", "DOMANIALITE", "TRAFIC", "AGE_DES_TRAVAUX", "ANCIENNETE_DES_TRAVAUX")
-REFRESH 
-START WITH sysdate+0 
-NEXT TRUNC(sysdate)+43/24
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS (
+    OBJECTID, 
+    ID_VOIE,
+    DOMANIALITE,
+    TRAFIC,
+    AGE_DES_TRAVAUX,
+    ANCIENNETE_DES_TRAVAUX
+)
+REFRESH ON DEMAND
 FORCE
 DISABLE QUERY REWRITE AS
+    WITH C_1 AS(
+        SELECT
+            a.idvoie AS id_voie,
+            a.domania AS domanialite,
+            b.clastrf AS trafic,
+            c.age_travaux AS age_des_travaux,
+            CASE
+                WHEN c.age_travaux< 5
+                    THEN 'Voirie de moins de 5 ans'
+                ELSE
+                    'Voirie de plus de 5 ans'
+            END AS anciennete_des_travaux
+        FROM
+            SIREO_LEC.OUT_DOMANIALITE a
+            INNER JOIN SIREO_LEC.OUT_CLAS_TRAF b ON a.idvoie = b.idvoie 
+            INNER JOIN SIREO_LEC.OUT_TRAVAUX_VOIE c ON c.idvoie = b.idvoie
+        GROUP BY
+            a.idvoie,
+            a.domania,
+            b.clastrf,
+            c.age_travaux,
+            CASE
+                WHEN c.age_travaux< 5
+                    THEN 'Voirie de moins de 5 ans'
+                ELSE
+                    'Voirie de plus de 5 ans'
+            END
+    )
+
     SELECT
-        ROWNUM AS objectid,
-        a.idvoie AS id_voie,
-        a.domania AS domanialite,
-        b.clastrf AS trafic,
-        c.age_travaux AS age_des_travaux,
-        CASE
-            WHEN c.age_travaux< 5
-                THEN 'Voirie de moins de 5 ans'
-            ELSE
-                'Voirie de plus de 5 ans'
-        END AS anciennete_des_travaux
+        rownum AS objectid,
+        a.id_voie,
+        a.domanialite,
+        a.trafic,
+        a.age_des_travaux,
+        a.anciennete_des_travaux
     FROM
-        SIREO_LEC.OUT_DOMANIALITE a
-        INNER JOIN SIREO_LEC.OUT_CLAS_TRAF b ON a.idvoie = b.idvoie 
-        INNER JOIN SIREO_LEC.OUT_TRAVAUX_VOIE c ON c.idvoie = b.idvoie
-    GROUP BY
-        a.idvoie,
-        a.domania,
-        b.clastrf,
-        c.age_travaux,
-        CASE
-            WHEN c.age_travaux< 5
-                THEN 'Voirie de moins de 5 ans'
-            ELSE
-                'Voirie de plus de 5 ans'
-        END;
+        C_1 a;
 
 -- 2. Création des commentaires
 COMMENT ON TABLE G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS IS 'Vue matérialisée rassemblant les informations nécessaires aux agents de la DEPV pour gérer les travaux de voirie via l''application LITTERALIS.';
@@ -74,8 +90,6 @@ CREATE INDEX VM_INFORMATION_VOIE_LITTERALIS_ANCIENNETE_DES_TRAVAUX_IDX ON G_BASE
 
 -- 5. Création des droits de lecture
 GRANT SELECT ON G_GESTIONGEO.VM_INFORMATION_VOIE_LITTERALIS TO G_ADMIN_SIG;
-GRANT SELECT ON G_GESTIONGEO.VM_INFORMATION_VOIE_LITTERALIS TO G_BASE_VOIE_R WITH GRANT OPTION;
-GRANT SELECT ON G_GESTIONGEO.VM_INFORMATION_VOIE_LITTERALIS TO G_BASE_VOIE_RW;
 
 /
 
