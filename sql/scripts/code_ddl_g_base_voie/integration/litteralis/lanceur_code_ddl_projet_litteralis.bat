@@ -10,7 +10,6 @@ SET /p chemin_code_vue_materialisee="Veuillez saisir le chemin d'acces du dossie
 SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du projet LITTERALIS : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
 
-
 copy /b %chemin_code_table%\creation_ta_secteur_voirie.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_correspondance_domanialite_classement.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_voie_administrative.sql + ^
@@ -25,15 +24,15 @@ copy /b %chemin_code_table%\creation_ta_secteur_voirie.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_intersect_agglo.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_intersect_hors_agglo.sql + ^
 %chemin_code_vue_materialisee%\creation_vm_information_voie_litteralis.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_troncon.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_adresse.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_zone_particuliere.sql + ^
 %chemin_code_vue%\creation_v_litteralis_troncon.sql + ^
 %chemin_code_vue%\creation_v_litteralis_adresse.sql + ^
 %chemin_code_vue%\creation_v_litteralis_regroupement.sql + ^
 %chemin_code_vue%\creation_v_litteralis_zone_particuliere.sql + ^
-%chemin_code_vue%\creation_v_litteralis_audit_troncon.sql + ^
-%chemin_code_vue%\creation_v_litteralis_audit_adresse.sql + ^
-%chemin_code_vue%\creation_v_litteralis_audit_zone_particuliere.sql + ^
-
-
+%chemin_code_vue%\creation_droits_lecture_ecriture_suppression_litteralis.sql + ^
+%chemin_code_temp%\desactivation_index_litteralis.sql ^
 %chemin_code_temp%\temp_code_ddl_projet_litteralis.sql
 
 :: 5. MISE EN PAUSE
