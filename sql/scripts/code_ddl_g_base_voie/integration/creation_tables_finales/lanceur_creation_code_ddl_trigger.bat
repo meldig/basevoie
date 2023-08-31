@@ -17,7 +17,8 @@ copy /b %chemin_code_trigger%\creation_a_ixx_ta_seuil.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_troncon_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_voie_physique_log.sql + ^
 %chemin_code_trigger%\creation_b_iud_ta_voie_supra_communale_log.sql + ^
-%chemin_code_trigger%\creation_b_iux_ta_voie_supra_communale_date_pnom.sql ^
+%chemin_code_trigger%\creation_b_iux_ta_voie_supra_communale_date_pnom.sql + ^
+%chemin_code_trigger%\creation_b_iux_ta_mise_a_jour_a_faire.sql ^
 %chemin_code_temp%\temp_code_ddl_trigger.sql
 
 :: 4. lancement de SQL plus.
