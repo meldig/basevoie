@@ -1,30 +1,40 @@
 @echo off
-echo Bienvenu dans la creation des tables du projet LITTERALIS de la Base Voie !
+echo Bienvenu dans la creation des tables, vues et vues matérialisées du projet LITTERALIS de la Base Voie !
 
 :: 1. Configurer le système d'encodage des caractères en UTF-8
 SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
 :: 2. Déclaration et valorisation des variables
-SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du schema : "
+SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du projet LITTERALIS : "
+SET /p chemin_code_vue_materialisee="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES MATERIALISEES du projet LITTERALIS : "
+SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du projet LITTERALIS : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
-::SET /p USER="Veuillez saisir l'utilisateur Oracle : "
-::SET /p MDP="Veuillez saisir le MDP : "
-::SET /p INSTANCE="Veuillez saisir l'instance Oracle : "
 
-copy /b %chemin_code_table%\creation_temp_adresse_autres_litteralis.sql + ^
-%chemin_code_table%\creation_temp_adresse_correcte_litteralis.sql + ^
-%chemin_code_table%\creation_temp_adresse_doublon_domania_litteralis.sql + ^
-%chemin_code_table%\creation_temp_adresse_doublon_voie_litteralis.sql + ^
-%chemin_code_table%\creation_temp_troncon_correct_litteralis.sql + ^
-%chemin_code_table%\creation_temp_troncon_doublon_domania_litteralis.sql + ^
-%chemin_code_table%\creation_temp_troncon_doublon_voie_litteralis.sql ^
+
+copy /b %chemin_code_table%\creation_ta_secteur_voirie.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_correspondance_domanialite_classement.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_voie_administrative.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_troncon.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_adresse.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_territoire_voirie.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_unite_territoriale_voirie.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_regroupement.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_agglomeration.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_en_agglo.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_hors_agglo.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_intersect_agglo.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_zone_particuliere_intersect_hors_agglo.sql + ^
+%chemin_code_vue_materialisee%\creation_vm_information_voie_litteralis.sql + ^
+%chemin_code_vue%\creation_v_litteralis_troncon.sql + ^
+%chemin_code_vue%\creation_v_litteralis_adresse.sql + ^
+%chemin_code_vue%\creation_v_litteralis_regroupement.sql + ^
+%chemin_code_vue%\creation_v_litteralis_zone_particuliere.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_troncon.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_adresse.sql + ^
+%chemin_code_vue%\creation_v_litteralis_audit_zone_particuliere.sql + ^
+
+
 %chemin_code_temp%\temp_code_ddl_projet_litteralis.sql
-
-:: 3. lancement de SQL plus.
-::CD C:/ora12c/R1/BIN
-
-:: 4. Execution de sqlplus. pour lancer les requetes SQL.
-::sqlplus.exe %USER%/%MDP%@%INSTANCE% @%chemin_code_temp%\temp_code_ddl_schema.sql
 
 :: 5. MISE EN PAUSE
 PAUSE
