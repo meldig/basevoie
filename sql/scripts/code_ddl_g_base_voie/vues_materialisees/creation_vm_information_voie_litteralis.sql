@@ -1,7 +1,9 @@
 /*
 Création de la Vue matérialisée VM_INFORMATION_VOIE_LITTERALIS rassemblant les informations nécessaires aux agents de la DEPV pour gérer les travaux de voirie via l'application LITTERALIS.
 */
-
+/*
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_INFORMATION_VOIE_LITTERALIS;
+*/
 -- 1. Création de la vue matérialisée
 CREATE MATERIALIZED VIEW "G_BASE_VOIE"."VM_INFORMATION_VOIE_LITTERALIS" ("OBJECTID", "ID_VOIE", "DOMANIALITE", "TRAFIC", "AGE_DES_TRAVAUX", "ANCIENNETE_DES_TRAVAUX")
 REFRESH 

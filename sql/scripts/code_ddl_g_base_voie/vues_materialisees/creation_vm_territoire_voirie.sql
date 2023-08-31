@@ -2,7 +2,13 @@
 Création de la vue matérialisée G_BASE_VOIE.VM_TERRITOIRE_VOIRIE qui regroupe les secteurs de voirie par territoire de voirie.
 ATTENTION : ces territoires sont différents des territoires du référentiel administratif du schéma G_REFERENTIEL.
 */
-
+-- Suppression de la VM
+/*
+DROP INDEX VM_TERRITOIRE_VOIRIE_SIDX;
+DROP MATERIALIZED VIEW G_BASE_VOIE.VM_TERRITOIRE_VOIRIE;
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'VM_TERRITOIRE_VOIRIE';
+COMMIT;
+*/
 -- 1. Création de la vue matérialisée
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_TERRITOIRE_VOIRIE(
     identifiant,
