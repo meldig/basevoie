@@ -2,7 +2,7 @@
 Création du trigger G_BASE_VOIE.B_IUX_TA_MISE_A_JOUR_A_FAIRE permettant d'insérer les date de création/modification des points à faire.
 */
 
-CREATE OR REPLACE EDITIONABLE TRIGGER "G_BASE_VOIE"."B_IUX_TA_MISE_A_JOUR_A_FAIRE" 
+CREATE OR REPLACE TRIGGER "G_BASE_VOIE"."B_IUX_TA_MISE_A_JOUR_A_FAIRE" 
 BEFORE INSERT OR UPDATE ON G_BASE_VOIE.TA_MISE_A_JOUR_A_FAIRE
 FOR EACH ROW
 DECLARE
@@ -40,8 +40,8 @@ BEGIN
 
     -- En cas de mise à jour, on renseigne l'agent ayant fait la modification et la date à laquelle il l'a faite ainsi que le code insee de l'entité.
     IF UPDATING THEN 
-        :new.fid_pnom_edition := v_id_agent;
-        :new.date_edition := sysdate;
+        :new.fid_pnom_modification := v_id_agent;
+        :new.date_modification := sysdate;
         :new.code_insee := v_code_insee;
     END IF;
 

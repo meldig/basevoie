@@ -356,7 +356,7 @@ WHEN NOT MATCHED THEN
     INSERT(a.objectid, a.id_infos_seuil, a.id_seuil, a.numero_seuil, a.complement_numero_seuil, a.date_action, a.fid_type_action, a.fid_pnom)
     VALUES(t.objectid, t.id_infos_seuil, t.id_seuil, t.numero_seuil, t.complement_numero_seuil, t.date_action, t.fid_type_action, t.fid_pnom);
 
-INSERT INTO G_BASE_VOIE.TA_MISE_A_JOUR_A_FAIRE(objectid,id_seuil,id_troncon,id_voie_administrative,code_insee,explication,date_saisie,date_edition,fid_pnom_saisie,fid_pnom_modification,fid_etat_avancement,geom)
+INSERT INTO G_BASE_VOIE.TA_MISE_A_JOUR_A_FAIRE(objectid,id_seuil,id_troncon,id_voie_administrative,code_insee,explication,date_saisie,date_modification,fid_pnom_saisie,fid_pnom_modification,fid_etat_avancement,geom)
 SELECT
     objectid,
     id_seuil,
@@ -365,12 +365,12 @@ SELECT
     code_insee,
     explication,
     date_saisie,
-    date_edition,
+    date_modification,
     fid_pnom_saisie,
     fid_pnom_modification,
     fid_etat_avancement,
     geom
 FROM
-    G_BASE_VOIE.TEMP_MISE_A_JOUR_A_FAIRE@DBL_MULTIT_G_BASE_VOIE_MAJ;
+    G_BASE_VOIE.TA_MISE_A_JOUR_A_FAIRE@DBL_MULTIT_G_BASE_VOIE_MAJ;
 
 COMMIT;
