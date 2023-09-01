@@ -20,6 +20,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_GESTION_VOIE_PHYSIQUE', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 

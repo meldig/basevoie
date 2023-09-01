@@ -21,6 +21,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_TRONCON_NON_JOINTIFS', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 

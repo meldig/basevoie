@@ -21,6 +21,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 
