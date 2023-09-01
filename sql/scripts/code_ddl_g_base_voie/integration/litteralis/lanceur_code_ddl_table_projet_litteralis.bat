@@ -6,7 +6,7 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 
 :: 2. Déclaration et valorisation des variables
 SET /p chemin_code_table="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des TABLES du projet LITTERALIS : "
-SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
+SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier litteralis : "
 
 copy /b %chemin_code_table%\creation_ta_secteur_voirie.sql + ^
 %chemin_code_temp%\desactivation_index_litteralis.sql ^

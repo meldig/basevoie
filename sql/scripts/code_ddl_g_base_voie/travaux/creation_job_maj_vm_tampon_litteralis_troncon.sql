@@ -1,5 +1,5 @@
 /*
-Création du job JOB_MAJ_VM_TAMPON_LITTERALIS_TRONCON rafraîchissant la VM VM_TAMPON_LITTERALIS_TRONCON le premier dimanche du mois à 11h00.
+Création du job JOB_MAJ_VM_TAMPON_LITTERALIS_TRONCON rafraîchissant la VM VM_TAMPON_LITTERALIS_TRONCON le premier dimanche du mois à 08h00.
 */
 
 BEGIN
@@ -7,9 +7,9 @@ BEGIN
    job_name          =>  'JOB_MAJ_VM_TAMPON_LITTERALIS_TRONCON',
    job_type          =>  'PLSQL_BLOCK',
    job_action        =>  'DBMS_REFRESH.REFRESH(''"G_BASE_VOIE"."VM_TAMPON_LITTERALIS_TRONCON"'');', 
-   start_date        =>  '02/09/23 11:00:00 EUROPE/PARIS',
-   repeat_interval   =>  'FREQ=MONTHLY; INTERVAL=1; BYDAY=SUN',
-   comments          =>  'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON le premier dimanche du mois à 11h00.');
+   start_date        =>  '02/09/23 08:00:00 EUROPE/PARIS',
+   repeat_interval   =>  'FREQ=MONTHLY; INTERVAL=1; BYDAY=SAT',
+   comments          =>  'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON le premier dimanche du mois à 08h00.');
 END;
 /
 

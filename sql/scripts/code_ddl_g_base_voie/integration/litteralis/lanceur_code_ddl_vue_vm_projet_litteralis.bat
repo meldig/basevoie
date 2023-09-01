@@ -8,7 +8,7 @@ SET NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 SET /p chemin_code_vue_materialisee="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES MATERIALISEES du projet LITTERALIS : "
 SET /p chemin_code_vue="Veuillez saisir le chemin d'acces du dossier contenant le code DDL des VUES du projet LITTERALIS : "
 SET /p chemin_droits="Veuillez saisir le chemin d'acces du dossier contenant le code des droits de lecture, insertion, édition et suppression des vues et VM du projet LITTERALIS : "
-SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration : "
+SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier litteralis : "
 
 :: 3. Concaténation des codes des VM et vues
 copy /b %chemin_code_vue_materialisee%\creation_vm_tampon_litteralis_correspondance_domanialite_classement.sql + ^
