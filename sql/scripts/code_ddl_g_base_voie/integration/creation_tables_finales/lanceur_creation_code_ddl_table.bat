@@ -36,6 +36,7 @@ copy /b %chemin_code_sequence%\creation_seq_ta_troncon_objectid.sql + ^
 %chemin_code_table%\creation_ta_voie_supra_communale.sql + ^
 %chemin_code_table%\creation_ta_relation_voie_administrative_supra_communale.sql + ^
 %chemin_code_table%\creation_ta_voie_supra_communale_log.sql + ^
+%chemin_code_table%\creation_ta_mise_a_jour_a_faire.sql + ^
 %chemin_code_fonction%\creation_get_code_insee_97_communes_contain_point.sql + ^
 %chemin_code_droits%\creation_droits_lecture_edition_table.sql ^
 %chemin_code_temp%\temp_code_ddl_table.sql
