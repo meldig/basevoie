@@ -1,20 +1,26 @@
 /*
-Création du job JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO rafraîchissant la VM VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO le premier dimanche du mois à 15h00.
+Création du job JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO rafraîchissant la VM VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO le dernier dimanche du mois à 15h00.
 */
 
 BEGIN
     DBMS_SCHEDULER.CREATE_JOB (
-   job_name          =>  'JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO',
-   job_type          =>  'PLSQL_BLOCK',
-   job_action        =>  'DBMS_REFRESH.REFRESH(''"G_BASE_VOIE"."VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO"'');', 
-   start_date        =>  '02/09/23 15:00:00 EUROPE/PARIS',
-   repeat_interval   =>  'FREQ=MONTHLY; INTERVAL=1; BYDAY=SAT',
-   comments          =>  'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO le premier dimanche du mois à 15h00.');
-END;
-/
-
-BEGIN
- DBMS_SCHEDULER.ENABLE ('JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO');
+            job_name => 'JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO',
+            job_type => 'PLSQL_BLOCK',
+            job_action => 'DBMS_REFRESH.REFRESH("G_BASE_VOIE"."VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO");',
+            number_of_arguments => 0,
+            start_date => TO_TIMESTAMP_TZ('2023-09-30 15:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=MONTHLY;BYTIME=150000;BYDAY=SAT',
+            end_date => NULL,
+            enabled => TRUE,
+            auto_drop => FALSE,
+            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO le dernier dimanche du mois à 15h00.');  
+ 
+    DBMS_SCHEDULER.SET_ATTRIBUTE( 
+             name => 'JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO', 
+             attribute => 'store_output', value => TRUE);
+    DBMS_SCHEDULER.SET_ATTRIBUTE( 
+             name => 'JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_AGGLO', 
+             attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
 END;
 
 /

@@ -22,7 +22,7 @@ CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_TRONCON" ("IDENTIFIANT"
         CAST('' AS NUMBER(8,0)) AS largeur,
         a.geometry
     FROM
-        G_BASE_VOIE.TA_TAMPON_LITTERALIS_TRONCON a;
+        G_BASE_VOIE.VM_TAMPON_LITTERALIS_TRONCON a;
         
 -- Création des commentaires
 COMMENT ON TABLE G_BASE_VOIE.V_LITTERALIS_TRONCON IS 'Vue - du jeux d''export du projet LITTERALIS - contenant tous les tronçons au format LITTERALIS.';
