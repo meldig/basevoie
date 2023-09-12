@@ -1,0 +1,36 @@
+-- VM_AUDIT_VOIEVOIE_CNOMINUS_NULL: champ CNOMINUS NULL dans VOIEVOI (nom de voie). Certaines voies n'ont pas de nom de voie
+
+-- 0. Suppression de l'ancienne vue matérialisée
+-- DROP MATERIALIZED VIEW VM_AUDIT_VOIEVOIE_CNOMINUS_NULL;
+
+-- 1. Creation de la vue.
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_VOIEVOIE_CNOMINUS_NULL (IDENTIFIANT, CODE_VOIE)
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE
+AS
+SELECT
+    ROWNUM,
+    ccomvoi
+FROM
+    G_BASE_VOIE.TEMP_VOIEVOI
+WHERE
+    cdvalvoi = 'V'
+    AND 
+    cnominus IS NULL
+;
+
+
+-- 2. Clé primaire
+ALTER TABLE G_BASE_VOIE.VM_AUDIT_VOIEVOIE_CNOMINUS_NULL
+ADD CONSTRAINT VM_AUDIT_VOIEVOIE_CNOMINUS_NULL_PK 
+PRIMARY KEY (IDENTIFIANT);
+
+
+-- 3. Commentaire de la vue materialisée.
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_VOIEVOIE_CNOMINUS_NULL  IS 'Vue permettant de reperer les voies sans nom';
+
+
+-- 4. Commentaire des colonnes.
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_VOIEVOIE_CNOMINUS_NULL.IDENTIFIANT IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_VOIEVOIE_CNOMINUS_NULL.code_voie IS 'identifiant de la voie.';

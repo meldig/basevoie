@@ -1,0 +1,45 @@
+-- VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES: Vue permettant de connaitre les voies secondaires affectées à plusiseurs voie.
+
+-- 0. Suppression de l'ancienne vue matérialisée
+-- DROP MATERIALIZED VIEW VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES;
+
+-- 1. Creation de la vue.
+CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES (IDENTIFIANT, NOMBRE, CODE_VOIE)
+REFRESH ON DEMAND
+FORCE
+DISABLE QUERY REWRITE
+AS
+WITH CTE AS
+    ( 
+    SELECT
+        COUNT(fid_voie_secondaire) as nombre,
+        fid_voie_secondaire
+    FROM
+        G_BASE_VOIE.TA_HIERARCHISATION_VOIE
+    GROUP BY
+        fid_voie_secondaire
+    HAVING COUNT(fid_voie_secondaire) >1
+    )
+SELECT
+    ROWNUM AS identifiant,
+    nombre,
+    fid_voie_secondaire AS code_voie
+FROM
+    CTE
+    ;
+
+
+-- 2. Clé primaire
+ALTER TABLE G_BASE_VOIE.VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES
+ADD CONSTRAINT VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES_PK 
+PRIMARY KEY (IDENTIFIANT);
+
+
+-- 3. Commentaire de la vue materialisée.
+COMMENT ON MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES  IS 'Vue permettant de connaitre les voies secondaire affectées à plusiseurs voie';
+
+
+-- 4. Commentaire des colonnes.
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES.IDENTIFIANT IS 'Clé primaire de la vue.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES.NOMBRE IS 'Nombre d''occurence de la voie secondaire.';
+COMMENT ON COLUMN G_BASE_VOIE.VM_AUDIT_VOIE_SECONDAIRE_AVEC_PLUSIEURS_VOIE_PRINCIPALES.CODE_VOIE IS 'Identifiant de la voie secondaire.';
