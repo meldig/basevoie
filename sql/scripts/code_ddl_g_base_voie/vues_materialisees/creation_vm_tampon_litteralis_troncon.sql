@@ -94,7 +94,9 @@ WITH
             C_4 a
             INNER JOIN SIREO_LEC.OUT_DOMANIALITE b ON b.cnumtrc = a.cnumtrc
             INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT c ON c.domanialite = b.domania
-            INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE d ON d.id_troncon = b.cnumtrc
+            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON CASE WHEN e.objectid <> e.old_objectid THEN e.old_objectid WHEN e.objectid = e.old_objectid THEN e.objectid WHEN e.old_objectid IS NULL THEN e.objectid END = b.cnumtrc 
+            INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE d ON d.id_troncon = e.objectid
+            
         UNION ALL
         SELECT
             b.id_troncon,
@@ -105,7 +107,8 @@ WITH
             b.lateralite_voie_administrative AS lateralite
         FROM
             C_3 a
-            INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE b ON b.id_troncon = a.cnumtrc
+            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON CASE WHEN e.objectid <> e.old_objectid THEN e.old_objectid WHEN e.objectid = e.old_objectid THEN e.objectid WHEN e.old_objectid IS NULL THEN e.objectid END = a.cnumtrc 
+            INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE b ON b.id_troncon = e.objectid
         UNION ALL
         SELECT -- Sélection des tronçons n'ayant pas de domanialité - dans ce cas le classement est 'VC'
             a.objectid,
@@ -118,7 +121,8 @@ WITH
             G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE a
             INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.id_troncon
         WHERE
-            b.old_objectid NOT IN(SELECT cnumtrc FROM SIREO_LEC.OUT_DOMANIALITE)
+            b.old_objectid NOT IN(SELECT cnumtrc FROM SIREO_LEC.OUT_DOMANIALITE WHERE cnumtrc IS NOT NULL)
+            AND b.old_objectid = b.objectid            
     ),
     
     C_6 AS(-- Récupération des informations complémentaires (hors géométrie)
