@@ -46,6 +46,7 @@ BEGIN
         :new.fid_pnom_saisie := v_id_agent;
         :new.date_saisie := TO_DATE(sysdate, 'dd/mm/yy');
         :new.fid_pnom_modification := v_id_agent;
+        :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
 
         INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(id_troncon, old_id_troncon, geom, date_action, fid_type_action, fid_pnom, id_voie_physique)
             VALUES(
@@ -60,6 +61,7 @@ BEGIN
     ELSE
         IF UPDATING THEN -- En cas de modification on insère les valeurs de la table TA_TRONCON_LOG, le numéro d'agent correspondant à l'utilisateur, la date de modification et le type de modification.
             :new.fid_pnom_modification := v_id_agent;
+            :new.date_modification := TO_DATE(sysdate, 'dd/mm/yy');
 
             INSERT INTO G_BASE_VOIE.TA_TRONCON_LOG(id_troncon, old_id_troncon, geom, date_action, fid_type_action, fid_pnom, id_voie_physique)
             VALUES(
