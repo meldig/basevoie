@@ -23,10 +23,10 @@ CREATE OR REPLACE FORCE VIEW "G_BASE_VOIE"."V_LITTERALIS_ADRESSE" (
         code_voie,
         code_point,
         nature,
-        libelle,
+        CAST(libelle AS VARCHAR2(254)) AS libelle,
         numero,
-        repetition,
-        cote,
+        CAST(repetition AS VARCHAR2(10)) AS repetition,
+        CAST(cote AS VARCHAR2(254)) AS cote,
         geometry
     FROM
         G_BASE_VOIE.VM_TAMPON_LITTERALIS_ADRESSE

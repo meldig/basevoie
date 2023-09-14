@@ -27,7 +27,7 @@ DISABLE QUERY REWRITE AS
 WITH
     C_1 AS(-- Sélection des tronçons composés de plusieurs sous-tronçons de domanialités différentes
         SELECT
-            cnumtrc
+            DISTINCT cnumtrc
         FROM
             SIREO_LEC.OUT_DOMANIALITE
         GROUP BY
@@ -38,6 +38,7 @@ WITH
     
     C_2 AS(-- Mise en concordance des domanialités de la DEPV et des classements de LITTERALIS
         SELECT
+        DISTINCT
             a.cnumtrc,
             c.classement
         FROM
@@ -56,6 +57,8 @@ WITH
                     THEN 'VC'
                 WHEN a.classement IN('A', 'RN')
                     THEN 'A'
+                WHEN a.classement IN('VC', 'RN')
+                    THEN 'RN'
             END AS classement
         FROM
             C_2 a
@@ -68,6 +71,8 @@ WITH
                     THEN 'VC'
                 WHEN a.classement IN('A', 'RN')
                     THEN 'A'
+                WHEN a.classement IN('VC', 'RN')
+                    THEN 'RN'
             END
     ),
     
@@ -82,7 +87,35 @@ WITH
             COUNT(DISTINCT domania) = 1  
     ),
     
-    C_5 AS(-- Mise en forme des tronçons ayant une seule domanialité et compilation avec ceux disposant de deux domanialités dans les tables source 
+    C_5 AS (
+        SELECT
+            cnumtrc
+        FROM
+            SIREO_LEC.OUT_DOMANIALITE
+        WHERE
+            domania IS NULL
+        ),
+
+    C_6 AS(-- Mise en forme des tronçons ayant une seule domanialité et compilation avec ceux disposant de deux domanialités dans les tables source 
+        SELECT DISTINCT --Le DISTINCT est indispensable car certains tronçons peuvent être composés de plusieurs sous-tronçons de même domanialité
+            d.id_troncon,
+            CAST(d.id_troncon AS VARCHAR2(254 BYTE)) AS code_tronc,
+            c.classement,
+            d.id_voie_physique,
+            d.id_voie_administrative,
+            d.lateralite_voie_administrative AS lateralite
+        FROM
+            C_5 a
+            INNER JOIN SIREO_LEC.OUT_DOMANIALITE b ON b.cnumtrc = a.cnumtrc
+            INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT c ON c.domanialite = b.domania
+            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON 
+                CASE 
+                    WHEN e.objectid <> e.old_objectid THEN e.old_objectid 
+                    WHEN e.objectid = e.old_objectid THEN e.objectid 
+                    WHEN e.old_objectid IS NULL THEN e.objectid 
+                END = b.cnumtrc 
+            INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE d ON d.id_troncon = e.objectid
+        UNION ALL
         SELECT DISTINCT --Le DISTINCT est indispensable car certains tronçons peuvent être composés de plusieurs sous-tronçons de même domanialité
             d.id_troncon,
             CAST(d.id_troncon AS VARCHAR2(254 BYTE)) AS code_tronc,
@@ -94,9 +127,13 @@ WITH
             C_4 a
             INNER JOIN SIREO_LEC.OUT_DOMANIALITE b ON b.cnumtrc = a.cnumtrc
             INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_CORRESPONDANCE_DOMANIALITE_CLASSEMENT c ON c.domanialite = b.domania
-            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON CASE WHEN e.objectid <> e.old_objectid THEN e.old_objectid WHEN e.objectid = e.old_objectid THEN e.objectid WHEN e.old_objectid IS NULL THEN e.objectid END = b.cnumtrc 
+            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON 
+                CASE 
+                    WHEN e.objectid <> e.old_objectid THEN e.old_objectid 
+                    WHEN e.objectid = e.old_objectid THEN e.objectid 
+                    WHEN e.old_objectid IS NULL THEN e.objectid 
+                END = b.cnumtrc 
             INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE d ON d.id_troncon = e.objectid
-            
         UNION ALL
         SELECT
             b.id_troncon,
@@ -107,12 +144,17 @@ WITH
             b.lateralite_voie_administrative AS lateralite
         FROM
             C_3 a
-            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON CASE WHEN e.objectid <> e.old_objectid THEN e.old_objectid WHEN e.objectid = e.old_objectid THEN e.objectid WHEN e.old_objectid IS NULL THEN e.objectid END = a.cnumtrc 
+            INNER JOIN G_BASE_VOIE.TA_TRONCON e ON 
+                CASE 
+                    WHEN e.objectid <> e.old_objectid THEN e.old_objectid 
+                    WHEN e.objectid = e.old_objectid THEN e.objectid 
+                    WHEN e.old_objectid IS NULL THEN e.objectid 
+                END = a.cnumtrc 
             INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE b ON b.id_troncon = e.objectid
         UNION ALL
         SELECT -- Sélection des tronçons n'ayant pas de domanialité - dans ce cas le classement est 'VC'
-            a.objectid,
-            CAST(a.objectid AS VARCHAR2(254 BYTE)) AS code_tronc,
+            a.id_troncon,
+            CAST(a.id_troncon AS VARCHAR2(254 BYTE)) AS code_tronc,
             'VC' AS classement,
             a.id_voie_physique,
             a.id_voie_administrative,
@@ -121,11 +163,16 @@ WITH
             G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE a
             INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.id_troncon
         WHERE
+            (
             b.old_objectid NOT IN(SELECT cnumtrc FROM SIREO_LEC.OUT_DOMANIALITE WHERE cnumtrc IS NOT NULL)
-            AND b.old_objectid = b.objectid            
+            AND 
+            b.objectid NOT IN(SELECT cnumtrc FROM SIREO_LEC.OUT_DOMANIALITE WHERE cnumtrc IS NOT NULL)
+            )
+            OR
+            b.old_objectid IS NULL
     ),
     
-    C_6 AS(-- Récupération des informations complémentaires (hors géométrie)
+    C_7 AS(-- Récupération des informations complémentaires (hors géométrie)
         SELECT
             a.id_troncon,
             a.code_tronc,
@@ -142,7 +189,7 @@ WITH
             b.code_insee AS code_insee_voie,
             b.nom_voie AS nom_voie
         FROM
-            C_5 a
+            C_6 a
             INNER JOIN G_BASE_VOIE.VM_TAMPON_LITTERALIS_VOIE_ADMINISTRATIVE b ON b.objectid = a.id_voie_administrative
     )
 
@@ -158,9 +205,9 @@ WITH
         a.nom_voie AS nom_voie_droite,
         c.nom_voie AS nom_voie_gauche
     FROM
-        C_6 a
+        C_7 a
         INNER JOIN G_BASE_VOIE.TA_TRONCON b ON b.objectid = a.id_troncon
-        INNER JOIN C_6 c ON c.id_troncon = b.objectid
+        INNER JOIN C_7 c ON c.id_troncon = b.objectid
     WHERE
         a.lateralite IN('Droit', 'LesDeuxCotes')
         AND c.lateralite IN('Gauche', 'LesDeuxCotes')
