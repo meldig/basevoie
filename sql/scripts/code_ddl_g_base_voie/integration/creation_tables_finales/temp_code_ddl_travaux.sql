@@ -8,12 +8,12 @@ BEGIN
             job_type => 'PLSQL_BLOCK',
             job_action => 'DBMS_REFRESH.REFRESH("G_BASE_VOIE"."VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR");',
             number_of_arguments => 0,
-            start_date => TO_TIMESTAMP_TZ('2023-09-03 08:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            repeat_interval => 'FREQ=WEEKLY;BYTIME=080000;BYDAY=SUN',
+            start_date => TO_TIMESTAMP_TZ('2023-09-30 08:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=WEEKLY;BYTIME=080000;BYDAY=SAT',
             end_date => NULL,
             enabled => TRUE,
             auto_drop => FALSE,
-            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR chaque dimanche à 08h00.');  
+            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR chaque samedi à 08h00.');  
  
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR', 
@@ -21,6 +21,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 
@@ -34,12 +35,12 @@ BEGIN
             job_type => 'PLSQL_BLOCK',
             job_action => 'DBMS_REFRESH.REFRESH("G_BASE_VOIE"."VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM");',
             number_of_arguments => 0,
-            start_date => TO_TIMESTAMP_TZ('2023-09-03 10:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            repeat_interval => 'FREQ=WEEKLY;BYTIME=100000;BYDAY=SUN',
+            start_date => TO_TIMESTAMP_TZ('2023-09-30 10:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=WEEKLY;BYTIME=100000;BYDAY=SAT',
             end_date => NULL,
             enabled => TRUE,
             auto_drop => FALSE,
-            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM chaque dimanche à 10h00.');  
+            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM chaque samedi à 10h00.');  
  
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_DISTANCE_SEUIL_TRONCON_1KM', 
@@ -61,12 +62,12 @@ BEGIN
             job_type => 'PLSQL_BLOCK',
             job_action => 'DBMS_REFRESH.REFRESH("G_BASE_VOIE"."VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE");',
             number_of_arguments => 0,
-            start_date => TO_TIMESTAMP_TZ('2023-09-03 12:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            repeat_interval => 'FREQ=WEEKLY;BYTIME=120000;BYDAY=SUN',
+            start_date => TO_TIMESTAMP_TZ('2023-09-30 12:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=WEEKLY;BYTIME=120000;BYDAY=SAT',
             end_date => NULL,
             enabled => TRUE,
             auto_drop => FALSE,
-            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE chaque dimanche à 12h00.');  
+            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE chaque samedi à 12h00.');  
  
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE', 
@@ -74,6 +75,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_DOUBLON_NUMERO_SEUIL_PAR_VOIE_ADMINISTRATIVE', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 
@@ -87,12 +89,12 @@ BEGIN
             job_type => 'PLSQL_BLOCK',
             job_action => 'DBMS_REFRESH.REFRESH("G_BASE_VOIE"."VM_AUDIT_TRONCON_NON_JOINTIFS");',
             number_of_arguments => 0,
-            start_date => TO_TIMESTAMP_TZ('2023-09-03 14:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            repeat_interval => 'FREQ=WEEKLY;BYTIME=140000;BYDAY=SUN',
+            start_date => TO_TIMESTAMP_TZ('2023-09-30 14:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=WEEKLY;BYTIME=140000;BYDAY=SAT',
             end_date => NULL,
             enabled => TRUE,
             auto_drop => FALSE,
-            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS chaque dimanche à 14h00.');  
+            comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_AUDIT_TRONCON_NON_JOINTIFS chaque samedi à 14h00.');  
  
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_TRONCON_NON_JOINTIFS', 
@@ -100,6 +102,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_AUDIT_TRONCON_NON_JOINTIFS', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 
@@ -112,8 +115,8 @@ BEGIN
             job_type => 'PLSQL_BLOCK',
             job_action => 'DELETE FROM G_BASE_VOIE.TA_VOIE_PHYSIQUE WHERE objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TA_TRONCON) AND objectid NOT IN(SELECT fid_voie_physique FROM G_BASE_VOIE.TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE);',
             number_of_arguments => 0,
-            start_date => TO_TIMESTAMP_TZ('2023-09-01 18:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            repeat_interval => 'FREQ=HOURLY;BYTIME=180000;BYDAY=MON,TUE,WED,THU,FRI',
+            start_date => TO_TIMESTAMP_TZ('2023-09-15 18:00:00.000000000 EUROPE/PARIS','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=HOURLY;BYDAY=MON,TUE,WED,THU,FRI',
             end_date => NULL,
             enabled => TRUE,
             auto_drop => FALSE,
@@ -125,6 +128,7 @@ BEGIN
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_GESTION_VOIE_PHYSIQUE', 
              attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+END;
 
 /
 

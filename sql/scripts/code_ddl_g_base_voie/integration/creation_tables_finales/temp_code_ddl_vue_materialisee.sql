@@ -1,4 +1,15 @@
 /*
+Sélection permettant de lancer la création des VM
+*/
+
+SELECT
+	GET_CODE_INSEE_97_COMMUNES_CONTAIN_POINT('TA_SEUIL', a.geom)
+FROM
+	G_BASE_VOIE.TA_SEUIL a;
+
+/
+
+/*
 Création de la vue matérialisée VM_CONSULTATION_SEUIL regroupant les seuils de la MEL et leur tronçon. Mise à jour du lundi au samedi à 05h00.
 */
 /*
@@ -926,6 +937,9 @@ DROP MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR;
 DELETE FROM USER_SDO_GEOM_METADATA WHERE table_name = 'VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR';
 COMMIT;
 */
+
+SELECT * FROM G_REFERENTIEL.MEL_COMMUNE_LLH;
+
 -- 1. Création de la VM
 CREATE MATERIALIZED VIEW G_BASE_VOIE.VM_AUDIT_CODE_INSEE_SEUIL_EN_ERREUR (
     ID_SEUIL,
