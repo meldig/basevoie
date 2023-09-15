@@ -14,7 +14,7 @@ BEGIN
             enabled => TRUE,
             auto_drop => FALSE,
             comments => 'Ce job rafraîchit la VM G_BASE_VOIE.VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_HORS_AGGLO le premier dimanche du mois à 16h00.');  
- e
+
     DBMS_SCHEDULER.SET_ATTRIBUTE( 
              name => 'JOB_MAJ_VM_TAMPON_LITTERALIS_ZONE_PARTICULIERE_INTERSECT_HORS_AGGLO', 
              attribute => 'store_output', value => TRUE);
