@@ -9,7 +9,8 @@ SET /p chemin_code_vue_materialisees="Veuillez saisir le chemin d'acces du dossi
 SET /p chemin_code_droits="Veuillez saisir le chemin d'acces du dossier contenant le droits de lecture, écriture, suppression : "
 SET /p chemin_code_temp="Veuillez saisir le chemin d'acces du dossier integration\creation_tables_finales : "
 
-copy /b %chemin_code_vue_materialisees%\creation_vm_consultation_seuil.sql + ^
+copy /b %chemin_code_temp%\selection_pour_faire_fonctionner_les_vues_et_vm.sql + ^
+%chemin_code_vue_materialisees%\creation_vm_consultation_seuil.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_base_voie.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_voie_administrative.sql + ^
 %chemin_code_vue_materialisees%\creation_vm_consultation_voie_physique.sql + ^
