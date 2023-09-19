@@ -25,7 +25,7 @@ BEGIN
 
 EXCEPTION
     WHEN OTHERS THEN
-        mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER G_BASE_VOIE.A_IXX_TA_SEUIL','bjacq@lillemetropole.fr');
+        mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER G_BASE_VOIE.A_IXX_TA_SEUIL','geotrigger@lillemetropole.fr');
 END;
 
 /

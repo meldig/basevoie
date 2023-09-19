@@ -25,7 +25,7 @@ BEGIN
 
 EXCEPTION
     WHEN OTHERS THEN
-        mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER G_BASE_VOIE.A_IXX_TA_SEUIL','bjacq@lillemetropole.fr');
+        mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER G_BASE_VOIE.A_IXX_TA_SEUIL','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -137,7 +137,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_ADMINISTRATIVE_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_ADMINISTRATIVE_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -177,7 +177,7 @@ BEGIN
 
         EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM || ' Erreur provoquée par ' || username || ' à ' || sysdate,'ERREUR TRIGGER - A_IXX_TA_VOIE_ADMINISTRATIVE','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM || ' Erreur provoquée par ' || username || ' à ' || sysdate,'ERREUR TRIGGER - A_IXX_TA_VOIE_ADMINISTRATIVE','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -268,7 +268,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_INFOS_SEUIL_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_INFOS_SEUIL_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -353,7 +353,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_RELATION_VOIE_PHYSIQUE_ADMINISTRATIVE_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -453,7 +453,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_SEUIL_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_SEUIL_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -547,7 +547,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_TRONCON_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_TRONCON_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -629,7 +629,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_PHYSIQUE_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_PHYSIQUE_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -721,7 +721,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_SUPRA_COMMUNALE_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_SUPRA_COMMUNALE_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /
@@ -775,7 +775,7 @@ BEGIN
 
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TA_MISE_A_JOUR_A_FAIRE','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TA_MISE_A_JOUR_A_FAIRE','geotrigger@lillemetropole.fr');
 END;
 
 

@@ -20,7 +20,7 @@ BEGIN
     
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM || ' Erreur provoquée par l''agent ' || username,'ERREUR TRIGGER - B_UXX_TEMP_C_VOIE_ADMINISTRATIVE_PRINCIPALE_MATERIALISE','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM || ' Erreur provoquée par l''agent ' || username,'ERREUR TRIGGER - B_UXX_TEMP_C_VOIE_ADMINISTRATIVE_PRINCIPALE_MATERIALISE','geotrigger@lillemetropole.fr');
 END;
 
 /

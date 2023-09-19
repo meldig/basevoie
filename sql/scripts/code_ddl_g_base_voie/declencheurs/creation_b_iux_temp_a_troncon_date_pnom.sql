@@ -32,7 +32,7 @@ BEGIN
 
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TEMP_A_TRONCON_DATE_PNOM','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUX_TEMP_A_TRONCON_DATE_PNOM','geotrigger@lillemetropole.fr');
 END;
 
 /
