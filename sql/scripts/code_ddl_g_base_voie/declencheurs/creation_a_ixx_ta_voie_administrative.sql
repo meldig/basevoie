@@ -33,7 +33,7 @@ BEGIN
 
         EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM || ' Erreur provoquée par ' || username || ' à ' || sysdate,'ERREUR TRIGGER - A_IXX_TA_VOIE_ADMINISTRATIVE','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM || ' Erreur provoquée par ' || username || ' à ' || sysdate,'ERREUR TRIGGER - A_IXX_TA_VOIE_ADMINISTRATIVE','geotrigger@lillemetropole.fr');
 END;
 
 /

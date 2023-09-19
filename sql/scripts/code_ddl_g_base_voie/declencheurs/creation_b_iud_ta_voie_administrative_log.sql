@@ -105,7 +105,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_ADMINISTRATIVE_LOG','bjacq@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_IUD_TA_VOIE_ADMINISTRATIVE_LOG','geotrigger@lillemetropole.fr');
 END;
 
 /

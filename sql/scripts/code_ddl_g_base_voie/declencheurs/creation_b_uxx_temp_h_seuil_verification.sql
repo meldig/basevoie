@@ -12,7 +12,7 @@ BEGIN
 
     EXCEPTION
         WHEN OTHERS THEN
-            mail.sendmail('bjacq@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_UXX_TEMP_H_SEUIL_VERIFICATION','bjacq@lillemetropole.fr','sysdig@lillemetropole.fr');
+            mail.sendmail('geotrigger@lillemetropole.fr',SQLERRM,'ERREUR TRIGGER - G_BASE_VOIE.B_UXX_TEMP_H_SEUIL_VERIFICATION','geotrigger@lillemetropole.fr','sysdig@lillemetropole.fr');
 END;
 
 /
