@@ -96,7 +96,7 @@ WITH
             domania IS NULL
         ),
 
-    C_6 AS(-- Mise en forme des tronçons ayant une seule domanialité et compilation avec ceux disposant de deux domanialités dans les tables source 
+   C_6 AS(-- Mise en forme des tronçons ayant une seule domanialité et compilation avec ceux disposant de deux domanialités dans les tables source 
         SELECT DISTINCT --Le DISTINCT est indispensable car certains tronçons peuvent être composés de plusieurs sous-tronçons de même domanialité
             d.id_troncon,
             CAST(d.id_troncon AS VARCHAR2(254 BYTE)) AS code_tronc,
@@ -135,7 +135,7 @@ WITH
                 END = b.cnumtrc 
             INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE d ON d.id_troncon = e.objectid
         UNION ALL
-        SELECT
+        SELECT DISTINCT
             b.id_troncon,
             CAST(b.id_troncon AS VARCHAR2(254 BYTE)) AS code_tronc,
             a.classement,
@@ -152,7 +152,7 @@ WITH
                 END = a.cnumtrc 
             INNER JOIN G_BASE_VOIE.VM_CONSULTATION_BASE_VOIE b ON b.id_troncon = e.objectid
         UNION ALL
-        SELECT -- Sélection des tronçons n'ayant pas de domanialité - dans ce cas le classement est 'VC'
+        SELECT DISTINCT -- Sélection des tronçons n'ayant pas de domanialité - dans ce cas le classement est 'VC'
             a.id_troncon,
             CAST(a.id_troncon AS VARCHAR2(254 BYTE)) AS code_tronc,
             'VC' AS classement,
