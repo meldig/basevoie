@@ -516,7 +516,11 @@ WITH
             b.objectid AS ID_TRONCON,
             c.id_voie_physique,
             CAST('ADR' AS VARCHAR2(254)) AS NATURE,
-            d.nom_voie AS LIBELLE,
+            COALESCE(
+                    TRIM(CAST(a.numero  AS VARCHAR2(254))) || ' ' || TRIM(CAST(a.complement_numero AS  VARCHAR2(254))),
+                    TRIM(CAST(a.numero  AS VARCHAR2(254))),
+                    TRIM(CAST(a.complement_numero AS  VARCHAR2(254)))
+                    ) AS LIBELLE,
             CAST(a.numero  AS NUMBER(8,0)) AS NUMERO,
             CAST(TRIM(a.complement_numero) AS VARCHAR2(254)) AS REPETITION,
             CASE
